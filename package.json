@@ -65,6 +65,7 @@
     "qrcode-reader": "^1.0.4",
     "request": "^2.88.2",
     "ruhend-scraper": "*",
+    "sequelize": "^6.37.5",
     "safe-stable-stringify": "^2.5.0",
     "set-cookie": "^0.0.4",
     "tough-cookie": "^5.0.0",
