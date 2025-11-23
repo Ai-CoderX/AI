@@ -40,7 +40,7 @@ const {
   isGroupAdmin,
   getParticipantInfo,
   isRealAdmin 
-} = require("./functions");
+} = require("./lib/functions");
 const fsSync = require("fs");
 const fs = require("fs").promises;
 const ff = require("fluent-ffmpeg");
