@@ -1,6 +1,6 @@
 // Jawad Tech On Top 🔝 
 const { setPrefix } = require('../lib/prefix');
-const { cmd, commands } = require('../conn');
+const { cmd, commands } = require('../command');
 const config = require('../config');
 const prefix = config.PREFIX;
 const fs = require('fs');
