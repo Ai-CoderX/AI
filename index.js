@@ -27,19 +27,17 @@ const {
   fetchLatestBaileysVersion,
   Browsers,
 } = require(config.BAILEYS);
-const { 
-  getBuffer, 
-  getGroupAdmins, 
-  getRandom, 
-  h2k, 
-  isUrl, 
-  Json, 
-  runtime, 
-  sleep, 
-  fetchJson, 
+const {
+  getBuffer,
+  getGroupAdmins,
+  getRandom,
+  h2k,
+  isUrl,
+  Json,
+  runtime,
+  sleep,
+  fetchJson,
   isGroupAdmin,
-  getParticipantInfo,
-  isRealAdmin 
 } = require("./lib/functions");
 const fsSync = require("fs");
 const fs = require("fs").promises;
@@ -783,66 +781,56 @@ conn.ev.on('group-participants.update', async (update) => {
       );
     }
 
-const m = sms(conn, mek);
-const type = getContentType(mek.message);
-const content = JSON.stringify(mek.message);
-const from = mek.key.remoteJid;
-const quoted =
-  type == "extendedTextMessage" && mek.message.extendedTextMessage.contextInfo != null
-    ? mek.message.extendedTextMessage.contextInfo.quotedMessage || []
-    : [];
-const body =
-  type === "conversation"
-    ? mek.message.conversation
-    : type === "extendedTextMessage"
-    ? mek.message.extendedTextMessage.text
-    : type == "imageMessage" && mek.message.imageMessage.caption
-    ? mek.message.imageMessage.caption
-    : type == "videoMessage" && mek.message.videoMessage.caption
-    ? mek.message.videoMessage.caption
-    : "";
-const prefix = getPrefix();
-const isCmd = body.startsWith(prefix);
-var budy = typeof mek.text == "string" ? mek.text : false;
-const command = isCmd ? body.slice(prefix.length).trim().split(" ").shift().toLowerCase() : "";
-const args = body.trim().split(/ +/).slice(1);
-const q = args.join(" ");
-const text = args.join(" ");
-const isGroup = from.endsWith("@g.us");
-const sender = mek.key.fromMe
-  ? (conn.user.id.split(":")[0] + "@s.whatsapp.net" || conn.user.id)
-  : mek.key.participant || mek.key.remoteJid;
-const senderNumber = sender.split("@")[0];
-const botNumber = conn.user.id.split(":")[0];
-const pushname = mek.pushName || "Sin Nombre";
-const isMe = botNumber.includes(senderNumber);
-const isOwner = ownerNumber.includes(senderNumber) || isMe;
-const botNumber2 = await jidNormalizedUser(conn.user.id);
-
-// Enhanced group metadata and admin checks
-const groupMetadata = isGroup ? await conn.groupMetadata(from).catch((e) => {
-  logger.error("[ ❌ ] Failed to fetch group metadata", { Error: e.message });
-  return null;
-}) : null;
-
-if (!groupMetadata && isGroup) return;
-
-const groupName = isGroup ? groupMetadata.subject : "";
-const participants = isGroup ? groupMetadata.participants : [];
-const groupAdmins = isGroup ? getGroupAdmins(participants) : [];
-
-// Enhanced admin checks like the other bot
-const userParticipant = isGroup ? await getParticipantInfo(conn, from, sender) : {};
-const botParticipant = isGroup ? await getParticipantInfo(conn, from, botNumber2) : {};
-
-const isRAdmin = isGroup ? (userParticipant?.admin === 'superadmin' || false) : false;
-const isAdmins = isGroup ? (isRAdmin || userParticipant?.admin === 'admin' || false) : false;
-const isBotAdmins = isGroup ? (botParticipant?.admin === 'admin' || botParticipant?.admin === 'superadmin' || false) : false;
-
-const isReact = m.message.reactionMessage ? true : false;
-const reply = (teks) => {
-    conn.sendMessage(from, { text: teks }, { quoted: mek })
-}
+    const m = sms(conn, mek);
+    const type = getContentType(mek.message);
+    const content = JSON.stringify(mek.message);
+    const from = mek.key.remoteJid;
+    const quoted =
+      type == "extendedTextMessage" && mek.message.extendedTextMessage.contextInfo != null
+        ? mek.message.extendedTextMessage.contextInfo.quotedMessage || []
+        : [];
+    const body =
+      type === "conversation"
+        ? mek.message.conversation
+        : type === "extendedTextMessage"
+        ? mek.message.extendedTextMessage.text
+        : type == "imageMessage" && mek.message.imageMessage.caption
+        ? mek.message.imageMessage.caption
+        : type == "videoMessage" && mek.message.videoMessage.caption
+        ? mek.message.videoMessage.caption
+        : "";
+    const prefix = getPrefix();
+    const isCmd = body.startsWith(prefix);
+    var budy = typeof mek.text == "string" ? mek.text : false;
+    const command = isCmd ? body.slice(prefix.length).trim().split(" ").shift().toLowerCase() : "";
+    const args = body.trim().split(/ +/).slice(1);
+    const q = args.join(" ");
+    const text = args.join(" ");
+    const isGroup = from.endsWith("@g.us");
+    const sender = mek.key.fromMe
+      ? (conn.user.id.split(":")[0] + "@s.whatsapp.net" || conn.user.id)
+      : mek.key.participant || mek.key.remoteJid;
+    const senderNumber = sender.split("@")[0];
+    const botNumber = conn.user.id.split(":")[0];
+    const pushname = mek.pushName || "Sin Nombre";
+    const isMe = botNumber.includes(senderNumber);
+    const isOwner = ownerNumber.includes(senderNumber) || isMe;
+    const botNumber2 = await jidNormalizedUser(conn.user.id);
+    const groupMetadata = isGroup ? await conn.groupMetadata(from).catch((e) => {
+      logger.error("[ ❌ ] Failed to fetch group metadata", { Error: e.message });
+      conn.sendMessage(from, { text: "Can't fetch group info, bro! Try again." });
+      return null;
+    }) : null;
+    if (!groupMetadata && isGroup) return;
+    const groupName = isGroup ? groupMetadata.subject : "";
+    const participants = isGroup ? groupMetadata.participants : [];
+    const groupAdmins = isGroup ? getGroupAdmins(participants) : [];
+    const isBotAdmins = isGroup ? await isGroupAdmin(conn, from, botNumber2) : false;
+    const isAdmins = isGroup ? await isGroupAdmin(conn, from, sender) : false;
+    const isReact = m.message.reactionMessage ? true : false;
+    const reply = (teks) => {
+      conn.sendMessage(from, { text: teks }, { quoted: mek });
+    };
     
     // --- ANTI-LINK HANDLER ---
     if (isGroup && !isAdmins && isBotAdmins) {
