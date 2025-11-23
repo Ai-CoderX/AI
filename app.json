@@ -162,6 +162,13 @@
       "required": false,
       "value": "💝,💖,💗,❤️‍🩹,❤️,🧡,💛,💚,💙,💜,🤎,🖤,🤍"
     }, 
+
+    
+    "STATUS_REACT_EMOJIS": {
+      "description": "put here custom status react react emojis.",
+      "required": false,
+      "value": "💝,💖,💗,❤️‍🩹,❤️,🧡,💛,💚,💙,💜,🤎,🖤,🤍"
+    }, 
     
     "ANTI_DEL_PATH": {
       "description": "change it to -same- if you want to resend deleted message in same chat othwise inbox",
