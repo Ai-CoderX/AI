@@ -4,8 +4,8 @@
   "description": "A WhatsApp Bot Created By JawadTechX",
   "main": "index.js",
   "engines": {
-    "node": ">=20.x",
-    "npm": ">=10.x"
+    "node": "20.x",
+    "npm": "10.x"
   },
   "scripts": {
     "start": "pm2 start index.js --deep-monitoring --attach --name KHAN-MD",
@@ -81,7 +81,6 @@
     "youtube-yts": "^2.0.0",
     "youtubedl-core": "^4.11.7",
     "ytdl-core": "^4.11.5",
-    "zlib": "^1.0.5",
     "body-parser": "^1.20.2"
   },
   "overrides": {
