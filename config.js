@@ -32,7 +32,7 @@ module.exports = {
   SESSION_ID: settings.SESSION_ID || process.env.SESSION_ID || "",
   PREFIX: settings.PREFIX || process.env.PREFIX || ".",
   CHATBOT: settings.CHATBOT || process.env.CHATBOT || "off",
-  BOT_NAME: settings.BOT_NAME || process.env.BOT_NAME || "KHAN-MD,
+  BOT_NAME: settings.BOT_NAME || process.env.BOT_NAME || "KHAN-MD",
   MODE: settings.MODE || process.env.MODE || "private",
   REPO: process.env.REPO || "https://github.com/JawadYT36/KHAN-MD",
   PAIRING_CODE: process.env.PAIRING_CODE || 'true',
@@ -57,7 +57,6 @@ module.exports = {
   OWNER_REACT: settings.OWNER_REACT || process.env.OWNER_REACT || "false",
   CUSTOM_REACT: settings.CUSTOM_REACT || process.env.CUSTOM_REACT || "false",
   CUSTOM_REACT_EMOJIS: settings.CUSTOM_REACT_EMOJIS || process.env.CUSTOM_REACT_EMOJIS || "💝,💖,💗,❤️‍🩹,❤️,🧡,💛,💚,💙,💜,🤎,🖤,🤍",
-  STATUS_REACT_EMOJIS: settings.STATUS_REACT_EMOJIS || process.env.STATUS_REACT_EMOJIS || "💝,💖,💗,❤️‍🩹,❤️,🧡,💛,💚,💙,💜,🤎,🖤,🤍",
   STICKER_NAME: process.env.STICKER_NAME || "KHAN-MD",
   AUTO_STICKER: settings.AUTO_STICKER || process.env.AUTO_STICKER || "false",
 
@@ -97,3 +96,4 @@ module.exports = {
   // ===== SOCIAL MEDIA =====
   channel: "https://whatsapp.com/channel/0029VatOy2EAzNc2WcShQw1j",
  };        
+  
