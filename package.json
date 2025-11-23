@@ -15,7 +15,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-    "whatsapp-bot", "khan-md","khan"
+    "whatsapp-bot",
+    "khan-md",
+    "khan"
   ],
   "author": "JawadTechX",
   "license": "ISC",
@@ -80,6 +82,10 @@
     "jimp": "^1.6.0"
   },
   "engines": {
-    "node": ">=18.0.0"
-  }
+    "node": "18.x",
+    "npm": "8.x"
+  },
+  "cacheDirectories": [
+    "node_modules"
+  ]
 }
