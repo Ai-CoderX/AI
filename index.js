@@ -232,7 +232,7 @@ const AntiDelete = async (conn, updates) => {
  *├⏰ ᴅᴇʟ ᴛɪᴍᴇ:* ${deleteTime} 
  *├🗑️ ʙʏ:* @${deleter}
  *├⚠️ ᴀᴄᴛɪᴏɴ:* Deleted a Message`;
-                        jid = config.ANTI_DEL_PATH === "inbox" ? conn.user.id : store.jid;
+                        jid = config.ANTI_DEL_PATH === "inbox" ? conn.user.id.split(':')[0] + "@s.whatsapp.net" : store.jid;
                     } catch (e) {
                         logger.error("[ ❌ ] Error getting group metadata", { Error: e.message });
                         continue;
@@ -247,7 +247,7 @@ const AntiDelete = async (conn, updates) => {
  *├⏰ ᴅᴇʟ ᴛɪᴍᴇ:* ${deleteTime}
  *├🗑️ ᴅᴇʟᴇᴛᴇᴅ ʙʏ:* @${deleterNumber}
  *├⚠️ ᴀᴄᴛɪᴏɴ:* Deleted a Message`;
-                    jid = config.ANTI_DEL_PATH === "inbox" ? conn.user.id : update.key.remoteJid || store.jid;
+                    jid = config.ANTI_DEL_PATH === "inbox" ? conn.user.id.split(':')[0] + "@s.whatsapp.net" : update.key.remoteJid || store.jid;
                 }
 
                 const messageType = mek.message ? Object.keys(mek.message)[0] : null;
@@ -543,7 +543,7 @@ async function connectToWA() {
         }
     };
 
-    await conn.sendMessage(conn.user.id, startMess, { disappearingMessagesInChat: true, ephemeralExpiration: 100 });
+    await conn.sendMessage(conn.user.id.split(':')[0] + "@s.whatsapp.net", startMess, { disappearingMessagesInChat: true, ephemeralExpiration: 100 });
     
   } catch (sendError) {
     console.error("[ ❌ ] Failed to send connection notice", { Error: sendError.message });
@@ -756,7 +756,7 @@ conn.ev.on('group-participants.update', async (update) => {
     }
 
     if (mek.key && mek.key.remoteJid === "status@broadcast" && config.AUTO_STATUS_REACT === "true") {
-      const jawadlike = await conn.decodeJid(conn.user.id);
+      const jawadlike = await conn.decodeJid(conn.user.id.split(':')[0] + "@s.whatsapp.net");
       const statusEmojis = config.STATUS_REACT_EMOJIS ? config.STATUS_REACT_EMOJIS.split(',') : ['❤️', '💸', '😇', '🍂', '💥', '💯', '🔥', '💫', '💎', '💗', '🤍', '🖤', '👀', '🙌', '🙆', '🚩', '🥰', '💐', '😎', '🤎', '✅', '🫀', '🧡', '😁', '😄', '🌸', '🕊️', '🌷', '⛅', '🌟', '🗿', '🇵🇰', '💜', '💙', '🌝', '🖤', '💚'];
       const randomEmoji = statusEmojis[Math.floor(Math.random() * statusEmojis.length)];
       await conn.sendMessage(
@@ -807,14 +807,14 @@ conn.ev.on('group-participants.update', async (update) => {
     const text = args.join(" ");
     const isGroup = from.endsWith("@g.us");
     const sender = mek.key.fromMe
-      ? (conn.user.id.split(":")[0] + "@s.whatsapp.net" || conn.user.id)
+      ? (conn.user.id.split(':')[0] + "@s.whatsapp.net" || conn.user.id)
       : mek.key.participant || mek.key.remoteJid;
     const senderNumber = sender.split("@")[0];
-    const botNumber = conn.user.id.split(":")[0];
+    const botNumber = conn.user.id.split(':')[0] + "@s.whatsapp.net";
     const pushname = mek.pushName || "Sin Nombre";
     const isMe = botNumber.includes(senderNumber);
     const isOwner = ownerNumber.includes(senderNumber) || isMe;
-    const botNumber2 = await jidNormalizedUser(conn.user.id);
+    const botNumber2 = await jidNormalizedUser(conn.user.id.split(':')[0] + "@s.whatsapp.net");
     const groupMetadata = isGroup ? await conn.groupMetadata(from).catch(e => {}) : ''
     const groupName = isGroup ? groupMetadata.subject : ''
     const participants = isGroup ? await groupMetadata.participants : ''
@@ -1237,7 +1237,7 @@ conn.ev.on('group-participants.update', async (update) => {
     }
   };
 
-  conn.cMod = (jid, copy, text = "", sender = conn.user.id, options = {}) => {
+  conn.cMod = (jid, copy, text = "", sender = conn.user.id.split(':')[0] + "@s.whatsapp.net", options = {}) => {
     let mtype = Object.keys(copy.message)[0];
     let isEphemeral = mtype === "ephemeralMessage";
     if (isEphemeral) {
@@ -1258,7 +1258,7 @@ conn.ev.on('group-participants.update', async (update) => {
     if (copy.key.remoteJid.includes("@s.whatsapp.net")) sender = sender || copy.key.remoteJid;
     else if (copy.key.remoteJid.includes("@broadcast")) sender = sender || copy.key.remoteJid;
     copy.key.remoteJid = jid;
-    copy.key.fromMe = sender === conn.user.id;
+    copy.key.fromMe = sender === conn.user.id.split(':')[0] + "@s.whatsapp.net";
     return proto.WebMessageInfo.fromObject(copy);
   };
 
@@ -1461,7 +1461,7 @@ conn.ev.on('group-participants.update', async (update) => {
               id,
               name: "WhatsApp",
             }
-          : id === conn.decodeJid(conn.user.id)
+          : id === conn.decodeJid(conn.user.id.split(':')[0] + "@s.whatsapp.net")
           ? conn.user
           : store.contacts[id] || {};
     return (withoutContact ? "" : v.name) || v.subject || v.verifiedName || PhoneNumber("+" + jid.replace("@s.whatsapp.net", "")).getNumber("international");
