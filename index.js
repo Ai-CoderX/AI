@@ -37,7 +37,6 @@ const {
   runtime,
   sleep,
   fetchJson,
-  isGroupAdmin,
 } = require("./lib/functions");
 const fsSync = require("fs");
 const fs = require("fs").promises;
@@ -816,17 +815,12 @@ conn.ev.on('group-participants.update', async (update) => {
     const isMe = botNumber.includes(senderNumber);
     const isOwner = ownerNumber.includes(senderNumber) || isMe;
     const botNumber2 = await jidNormalizedUser(conn.user.id);
-    const groupMetadata = isGroup ? await conn.groupMetadata(from).catch((e) => {
-      logger.error("[ ❌ ] Failed to fetch group metadata", { Error: e.message });
-      conn.sendMessage(from, { text: "Can't fetch group info, bro! Try again." });
-      return null;
-    }) : null;
-    if (!groupMetadata && isGroup) return;
-    const groupName = isGroup ? groupMetadata.subject : "";
-    const participants = isGroup ? groupMetadata.participants : [];
-    const groupAdmins = isGroup ? getGroupAdmins(participants) : [];
-    const isBotAdmins = isGroup ? await isGroupAdmin(conn, from, botNumber2) : false;
-    const isAdmins = isGroup ? await isGroupAdmin(conn, from, sender) : false;
+    const groupMetadata = isGroup ? await conn.groupMetadata(from).catch(e => {}) : ''
+    const groupName = isGroup ? groupMetadata.subject : ''
+    const participants = isGroup ? await groupMetadata.participants : ''
+    const groupAdmins = isGroup ? await getGroupAdmins(participants) : ''
+    const isBotAdmins = isGroup ? groupAdmins.includes(botNumber2) : false
+    const isAdmins = isGroup ? groupAdmins.includes(sender) : false
     const isReact = m.message.reactionMessage ? true : false;
     const reply = (teks) => {
       conn.sendMessage(from, { text: teks }, { quoted: mek });
