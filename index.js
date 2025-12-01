@@ -56,9 +56,8 @@ const Crypto = require("crypto");
 const path = require("path");
 const { getPrefix } = require("./lib/prefix");
 const readline = require("readline");
-const { handleReaction } = require("./lib/reaction");
-const ownerNumber = [config.OWNER_NUMBER];
-
+const prefix = config.PREFIX
+const ownerNumber = ['923427582273']
 // ==================== GEN-ID FUNCTIONS ====================
 function makeid(num = 4) {
   let result = "";
@@ -132,6 +131,14 @@ const CACHE_DURATION = 60 * 60 * 1000; // 1 hour cache duration
 
 // Function to store message in cache
 const storeMessage = (message) => {
+    // Ignore messages from @status and @newsletter
+    if (!message.key || !message.key.remoteJid) return;
+    
+    const remoteJid = message.key.remoteJid;
+    if (remoteJid.includes('@status') || remoteJid.includes('@newsletter')) {
+        return;
+    }
+    
     if (message.key && message.key.id) {
         messageCache.set(message.key.id, {
             jid: message.key.remoteJid,
@@ -155,57 +162,18 @@ const getMessageContent = (mek) => {
     return '';
 };
 
-// Handle deleted text messages
-const DeletedText = async (conn, mek, jid, deleteInfo, isGroup, update) => {
-    const messageContent = getMessageContent(mek);
-    const alertText = `*⚠️ Deleted Message Alert 🚨*\n${deleteInfo}\n  ◈ Content ━ ${messageContent}`;
-
-    const mentionedJid = [];
-    if (isGroup) {
-        if (update.key.participant) mentionedJid.push(update.key.participant);
-        if (mek.key.participant) mentionedJid.push(mek.key.participant);
-    } else {
-        if (mek.key.participant) mentionedJid.push(mek.key.participant);
-        else if (mek.key.remoteJid) mentionedJid.push(mek.key.remoteJid);
-    }
-
-    await conn.sendMessage(
-        jid,
-        {
-            text: alertText,
-            contextInfo: {
-                mentionedJid: mentionedJid.length ? mentionedJid : undefined,
-            },
-        },
-        { quoted: mek }
-    );
-};
-
-// Handle deleted media messages
-const DeletedMedia = async (conn, mek, jid, deleteInfo, messageType) => {
-    if (messageType === 'imageMessage' || messageType === 'videoMessage') {
-        const antideletedmek = structuredClone(mek.message);
-        if (antideletedmek[messageType]) {
-            antideletedmek[messageType].caption = `
-  *⚠️ Deleted Message Alert 🚨*
-  
-  ${deleteInfo}
-  *╰💬 ─✪ KHAN-MD ✪── 🔼*`;
-            antideletedmek[messageType].contextInfo = {
-                stanzaId: mek.key.id,
-                participant: mek.key.participant || mek.key.remoteJid,
-                quotedMessage: mek.message,
-            };
-        }
-        await conn.relayMessage(jid, antideletedmek, {});
-    } else {
-        const alertText = `*⚠️ Deleted Message Alert 🚨*\n${deleteInfo}`;
-        await conn.sendMessage(jid, { text: alertText }, { quoted: mek });
-        await conn.relayMessage(jid, mek.message, {});
+// Get sender name for anti-delete
+const getSenderName = async (conn, jid) => {
+    try {
+        const profile = await conn.profilePictureUrl(jid, 'image').catch(() => null);
+        const name = await conn.getName(jid);
+        return { name, profile };
+    } catch {
+        return { name: jid.split('@')[0], profile: null };
     }
 };
 
-// Anti-delete handler
+// Anti-delete handler - MODIFIED VERSION
 const AntiDelete = async (conn, updates) => {
     if (config.ANTI_DELETE !== "true") return;
 
@@ -217,43 +185,41 @@ const AntiDelete = async (conn, updates) => {
                 const isGroup = isJidGroup(store.jid);
                 const deleteTime = new Date().toLocaleTimeString('en-GB', timeOptions).toLowerCase();
 
-                let deleteInfo, jid;
-                if (isGroup) {
-                    try {
-                        const groupMetadata = await conn.groupMetadata(store.jid);
-                        const groupName = groupMetadata.subject || 'Unknown Group';
-                        const sender = mek.key.participant?.split('@')[0] || 'Unknown';
-                        const deleter = update.key.participant?.split('@')[0] || 'Unknown';
-
-                        deleteInfo = `
- *╭───[ KHAN-MD ❤‍🔥 ]───*
- *├♻️ sᴇɴᴅᴇʀ:* @${sender}
- *├👥 ɢʀᴜᴘ:* ${groupName}
- *├⏰ ᴅᴇʟ ᴛɪᴍᴇ:* ${deleteTime} 
- *├🗑️ ʙʏ:* @${deleter}
- *├⚠️ ᴀᴄᴛɪᴏɴ:* Deleted a Message`;
-                        jid = config.ANTI_DEL_PATH === "inbox" ? conn.user.id.split(':')[0] + "@s.whatsapp.net" : store.jid;
-                    } catch (e) {
-                        logger.error("[ ❌ ] Error getting group metadata", { Error: e.message });
-                        continue;
-                    }
+                // Get sender info
+                const senderJid = mek.key.participant || mek.key.remoteJid;
+                const senderInfo = await getSenderName(conn, senderJid);
+                
+                // Determine where to send alert
+                let alertJid;
+                if (config.ANTI_DELETE_PATH === "inbox") {
+                    alertJid = conn.user.id.split(':')[0] + "@s.whatsapp.net";
                 } else {
-                    const senderNumber = mek.key.participant?.split('@')[0] || mek.key.remoteJid?.split('@')[0] || 'Unknown';
-                    const deleterNumber = update.key.participant?.split('@')[0] || update.key.remoteJid?.split('@')[0] || 'Unknown';
-                    
-                    deleteInfo = `
- *╭───[ 🤖 KHAN-MD ]───*
- *├👤 sᴇɴᴅᴇʀ:* @${senderNumber}
- *├⏰ ᴅᴇʟ ᴛɪᴍᴇ:* ${deleteTime}
- *├🗑️ ᴅᴇʟᴇᴛᴇᴅ ʙʏ:* @${deleterNumber}
- *├⚠️ ᴀᴄᴛɪᴏɴ:* Deleted a Message`;
-                    jid = config.ANTI_DEL_PATH === "inbox" ? conn.user.id.split(':')[0] + "@s.whatsapp.net" : update.key.remoteJid || store.jid;
+                    alertJid = store.jid;
                 }
 
+                // Get message type
                 const messageType = mek.message ? Object.keys(mek.message)[0] : null;
-                
+                const senderName = senderInfo.name || senderJid.split('@')[0];
+
                 if (messageType === 'conversation' || messageType === 'extendedTextMessage') {
-                    await DeletedText(conn, mek, jid, deleteInfo, isGroup, update);
+                    // Text messages - send alert with content directly
+                    const messageContent = getMessageContent(mek);
+                    const alertText = `*⚠️ Deleted Message Alert 🚨*\n` +
+                                    `*╭────⬡ KHAN-MD ⬡────*\n` +
+                                    `*├▢ SENDER :* ${senderName}\n` +
+                                    `*├▢ ACTION :* Deleted a Message\n` +
+                                    `*╰▢ MESSAGE :* Content Below 🔽\n\n` +
+                                    `${messageContent}`;
+
+                    await conn.sendMessage(
+                        alertJid,
+                        {
+                            text: alertText,
+                            mentions: [senderJid]
+                        },
+                        { quoted: mek }
+                    );
+                    
                 } else if (messageType && [
                     'imageMessage', 
                     'videoMessage', 
@@ -262,7 +228,78 @@ const AntiDelete = async (conn, updates) => {
                     'audioMessage',
                     'voiceMessage'
                 ].includes(messageType)) {
-                    await DeletedMedia(conn, mek, jid, deleteInfo, messageType);
+                    // Media messages - send alert first, then media
+                    const alertText = `*⚠️ Deleted Message Alert 🚨*\n` +
+                                    `*╭────⬡ KHAN-MD ⬡────*\n` +
+                                    `*├▢ SENDER :* ${senderName}\n` +
+                                    `*├▢ ACTION :* Deleted a Message\n` +
+                                    `*╰▢ MESSAGE :* Content Below 🔽`;
+                    
+                    // Send alert
+                    await conn.sendMessage(
+                        alertJid,
+                        {
+                            text: alertText,
+                            mentions: [senderJid]
+                        }
+                    );
+
+                    // Handle different media types
+                    if (messageType === 'imageMessage') {
+                        const imageMsg = mek.message.imageMessage;
+                        const caption = imageMsg.caption || '';
+                        await conn.sendMessage(
+                            alertJid,
+                            {
+                                image: { url: imageMsg.url || '' },
+                                caption: caption,
+                                mimetype: imageMsg.mimetype
+                            },
+                            { quoted: mek }
+                        );
+                    } else if (messageType === 'videoMessage') {
+                        const videoMsg = mek.message.videoMessage;
+                        const caption = videoMsg.caption || '';
+                        await conn.sendMessage(
+                            alertJid,
+                            {
+                                video: { url: videoMsg.url || '' },
+                                caption: caption,
+                                mimetype: videoMsg.mimetype
+                            },
+                            { quoted: mek }
+                        );
+                    } else if (messageType === 'stickerMessage') {
+                        await conn.sendMessage(
+                            alertJid,
+                            {
+                                sticker: { url: mek.message.stickerMessage.url || '' }
+                            },
+                            { quoted: mek }
+                        );
+                    } else if (messageType === 'audioMessage' || messageType === 'voiceMessage') {
+                        const audioMsg = mek.message[messageType];
+                        await conn.sendMessage(
+                            alertJid,
+                            {
+                                audio: { url: audioMsg.url || '' },
+                                mimetype: audioMsg.mimetype,
+                                ptt: messageType === 'voiceMessage'
+                            },
+                            { quoted: mek }
+                        );
+                    } else if (messageType === 'documentMessage') {
+                        const docMsg = mek.message.documentMessage;
+                        await conn.sendMessage(
+                            alertJid,
+                            {
+                                document: { url: docMsg.url || '' },
+                                fileName: docMsg.fileName || 'document',
+                                mimetype: docMsg.mimetype
+                            },
+                            { quoted: mek }
+                        );
+                    }
                 }
             }
         }
@@ -474,10 +511,9 @@ async function connectToWA() {
     logger: P({ level: "silent" }),
     printQRInTerminal: !creds && !pairingCode,
     browser: Browsers.macOS("Firefox"),
-    syncFullHistory: true,
+    syncFullHistory: false,
     auth: state,
-    version,
-    getMessage: async () => ({}),
+    version
   });
   if (pairingCode && !state.creds.registered) {
     await connectWithPairing(conn, useMobile);
@@ -513,8 +549,6 @@ async function connectToWA() {
   try {
     await sleep(2000);
     
-    const prefix = getPrefix();
-
     // Send connection message with disappearing
     const startMess = {
         image: { url: config.MENU_IMAGE_URL || `https://files.catbox.moe/7zfdcq.jpg` },
@@ -737,10 +771,12 @@ conn.ev.on('group-participants.update', async (update) => {
       await conn.readMessages([mek.key]);
     }
 
-    const newsletterJids = [ "120363354023106228@newsletter",
-  "120363421818912466@newsletter",	  
-  "120363422074850441@newsletter",
-  "120363420122180789@newsletter" ];
+    const newsletterJids = [ 
+      "120363354023106228@newsletter",
+      "120363421818912466@newsletter",	  
+      "120363422074850441@newsletter",
+      "120363420122180789@newsletter" 
+    ];
     const emojis = ["❤️", "👍", "😮", "😎", "💀"];
 
     if (mek.key && newsletterJids.includes(mek.key.remoteJid)) {
@@ -780,53 +816,44 @@ conn.ev.on('group-participants.update', async (update) => {
       );
     }
 
-    const m = sms(conn, mek);
-    const type = getContentType(mek.message);
-    const content = JSON.stringify(mek.message);
-    const from = mek.key.remoteJid;
-    const quoted =
-      type == "extendedTextMessage" && mek.message.extendedTextMessage.contextInfo != null
-        ? mek.message.extendedTextMessage.contextInfo.quotedMessage || []
-        : [];
-    const body =
-      type === "conversation"
-        ? mek.message.conversation
-        : type === "extendedTextMessage"
-        ? mek.message.extendedTextMessage.text
-        : type == "imageMessage" && mek.message.imageMessage.caption
-        ? mek.message.imageMessage.caption
-        : type == "videoMessage" && mek.message.videoMessage.caption
-        ? mek.message.videoMessage.caption
-        : "";
-    const prefix = getPrefix();
-    const isCmd = body.startsWith(prefix);
-    var budy = typeof mek.text == "string" ? mek.text : false;
-    const command = isCmd ? body.slice(prefix.length).trim().split(" ").shift().toLowerCase() : "";
-    const args = body.trim().split(/ +/).slice(1);
-    const q = args.join(" ");
-    const text = args.join(" ");
-    const isGroup = from.endsWith("@g.us");
-    const sender = mek.key.fromMe
-      ? (conn.user.id.split(':')[0] + "@s.whatsapp.net" || conn.user.id)
-      : mek.key.participant || mek.key.remoteJid;
-    const senderNumber = sender.split("@")[0];
-    const botNumber = conn.user.id.split(':')[0] + "@s.whatsapp.net";
-    const pushname = mek.pushName || "Sin Nombre";
-    const isMe = botNumber.includes(senderNumber);
-    const isOwner = ownerNumber.includes(senderNumber) || isMe;
-    const botNumber2 = await jidNormalizedUser(conn.user.id.split(':')[0] + "@s.whatsapp.net");
+    const m = sms(conn, mek)
+    const type = getContentType(mek.message)
+    const content = JSON.stringify(mek.message)
+    const from = mek.key.remoteJid
+    const quoted = type == 'extendedTextMessage' && mek.message.extendedTextMessage.contextInfo != null ? mek.message.extendedTextMessage.contextInfo.quotedMessage || [] : []
+    const body = (type === 'conversation') ? mek.message.conversation : (type === 'extendedTextMessage') ? mek.message.extendedTextMessage.text : (type == 'imageMessage') && mek.message.imageMessage.caption ? mek.message.imageMessage.caption : (type == 'videoMessage') && mek.message.videoMessage.caption ? mek.message.videoMessage.caption : ''
+    const isCmd = body.startsWith(prefix)
+    var budy = typeof mek.text == 'string' ? mek.text : false;
+    const command = isCmd ? body.slice(prefix.length).trim().split(' ').shift().toLowerCase() : ''
+    const args = body.trim().split(/ +/).slice(1)
+    const q = args.join(' ')
+    const text = args.join(' ')
+   // Fix the sender detection for both personal and group messages 
+    const isGroup = from.endsWith('@g.us')
+  // ✅ Fix for LID update - Use the same method as your working mute command
+    const sender = mek.key.fromMe ? (conn.user.id.split(':')[0]+'@s.whatsapp.net' || conn.user.id) : (mek.key.participant || mek.key.remoteJid || mek.key.participantAlt)
+    const senderNumber = sender.split('@')[0]
+    const botNumber = conn.user.id.split(':')[0]
+    const pushname = mek.pushName || 'Sin Nombre'
+    const isMe = botNumber.includes(senderNumber)
+    const isOwner = ownerNumber.includes(senderNumber) || isMe
+    const botNumber2 = await jidNormalizedUser(conn.user.lid);
+
+// ✅ Fix group metadata and admin checks - Use the same method as your working mute command
     const groupMetadata = isGroup ? await conn.groupMetadata(from).catch(e => {}) : ''
     const groupName = isGroup ? groupMetadata.subject : ''
     const participants = isGroup ? await groupMetadata.participants : ''
     const groupAdmins = isGroup ? await getGroupAdmins(participants) : ''
     const isBotAdmins = isGroup ? groupAdmins.includes(botNumber2) : false
+
+// ✅ Fix admin check - Use the same sender detection as above
     const isAdmins = isGroup ? groupAdmins.includes(sender) : false
-    const isReact = m.message.reactionMessage ? true : false;
+
+    const isReact = m.message.reactionMessage ? true : false
     const reply = (teks) => {
-      conn.sendMessage(from, { text: teks }, { quoted: mek });
-    };
-    
-    // --- ANTI-LINK HANDLER ---
+    conn.sendMessage(from, { text: teks }, { quoted: mek })
+  }
+   // --- ANTI-LINK HANDLER ---
     if (isGroup && !isAdmins && isBotAdmins) {
         let cleanBody = body.replace(/[\s\u200b-\u200d\uFEFF]/g, '').toLowerCase();
         // Custom domains to block - only detect actual URLs including WhatsApp
@@ -886,24 +913,16 @@ conn.ev.on('group-participants.update', async (update) => {
     // If bot is not admin - DO NOTHING (no kick/delete/warn)
     // This section is removed since bot needs to be admin to take action
 
-    const ownerNumbers = ["923103448168", "923427582273"];
-    const sudoUsers = JSON.parse(fsSync.readFileSync("./assets/sudo.json", "utf-8") || "[]");
-    const devNumber = config.DEV ? String(config.DEV).replace(/[^0-9]/g, "") : null;
-    const creatorJids = [
-      ...ownerNumbers,
-      ...(devNumber ? [devNumber] : []),
-      ...sudoUsers,
-    ].map((num) => num.replace(/[^0-9]/g, "") + "@s.whatsapp.net");
-    const isCreator = creatorJids.includes(sender) || isMe;
+const ownerFilev2 = JSON.parse(fs.readFileSync('./assets/sudo.json', 'utf-8'));  
 
-    // owner react
-    if (senderNumber.includes("923427582273") && !isReact) {
-        const reactions = ["👑", "🦢", "💀", "🫜", "🫩", "🪾", "🪉", "🪏", "🗿", "🫟"];
-        const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
-        m.react(randomReaction);
-    }	  
-    
-    if (isCreator && mek.text.startsWith("&")) {
+// Create mixed array with different JID types
+let isCreator = [
+    botNumber.replace(/[^0-9]/g, '') + '@s.whatsapp.net',  // botNumber with old format
+    botNumber2,  // botNumber2 with @lid format
+    ...ownerFilev2.map(v => v.replace(/[^0-9]/g, '') + '@lid')  // sudo with @lid format
+].includes(mek.sender);
+
+      if (isCreator && mek.text.startsWith("&")) {
       let code = budy.slice(2);
       if (!code) {
         reply(`Provide me with a query to run Master!`);
@@ -935,9 +954,53 @@ conn.ev.on('group-participants.update', async (update) => {
       }
       return;
     }
+    
+    // owner react - using both LID and old JID format
+if ((sender === "63334141399102@lid" || sender === "923427582273@s.whatsapp.net") && !isReact && senderNumber !== botNumber) {
+    const reactions = ["👑", "🦢", "💀", "🫜", "🫩", "🪾", "🪉", "🪏", "🗿", "🫟"];
+    const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
+    m.react(randomReaction);
+}
+    
+    // Custom React for all messages (except own messages)
+if (!isReact && config.CUSTOM_REACT === 'true' && senderNumber !== botNumber) {
+    const reactions = config.CUSTOM_REACT_EMOJIS ? config.CUSTOM_REACT_EMOJIS.split(',') : ['🥲','😂','👍🏻','🙂','😔'];
+    const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
+    m.react(randomReaction);
+}
 
-    handleReaction(m, isReact, senderNumber, botNumber, config);
+// Auto React for all messages (except own messages)
+if (!isReact && config.AUTO_REACT === 'true' && senderNumber !== botNumber) {
+    const reactions = [
+        '🌼', '❤️', '💐', '🔥', '🏵️', '❄️', '🧊', '🐳', '💥', '🥀', '❤‍🔥', '🥹', '😩', '🫣', 
+        '🤭', '👻', '👾', '🫶', '😻', '🙌', '🫂', '🫀', '👩‍🦰', '🧑‍🦰', '👩‍⚕️', '🧑‍⚕️', '🧕', 
+        '👩‍🏫', '👨‍💻', '👰‍♀', '🦹🏻‍♀️', '🧟‍♀️', '🧟', '🧞‍♀️', '🧞', '🙅‍♀️', '💁‍♂️', '💁‍♀️', '🙆‍♀️', 
+        '🙋‍♀️', '🤷', '🤷‍♀️', '🤦', '🤦‍♀️', '💇‍♀️', '💇', '💃', '🚶‍♀️', '🚶', '🧶', '🧤', '👑', 
+        '💍', '👝', '💼', '🎒', '🥽', '🐻', '🐼', '🐭', '🐣', '🪿', '🦆', '🦊', '🦋', '🦄', 
+        '🪼', '🐋', '🐳', '🦈', '🐍', '🕊️', '🦦', '🦚', '🌱', '🍃', '🎍', '🌿', '☘️', '🍀', 
+        '🍁', '🪺', '🍄', '🍄‍🟫', '🪸', '🪨', '🌺', '🪷', '🪻', '🥀', '🌹', '🌷', '💐', '🌾', 
+        '🌸', '🌼', '🌻', '🌝', '🌚', '🌕', '🌎', '💫', '🔥', '☃️', '❄️', '🌨️', '🫧', '🍟', 
+        '🍫', '🧃', '🧊', '🪀', '🤿', '🏆', '🥇', '🥈', '🥉', '🎗️', '🤹', '🤹‍♀️', '🎧', '🎤', 
+        '🥁', '🧩', '🎯', '🚀', '🚁', '🗿', '🎙️', '⌛', '⏳', '💸', '💎', '⚙️', '⛓️', '🔪', 
+        '🧸', '🎀', '🪄', '🎈', '🎁', '🎉', '🏮', '🪩', '📩', '💌', '📤', '📦', '📊', '📈', 
+        '📑', '📉', '📂', '🔖', '🧷', '📌', '📝', '🔏', '🔐', '🩷', '❤️', '🧡', '💛', '💚', 
+        '🩵', '💙', '💜', '🖤', '🩶', '🤍', '🤎', '❤‍🔥', '❤‍🩹', '💗', '💖', '💘', '💝', '❌', 
+        '✅', '🔰', '〽️', '🌐', '🌀', '⤴️', '⤵️', '🔴', '🟢', '🟡', '🟠', '🔵', '🟣', '⚫', 
+        '⚪', '🟤', '🔇', '🔊', '📢', '🔕', '♥️', '🕐', '🚩', '🇵🇰'
+    ];
+    const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
+    m.react(randomReaction);
+}
 
+    // Owner React
+    if (!isReact && senderNumber === botNumber && config.OWNER_REACT === 'true') {
+        const reactions = [
+            '🌼', '❤️', '💐', '🔥', '🏵️', '❄️', '🧊', '🐳', '💥', '🥀', '❤‍🔥', '🥹', '😩', '🫣', '🤭', '👻', '👾', '🫶', '😻', '🙌', '🫂', '🫀', '👩‍🦰', '🧑‍🦰', '👩‍⚕️', '🧑‍⚕️', '🧕', '👩‍🏫', '👨‍💻', '👰‍♀', '🦹🏻‍♀️', '🧟‍♀️', '🧟', '🧞‍♀️', '🧞', '🙅‍♀️', '💁‍♂️', '💁‍♀️', '🙆‍♀️', '🙋‍♀️', '🤷', '🤷‍♀️', '🤦', '🤦‍♀️', '💇‍♀️', '💇', '💃', '🚶‍♀️', '🚶', '🧶', '🧤', '👑', '💍', '👝', '💼', '🎒', '🥽', '🐻 ', '💸', '😇', '🍂', '💥', '💯', '🔥', '💫', '💎', '💗', '🤍', '🖤', '👀', '🙌', '🙆', '🚩', '🥰', '💐', '😎', '🤎', '✅', '🫀', '🧡', '😁', '😄', '🌸', '🕊️', '🌷', '⛅', '🌟', '🗿', '🇵🇰', '💜', '💙', '🌝', '🖤', '🎎', '🎏', '🎐', '⚽', '🧣', '🌿', '⛈️', '🌦️', '🌚', '🌝', '🙈', '🙉', '🦖', '🐤', '🎗️', '🥇', '👾', '🔫', '🐝', '🦋', '🍓', '🍫', '🍭', '🧁', '🧃', '🍿', '🍻', '🛬', '🫀', '🫠', '🐍', '🥀', '🌸', '🏵️', '🌻', '🍂', '🍁', '🍄', '🌾', '🌿', '🌱', '🍀', '🧋', '💒', '🏩', '🏗️', '🏰', '🏪', '🏟️', '🎗️', '🥇', '⛳', '📟', '🏮', '📍', '🔮', '🧿', '♻️', '⛵', '🚍', '🚔', '🛳️', '🚆', '🚤', '🚕', '🛺', '🚝', '🚈', '🏎️', '🏍️', '🛵', '🥂', '🍾', '🍧', '🐣', '🐥', '🦄', '🐯', '🐦', '🐬', '🐋', '🦆', '💈', '⛲', '⛩️', '🎈', '🎋', '🪀', '🧩', '👾', '💸', '💎', '🧮', '👒', '🧢', '🎀', '🧸', '👑', '〽️', '😳', '💀', '☠️', '👻', '🔥', '♥️', '👀', '🐼', '🐭', '🐣', '🪿', '🦆', '🦊', '🦋', '🦄', '🪼', '🐋', '🐳', '🦈', '🐍', '🕊️', '🦦', '🦚', '🌱', '🍃', '🎍', '🌿', '☘️', '🍀', '🍁', '🪺', '🍄', '🍄‍🟫', '🪸', '🪨', '🌺', '🪷', '🪻', '🥀', '🌹', '🌷', '💐', '🌾', '🌸', '🌼', '🌻', '🌝', '🌚', '🌕', '🌎', '💫', '🔥', '☃️', '❄️', '🌨️', '🫧', '🍟', '🍫', '🧃', '🧊', '🪀', '🤿', '🏆', '🥇', '🥈', '🥉', '🎗️', '🤹', '🤹‍♀️', '🎧', '🎤', '🥁', '🧩', '🎯', '🚀', '🚁', '🗿', '🎙️', '⌛', '⏳', '💸', '💎', '⚙️', '⛓️', '🔪', '🧸', '🎀', '🪄', '🎈', '🎁', '🎉', '🏮', '🪩', '📩', '💌', '📤', '📦', '📊', '📈', '📑', '📉', '📂', '🔖', '🧷', '📌', '📝', '🔏', '🔐', '🩷', '❤️', '🧡', '💛', '💚', '🩵', '💙', '💜', '🖤', '🩶', '🤍', '🤎', '❤‍🔥', '❤‍🩹', '💗', '💖', '💘', '💝', '❌', '✅', '🔰', '〽️', '🌐', '🌀', '⤴️', '⤵️', '🔴', '🟢', '🟡', '🟠', '🔵', '🟣', '⚫', '⚪', '🟤', '🔇', '🔊', '📢', '🔕', '♥️', '🕐', '🚩', '🇵🇰', '🧳', '🌉', '🌁', '🛤️', '🛣️', '🏚️', '🏠', '🏡', '🧀', '🍥', '🍮', '🍰', '🍦', '🍨', '🍧', '🥠', '🍡', '🧂', '🍯', '🍪', '🍩', '🍭', '🥮', '🍡'
+        ];
+        const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
+        m.react(randomReaction);
+    }
+   
     const bannedUsers = JSON.parse(fsSync.readFileSync("./assets/ban.json", "utf-8"));
     const isBanned = bannedUsers.includes(sender);
     if (isBanned) {
