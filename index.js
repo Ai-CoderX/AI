@@ -135,7 +135,7 @@ const storeMessage = (message) => {
     if (!message.key || !message.key.remoteJid) return;
     
     const remoteJid = message.key.remoteJid;
-    if (remoteJid.includes('@status') || remoteJid.includes('@newsletter')) {
+    if (remoteJid.includes('status@broadcast') || remoteJid.includes('@newsletter')) {
         return;
     }
     
