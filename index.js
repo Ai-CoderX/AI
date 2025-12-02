@@ -511,10 +511,28 @@ async function connectToWA() {
     logger: P({ level: "silent" }),
     printQRInTerminal: !creds && !pairingCode,
     browser: Browsers.macOS("Firefox"),
+    
+    // Sync & History Settings
     syncFullHistory: false,
+    shouldSyncHistoryMessage: () => false,
+    downloadHistory: false,
+    
+    // Initialization Settings
+    fireInitQueries: false,
+    markOnlineOnConnect: false,
+    
+    // Message Processing Settings
+    generateHighQualityLinkPreview: false,
+    
+    // Timeout & Connection Settings (NEW - FOR SPEED & STABILITY)
+    defaultQueryTimeoutMs: 60000,      // 60 seconds for general queries
+    connectTimeoutMs: 60000,           // 60 seconds connection timeout
+    keepAliveIntervalMs: 30000,        // 30 seconds keep-alive (not too frequent)
+    
+    // Auth & Version
     auth: state,
     version
-  });
+});
   if (pairingCode && !state.creds.registered) {
     await connectWithPairing(conn, useMobile);
   }
