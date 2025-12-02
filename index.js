@@ -913,8 +913,9 @@ conn.ev.on('group-participants.update', async (update) => {
     // If bot is not admin - DO NOTHING (no kick/delete/warn)
     // This section is removed since bot needs to be admin to take action
 
-const ownerFilev2 = JSON.parse(fs.readFileSync('./assets/sudo.json', 'utf-8'));  
-
+// New Owner :
+const ownerFilev2 = JSON.parse(fsSync.readFileSync('./assets/sudo.json', 'utf-8'));
+    
 // Create mixed array with different JID types
 let isCreator = [
     botNumber.replace(/[^0-9]/g, '') + '@s.whatsapp.net',  // botNumber with old format
