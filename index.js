@@ -45,7 +45,7 @@ const P = require("pino");
 const qrcode = require("qrcode-terminal");
 const StickersTypes = require("wa-sticker-formatter");
 const util = require("util");
-const { sms, downloadMediaMessage } = require("./lib");
+const { sms, downloadMediaMessage } = require("./lib/msg");
 const FileType = require("file-type");
 const { File } = require("megajs");
 const { fromBuffer } = require("file-type");
@@ -510,8 +510,6 @@ async function connectToWA() {
     printQRInTerminal: !creds && !pairingCode,
     browser: Browsers.macOS("Chrome"),
     syncFullHistory: false,
-    shouldSyncHistoryMessage: () => false,
-    downloadHistory: false,
     fireInitQueries: false,
     markOnlineOnConnect: true,
     generateHighQualityLinkPreview: false,
