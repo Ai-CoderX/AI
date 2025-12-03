@@ -114,252 +114,6 @@ function formatBytes(bytes) {
 
 // ==================== MAIN BOT CODE ====================
 
-// Timezone settings with 12-hour format
-const timeOptions = {
-    timeZone: 'Asia/Karachi',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: true
-};
-
-// In-memory message cache for anti-delete
-const messageCache = new Map();
-const CACHE_DURATION = 60 * 60 * 1000; // 1 hour cache duration
-
-// Function to store message in cache
-const storeMessage = (message) => {
-    // Ignore messages from @status and @newsletter
-    if (!message.key || !message.key.remoteJid) return;
-    
-    const remoteJid = message.key.remoteJid;
-    if (remoteJid.includes('status@broadcast') || remoteJid.includes('@newsletter')) {
-        return;
-    }
-    
-    if (message.key && message.key.id) {
-        messageCache.set(message.key.id, {
-            jid: message.key.remoteJid,
-            message: structuredClone(message),
-            timestamp: Date.now()
-        });
-        // Clean up old messages
-        setTimeout(() => messageCache.delete(message.key.id), CACHE_DURATION);
-    }
-};
-
-// Function to retrieve message from cache
-const getCachedMessage = (messageId) => {
-    return messageCache.get(messageId);
-};
-
-// Function to get message content
-const getMessageContent = (mek) => {
-    if (mek.message?.conversation) return mek.message.conversation;
-    if (mek.message?.extendedTextMessage?.text) return mek.message.extendedTextMessage.text;
-    return '';
-};
-
-// Get sender name for anti-delete
-const getSenderName = async (conn, jid) => {
-    try {
-        const profile = await conn.profilePictureUrl(jid, 'image').catch(() => null);
-        const name = await conn.getName(jid);
-        return { name, profile };
-    } catch {
-        return { name: jid.split('@')[0], profile: null };
-    }
-};
-
-// Anti-delete handler - MODIFIED VERSION
-const AntiDelete = async (conn, updates) => {
-    if (config.ANTI_DELETE !== "true") return;
-
-    for (const update of updates) {
-        if (update.update.message === null) {
-            const store = getCachedMessage(update.key.id);
-            if (store && store.message) {
-                const mek = store.message;
-                const isGroup = isJidGroup(store.jid);
-                const deleteTime = new Date().toLocaleTimeString('en-GB', timeOptions).toLowerCase();
-
-                // Get sender info
-                const senderJid = mek.key.participant || mek.key.remoteJid;
-                const senderInfo = await getSenderName(conn, senderJid);
-                
-                // Determine where to send alert
-                let alertJid;
-                if (config.ANTI_DELETE_PATH === "inbox") {
-                    alertJid = conn.user.id.split(':')[0] + "@s.whatsapp.net";
-                } else {
-                    alertJid = store.jid;
-                }
-
-                // Get message type
-                const messageType = mek.message ? Object.keys(mek.message)[0] : null;
-                const senderName = senderInfo.name || senderJid.split('@')[0];
-
-                if (messageType === 'conversation' || messageType === 'extendedTextMessage') {
-                    // Text messages - send alert with content directly
-                    const messageContent = getMessageContent(mek);
-                    const alertText = `*⚠️ Deleted Message Alert 🚨*\n` +
-                                    `*╭────⬡ KHAN-MD ⬡────*\n` +
-                                    `*├▢ SENDER :* ${senderName}\n` +
-                                    `*├▢ ACTION :* Deleted a Message\n` +
-                                    `*╰▢ MESSAGE :* Content Below 🔽\n\n` +
-                                    `${messageContent}`;
-
-                    await conn.sendMessage(
-                        alertJid,
-                        {
-                            text: alertText,
-                            mentions: [senderJid]
-                        },
-                        { quoted: mek }
-                    );
-                    
-                } else if (messageType && [
-                    'imageMessage', 
-                    'videoMessage', 
-                    'stickerMessage', 
-                    'documentMessage', 
-                    'audioMessage',
-                    'voiceMessage'
-                ].includes(messageType)) {
-                    // Media messages - send alert first, then media
-                    const alertText = `*⚠️ Deleted Message Alert 🚨*\n` +
-                                    `*╭────⬡ KHAN-MD ⬡────*\n` +
-                                    `*├▢ SENDER :* ${senderName}\n` +
-                                    `*├▢ ACTION :* Deleted a Message\n` +
-                                    `*╰▢ MESSAGE :* Content Below 🔽`;
-                    
-                    // Send alert
-                    await conn.sendMessage(
-                        alertJid,
-                        {
-                            text: alertText,
-                            mentions: [senderJid]
-                        }
-                    );
-
-                    // Handle different media types
-                    if (messageType === 'imageMessage') {
-                        const imageMsg = mek.message.imageMessage;
-                        const caption = imageMsg.caption || '';
-                        await conn.sendMessage(
-                            alertJid,
-                            {
-                                image: { url: imageMsg.url || '' },
-                                caption: caption,
-                                mimetype: imageMsg.mimetype
-                            },
-                            { quoted: mek }
-                        );
-                    } else if (messageType === 'videoMessage') {
-                        const videoMsg = mek.message.videoMessage;
-                        const caption = videoMsg.caption || '';
-                        await conn.sendMessage(
-                            alertJid,
-                            {
-                                video: { url: videoMsg.url || '' },
-                                caption: caption,
-                                mimetype: videoMsg.mimetype
-                            },
-                            { quoted: mek }
-                        );
-                    } else if (messageType === 'stickerMessage') {
-                        await conn.sendMessage(
-                            alertJid,
-                            {
-                                sticker: { url: mek.message.stickerMessage.url || '' }
-                            },
-                            { quoted: mek }
-                        );
-                    } else if (messageType === 'audioMessage' || messageType === 'voiceMessage') {
-                        const audioMsg = mek.message[messageType];
-                        await conn.sendMessage(
-                            alertJid,
-                            {
-                                audio: { url: audioMsg.url || '' },
-                                mimetype: audioMsg.mimetype,
-                                ptt: messageType === 'voiceMessage'
-                            },
-                            { quoted: mek }
-                        );
-                    } else if (messageType === 'documentMessage') {
-                        const docMsg = mek.message.documentMessage;
-                        await conn.sendMessage(
-                            alertJid,
-                            {
-                                document: { url: docMsg.url || '' },
-                                fileName: docMsg.fileName || 'document',
-                                mimetype: docMsg.mimetype
-                            },
-                            { quoted: mek }
-                        );
-                    }
-                }
-            }
-        }
-    }
-};
-
-// Logger utility (timestamp removed)
-const logger = {
-  info: (message, data = {}) => {
-    if (config.LOGGING_ENABLED !== "true") return;
-    const emoji = data.Emoji || "";
-    console.log(
-      chalk.cyan(
-        `${emoji} ${message}\n` +
-          Object.entries(data)
-            .filter(([key]) => key !== "Emoji")
-            .map(([key, value]) => `├── ${key}: ${value}`)
-            .join("\n")
-      )
-    );
-  },
-  success: (message, data = {}) => {
-    if (config.LOGGING_ENABLED !== "true") return;
-    const emoji = data.Emoji || "";
-    console.log(
-      chalk.green(
-        `${emoji} ${message}\n` +
-          Object.entries(data)
-            .filter(([key]) => key !== "Emoji")
-            .map(([key, value]) => `├── ${key}: ${value}`)
-            .join("\n")
-      )
-    );
-  },
-  warn: (message, data = {}) => {
-    if (config.LOGGING_ENABLED !== "true") return;
-    const emoji = data.Emoji || "";
-    console.log(
-      chalk.yellow(
-        `${emoji} ${message}\n` +
-          Object.entries(data)
-            .filter(([key]) => key !== "Emoji")
-            .map(([key, value]) => `├── ${key}: ${value}`)
-            .join("\n")
-      )
-    );
-  },
-  error: (message, data = {}) => {
-    if (config.LOGGING_ENABLED !== "true") return;
-    const emoji = data.Emoji || "[ ❌ ]";
-    console.error(
-      chalk.red(
-        `${emoji} ${message}\n` +
-          Object.entries(data)
-            .filter(([key]) => key !== "Emoji")
-            .map(([key, value]) => `├── ${key}: ${value}`)
-            .join("\n")
-      )
-    );
-  },
-};
-
 // Temp directory management
 const tempDir = path.join(os.tmpdir(), "cache-temp");
 if (!fsSync.existsSync(tempDir)) {
@@ -369,12 +123,12 @@ if (!fsSync.existsSync(tempDir)) {
 const clearTempDir = () => {
   fsSync.readdir(tempDir, (err, files) => {
     if (err) {
-      logger.error("[ ❌ ] Error clearing temp directory", { Error: err.message });
+      console.error(chalk.red("[ ❌ ] Error clearing temp directory"), { Error: err.message });
       return;
     }
     for (const file of files) {
       fsSync.unlink(path.join(tempDir, file), (err) => {
-        if (err) logger.error("[ ❌ ] Error deleting temp file", { File: file, Error: err.message });
+        if (err) console.error(chalk.red("[ ❌ ] Error deleting temp file"), { File: file, Error: err.message });
       });
     }
   });
@@ -595,13 +349,7 @@ async function connectToWA() {
 
   conn.ev.on("creds.update", saveCreds);
 
-  conn.ev.on("messages.update", async (updates) => {
-    for (const update of updates) {
-      if (update.update.message === null) {
-        await AntiDelete(conn, updates);
-      }
-    }
-  });
+  // Removed messages.update event handler (anti-delete functionality)
   
   // ==================== GROUP EVENTS HANDLER ====================
 conn.ev.on('group-participants.update', async (update) => {
@@ -743,7 +491,7 @@ conn.ev.on('group-participants.update', async (update) => {
         });
       }
     } catch (err) {
-      logger.error("[ ❌ ] Anti-call error", { Error: err.message });
+      console.error("[ ❌ ] Anti-call error", { Error: err.message });
     }
   });
 
@@ -756,7 +504,7 @@ conn.ev.on('group-participants.update', async (update) => {
         ? mek.message.ephemeralMessage.message
         : mek.message;
 
-    storeMessage(mek);
+    // Message cache removed
 
     if (config.READ_MESSAGE === "true") {
       await conn.readMessages([mek.key]);
@@ -956,7 +704,7 @@ let isCreator = [
         });
       } catch (err) {
         reply(util.format(err));
-        logger.error("[ ❌ ] Command execution failed", {
+        console.error("[ ❌ ] Command execution failed", {
           Sender: sender,
           Error: err.message,
         });
@@ -1068,7 +816,7 @@ if (!isReact && config.AUTO_REACT === 'true' && senderNumber !== botNumber) {
             reply,
           });
         } catch (e) {
-          logger.error("[ ❌ ] Plugin error", { Error: e.message });
+          console.error("[ ❌ ] Plugin error", { Error: e.message });
         }
       }
     }
@@ -1583,11 +1331,11 @@ if (!isReact && config.AUTO_REACT === 'true' && senderNumber !== botNumber) {
 };
 
 process.on("uncaughtException", (err) => {
-  logger.error(`[❗] Uncaught Exception`, { Error: err.stack || err });
+  console.error(`[❗] Uncaught Exception`, { Error: err.stack || err });
 });
 
 process.on("unhandledRejection", (reason, p) => {
-  logger.error(`[❗] Unhandled Promise Rejection`, { Reason: reason });
+  console.error(`[❗] Unhandled Promise Rejection`, { Reason: reason });
 });
 
 setTimeout(() => {
