@@ -38,8 +38,8 @@
       "value": "true"  
     },
     
-    "ALWAYS_ONLINE": {
-      "description": "Make it true if want always online.",
+     "PRESENCE": {
+      "description": "Bot presence status (set anyone: typing, recording, online, false)",
       "required": false,
       "value": "false"  
     },    
