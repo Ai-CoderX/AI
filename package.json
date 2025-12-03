@@ -3,10 +3,6 @@
   "version": "5.0.0",
   "description": "A WhatsApp Bot Created By JawadTechX",
   "main": "index.js",
-  "engines": {
-    "node": "20.x",
-    "npm": "10.x"
-  },
   "scripts": {
     "start": "pm2 start index.js --deep-monitoring --attach --name KHAN-MD",
     "stop": "pm2 stop KHAN-MD",
