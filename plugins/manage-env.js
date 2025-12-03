@@ -267,6 +267,31 @@ cmd({
   }
 });
 
+// ANTI-DELETE
+cmd({
+  pattern: "antidelete",
+  alias: ["anti-delete", "ad", "antidel"],
+  react: "🪃",
+  desc: "Enable or disable the antidelete feature",
+  category: "settings",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+  const status = args[0]?.toLowerCase();
+  if (status === "on") {
+    config.ANTI_DELETE = "true";
+    process.env.ANTI_DELETE = "true";
+    await reply("Antidelete feature is now enabled.");
+  } else if (status === "off") {
+    config.ANTI_DELETE = "false";
+    process.env.ANTI_DELETE = "false";
+    await reply("Antidelete feature is now disabled.");
+  } else {
+    await reply(`*🔥 ᴇxᴀᴍᴘʟᴇ: .ᴀɴᴛɪᴅᴇʟᴇᴛᴇ ᴏɴ*`);
+  }
+});
+
 // AUTO STATUS REACT
 cmd({
   pattern: "autostatusreact",
