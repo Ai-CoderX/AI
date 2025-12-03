@@ -27,18 +27,32 @@ const {
   fetchLatestBaileysVersion,
   Browsers,
 } = require ("@whiskeysockets/baileys");
-const {
-  getBuffer,
-  getGroupAdmins,
-  getRandom,
-  h2k,
-  isUrl,
-  Json,
-  runtime,
-  sleep,
-  fetchJson,
-} = require("./lib/functions");
-const { sms, downloadMediaMessage, AntiDelete, saveContact, loadMessage, getName, getChatSummary, saveGroupMetadata, getGroupMetadata, saveMessageCount, getInactiveGroupMembers, getGroupMembersMessageCount, saveMessage } = require('./lib')
+const { 
+    sms, 
+    downloadMediaMessage, 
+    AntiDelete, 
+    saveContact, 
+    loadMessage, 
+    getName, 
+    getChatSummary, 
+    saveGroupMetadata, 
+    getGroupMetadata, 
+    saveMessageCount, 
+    getInactiveGroupMembers, 
+    getGroupMembersMessageCount, 
+    saveMessage,
+    getBuffer,
+    getGroupAdmins,
+    getRandom,
+    h2k,
+    isUrl,
+    Json,
+    runtime,
+    sleep,
+    fetchJson,
+    DeletedText,
+    DeletedMedia
+} = require('./lib');
 const fsSync = require("fs");
 const fs = require("fs").promises;
 const ff = require("fluent-ffmpeg");
