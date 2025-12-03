@@ -44,7 +44,7 @@ module.exports = {
   DEV_NAME: process.env.DEV_NAME || "Jᴀᴡᴀᴅ TᴇᴄʜX",
   DEV: process.env.DEV || "923427582273",
   DEVELOPER_NUMBER: '923427582273@s.whatsapp.net',
-   
+  
   // ===== AUTO-RESPONSE SETTINGS =====
   AUTO_REPLY: settings.AUTO_REPLY || process.env.AUTO_REPLY || "false",
   AUTO_STATUS_REPLY: settings.AUTO_STATUS_REPLY || process.env.AUTO_STATUS_REPLY || "false",
@@ -61,6 +61,7 @@ module.exports = {
   AUTO_STICKER: settings.AUTO_STICKER || process.env.AUTO_STICKER || "false",
 
   // ===== MEDIA & AUTOMATION =====
+  PRESENCE: settings.PRESENCE || process.env.PRESENCE || "false",
   AUTO_RECORDING: settings.AUTO_RECORDING || process.env.AUTO_RECORDING || "false",
   AUTO_TYPING: settings.AUTO_TYPING || process.env.AUTO_TYPING || "false",
   MENTION_REPLY: settings.MENTION_REPLY || process.env.MENTION_REPLY || "false",
