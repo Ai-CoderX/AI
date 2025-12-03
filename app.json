@@ -170,7 +170,7 @@
       "value": "💝,💖,💗,❤️‍🩹,❤️,🧡,💛,💚,💙,💜,🤎,🖤,🤍"
     }, 
     
-    "ANTI_DEL_PATH": {
+    "ANTI_DELETE_PATH": {
       "description": "change it to -same- if you want to resend deleted message in same chat othwise inbox",
       "required": false,
       "value": "inbox"
