@@ -349,17 +349,18 @@ async function connectToWA() {
 
   conn.ev.on("creds.update", saveCreds);
 
-  // Anti Delete 
-  
-  conn.ev.on('messages.update', async updates => {
-    for (const update of updates) {
-        if (update.update.message === null) {
-            console.log("[ 🗑️ ] Delete Detected");
-            await AntiDelete(conn, updates);
+ // Anti Delete 
+if (config.ANTI_DELETE === "true") {
+    conn.ev.on('messages.update', async updates => {
+        for (const update of updates) {
+            if (update.update.message === null) {
+                console.log("[ 🗑️ ] Delete Detected");
+                await AntiDelete(conn, updates).catch(() => {});
+            }
         }
-    }
-});
-  
+    });
+}
+ 
   // ==================== GROUP EVENTS HANDLER ====================
 conn.ev.on('group-participants.update', async (update) => {
     try {
@@ -565,7 +566,10 @@ conn.ev.on('group-participants.update', async (update) => {
       );
     }
 
+// Save message to store if anti-delete is enabled
+if (config.ANTI_DELETE === "true") {
     saveMessage(mek).catch(() => {});
+}
     
     const m = sms(conn, mek)
     const type = getContentType(mek.message)
