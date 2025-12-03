@@ -42,7 +42,6 @@ const fsSync = require("fs");
 const fs = require("fs").promises;
 const ff = require("fluent-ffmpeg");
 const P = require("pino");
-const { PresenceControl, BotActivityFilter } = require("./data/presence");
 const qrcode = require("qrcode-terminal");
 const StickersTypes = require("wa-sticker-formatter");
 const util = require("util");
@@ -54,7 +53,6 @@ const bodyparser = require("body-parser");
 const os = require("os");
 const Crypto = require("crypto");
 const path = require("path");
-const { getPrefix } = require("./lib/prefix");
 const readline = require("readline");
 const prefix = config.PREFIX
 const ownerNumber = ['923427582273']
@@ -510,26 +508,16 @@ async function connectToWA() {
   conn = makeWASocket({
     logger: P({ level: "silent" }),
     printQRInTerminal: !creds && !pairingCode,
-    browser: Browsers.macOS("Firefox"),
-    
-    // Sync & History Settings
+    browser: Browsers.macOS("Chrome"),
     syncFullHistory: false,
     shouldSyncHistoryMessage: () => false,
     downloadHistory: false,
-    
-    // Initialization Settings
     fireInitQueries: false,
-    markOnlineOnConnect: false,
-    
-    // Message Processing Settings
+    markOnlineOnConnect: true,
     generateHighQualityLinkPreview: false,
-    
-    // Timeout & Connection Settings (NEW - FOR SPEED & STABILITY)
     defaultQueryTimeoutMs: 60000,      // 60 seconds for general queries
     connectTimeoutMs: 60000,           // 60 seconds connection timeout
     keepAliveIntervalMs: 30000,        // 30 seconds keep-alive (not too frequent)
-    
-    // Auth & Version
     auth: state,
     version
 });
@@ -761,11 +749,6 @@ conn.ev.on('group-participants.update', async (update) => {
     }
   });
 
-  conn.ev.on("presence.update", async (update) => {
-    await PresenceControl(conn, update);
-  });
-
-  BotActivityFilter(conn);
 
   conn.ev.on("messages.upsert", async (mek) => {
     mek = mek.messages[0];
@@ -838,6 +821,15 @@ conn.ev.on('group-participants.update', async (update) => {
     const type = getContentType(mek.message)
     const content = JSON.stringify(mek.message)
     const from = mek.key.remoteJid
+    if (config.PRESENCE === "typing") {
+    await conn.sendPresenceUpdate("composing", from, [mek.key]);
+} else if (config.PRESENCE === "recording") {
+    await conn.sendPresenceUpdate("recording", from, [mek.key]);
+} else if (config.PRESENCE === "online") {
+    await conn.sendPresenceUpdate('available', from, [mek.key]);
+} else {
+    await conn.sendPresenceUpdate('unavailable', from, [mek.key]);
+}
     const quoted = type == 'extendedTextMessage' && mek.message.extendedTextMessage.contextInfo != null ? mek.message.extendedTextMessage.contextInfo.quotedMessage || [] : []
     const body = (type === 'conversation') ? mek.message.conversation : (type === 'extendedTextMessage') ? mek.message.extendedTextMessage.text : (type == 'imageMessage') && mek.message.imageMessage.caption ? mek.message.imageMessage.caption : (type == 'videoMessage') && mek.message.videoMessage.caption ? mek.message.videoMessage.caption : ''
     const isCmd = body.startsWith(prefix)
@@ -931,7 +923,7 @@ conn.ev.on('group-participants.update', async (update) => {
     // If bot is not admin - DO NOTHING (no kick/delete/warn)
     // This section is removed since bot needs to be admin to take action
 
-// New Owner :
+    // New Owner :
 const ownerFilev2 = JSON.parse(fsSync.readFileSync('./assets/sudo.json', 'utf-8'));
     
 // Create mixed array with different JID types
