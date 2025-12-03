@@ -38,6 +38,7 @@ const {
   sleep,
   fetchJson,
 } = require("./lib/functions");
+const { sms, downloadMediaMessage, AntiDelete, saveContact, loadMessage, getName, getChatSummary, saveGroupMetadata, getGroupMetadata, saveMessageCount, getInactiveGroupMembers, getGroupMembersMessageCount, saveMessage } = require('./lib')
 const fsSync = require("fs");
 const fs = require("fs").promises;
 const ff = require("fluent-ffmpeg");
@@ -45,7 +46,6 @@ const P = require("pino");
 const qrcode = require("qrcode-terminal");
 const StickersTypes = require("wa-sticker-formatter");
 const util = require("util");
-const { sms, downloadMediaMessage } = require("./lib/msg");
 const FileType = require("file-type");
 const { File } = require("megajs");
 const { fromBuffer } = require("file-type");
@@ -349,7 +349,16 @@ async function connectToWA() {
 
   conn.ev.on("creds.update", saveCreds);
 
-  // Removed messages.update event handler (anti-delete functionality)
+  // Anti Delete 
+  
+  conn.ev.on('messages.update', async updates => {
+    for (const update of updates) {
+        if (update.update.message === null) {
+            console.log("[ 🗑️ ] Delete Detected");
+            await AntiDelete(conn, updates);
+        }
+    }
+});
   
   // ==================== GROUP EVENTS HANDLER ====================
 conn.ev.on('group-participants.update', async (update) => {
@@ -563,6 +572,8 @@ conn.ev.on('group-participants.update', async (update) => {
       );
     }
 
+    saveMessage(mek).catch(() => {});
+    
     const m = sms(conn, mek)
     const type = getContentType(mek.message)
     const content = JSON.stringify(mek.message)
