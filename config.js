@@ -62,8 +62,6 @@ module.exports = {
 
   // ===== MEDIA & AUTOMATION =====
   PRESENCE: settings.PRESENCE || process.env.PRESENCE || "false",
-  AUTO_RECORDING: settings.AUTO_RECORDING || process.env.AUTO_RECORDING || "false",
-  AUTO_TYPING: settings.AUTO_TYPING || process.env.AUTO_TYPING || "false",
   MENTION_REPLY: settings.MENTION_REPLY || process.env.MENTION_REPLY || "false",
   MENU_IMAGE_URL: settings.MENU_IMAGE_URL || process.env.MENU_IMAGE_URL || "https://files.catbox.moe/7zfdcq.jpg",
   MENU_AUDIO_URL: settings.MENU_AUDIO_URL || process.env.MENU_AUDIO_URL || 'https://files.catbox.moe/xv42ur.mp3',
@@ -75,26 +73,18 @@ module.exports = {
   ANTI_LINK: settings.ANTI_LINK || process.env.ANTI_LINK || "true",
   ANTI_SPAM: settings.ANTI_SPAM || process.env.ANTI_SPAM || "false",
   ANTI_VV: settings.ANTI_VV || process.env.ANTI_VV || "false",
-  ANTI_DEL_PATH: process.env.ANTI_DEL_PATH || "inbox",
+  ANTI_DELETE_PATH: process.env.ANTI_DELETE_PATH || "inbox",
   ANTI_BOT: settings.ANTI_BOT || process.env.ANTI_BOT || "false",
   PM_BLOCKER: settings.PM_BLOCKER || process.env.PM_BLOCKER || "false",
 
   // ===== BOT BEHAVIOR & APPEARANCE =====
   DESCRIPTION: process.env.DESCRIPTION || "*© ᴘᴏᴡᴇʀᴇᴅ ʙʏ Jᴀᴡᴀᴅ TᴇᴄʜX*",
-  ALWAYS_ONLINE: settings.ALWAYS_ONLINE || process.env.ALWAYS_ONLINE || "false",
   AUTO_STATUS_REACT: settings.AUTO_STATUS_REACT || process.env.AUTO_STATUS_REACT || "true",
   AUTO_STATUS_SEEN: settings.AUTO_STATUS_SEEN || process.env.AUTO_STATUS_SEEN || "true",
   AUTO_BIO: settings.AUTO_BIO || process.env.AUTO_BIO || "false",
   WELCOME: settings.WELCOME || process.env.WELCOME || "false",
   ADMIN_ACTION: settings.ADMIN_ACTION || process.env.ADMIN_ACTION || "false",
-  version: process.env.version || "9.0.0 Bᴇᴛᴀ",
+  VERSION: process.env.VERSION || "9.0.0 Bᴇᴛᴀ",
   TIMEZONE: settings.TIMEZONE || process.env.TIMEZONE || "Asia/Karachi",
-
-  LOGGING_ENABLED: process.env.LOGGING_ENABLED || "false",
-
-  wait: "Please wait...",
-
-  // ===== SOCIAL MEDIA =====
-  channel: "https://whatsapp.com/channel/0029VatOy2EAzNc2WcShQw1j",
  };        
   
