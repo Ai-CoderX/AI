@@ -1101,7 +1101,7 @@ if (!isReact && config.AUTO_REACT === 'true' && senderNumber !== botNumber) {
     else if (copy.key.remoteJid.includes("@broadcast")) sender = sender || copy.key.remoteJid;
     copy.key.remoteJid = jid;
     copy.key.fromMe = sender === conn.user.id.split(':')[0] + "@s.whatsapp.net";
-    return proto.WebMessageInfo.fromObject(copy);
+    return proto.WebMessageInfo.create(copy);
   };
 
   conn.getFile = async (PATH, save) => {
@@ -1270,19 +1270,19 @@ if (!isReact && config.AUTO_REACT === 'true' && senderNumber !== botNumber) {
   conn.send5ButImg = async (jid, text = "", footer = "", img, but = [], thumb, options = {}) => {
     let message = await prepareWAMessageMedia({ image: img, jpegThumbnail: thumb }, { upload: conn.waUploadToServer });
     var template = generateWAMessageFromContent(
-      jid,
-      proto.Message.fromObject({
-        templateMessage: {
-          hydratedTemplate: {
-            imageMessage: message.imageMessage,
-            hydratedContentText: text,
-            hydratedFooterText: footer,
-            hydratedButtons: but,
-          },
-        },
-      }),
-      options
-    );
+  jid,
+  proto.Message.create({  // ← CHANGED: fromObject → create
+    templateMessage: {
+      hydratedTemplate: {
+        imageMessage: message.imageMessage,
+        hydratedContentText: text,
+        hydratedFooterText: footer,
+        hydratedButtons: but,
+      },
+    },
+  }),
+  options
+);
     conn.relayMessage(jid, template.message, { messageId: template.key.id });
   };
 
@@ -1363,3 +1363,4 @@ process.on("unhandledRejection", (reason, p) => {
 setTimeout(() => {
   connectToWA();
 }, 4000);
+
