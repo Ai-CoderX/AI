@@ -1,7 +1,7 @@
 const { cmd } = require('../command');
 const { Sticker, StickerTypes } = require("wa-sticker-formatter");
 const Config = require('../config');
-const StickerMaker = require('../data/sticker-maker');
+const StickerMaker = require('../lib/sticker-maker');
 const crypto = require('crypto'); // Added missing import
 
 // Mega Unified Sticker Command
