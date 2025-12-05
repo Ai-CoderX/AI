@@ -1,4 +1,4 @@
-const converter = require('../data/converter');
+const converter = require('../lib/converter');
 const { cmd } = require('../command');
 
 // Convert sticker to image
