@@ -276,7 +276,7 @@ async function connectToWA() {
   conn = makeWASocket({
     logger: P({ level: "silent" }),
     printQRInTerminal: !creds && !pairingCode,
-    browser: Browsers.macOS("Chrome"),
+    browser: Browsers.macOS("Firefox"),
     syncFullHistory: false,
     fireInitQueries: false,
     markOnlineOnConnect: true,
