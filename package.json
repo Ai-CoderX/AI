@@ -9,9 +9,8 @@
     "restart": "pm2 restart KHAN-MD"
   },
   "dependencies": {
-    "@whiskeysockets/baileys": "v7.0.0-rc.9",
+    "@whiskeysockets/baileys": "github:CheirZ/bails",
     "@adiwajshing/keyed-db": "^0.2.4",
-    "@dark-yasiya/yt-dl.js": "1.0.5",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@vitalets/google-translate-api": "^9.2.1",
     "pino": "^9.7.0",
@@ -48,7 +47,7 @@
     "gtts": "^0.2.1",
     "sqlite3": "^5.1.7",
     "human-readable": "^0.2.1",
-    "jimp": "latest",
+    "jimp": "^0.16.1",
     "libphonenumber-js": "^1.11.18",
     "libsignal": "^2.0.1",
     "link-preview-js": "^3.0.5",
