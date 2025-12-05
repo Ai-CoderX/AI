@@ -606,31 +606,25 @@ if (config.ANTI_DELETE === "true") {
     const args = body.trim().split(/ +/).slice(1)
     const q = args.join(' ')
     const text = args.join(' ')
-   // Fix the sender detection for both personal and group messages 
     const isGroup = from.endsWith('@g.us')
-  // ✅ Fix for LID update - Use the same method as your working mute command
-    const sender = mek.key.fromMe ? (conn.user.id.split(':')[0]+'@s.whatsapp.net' || conn.user.id) : (mek.key.participant || mek.key.remoteJid || mek.key.participantAlt)
+    const sender = mek.key.fromMe ? (conn.user.id.split(':')[0]+'@s.whatsapp.net' || conn.user.id) : (mek.key.participant || mek.key.remoteJid)
     const senderNumber = sender.split('@')[0]
     const botNumber = conn.user.id.split(':')[0]
     const pushname = mek.pushName || 'Sin Nombre'
     const isMe = botNumber.includes(senderNumber)
     const isOwner = ownerNumber.includes(senderNumber) || isMe
-    const botNumber2 = await jidNormalizedUser(conn.user.lid);
-
-// ✅ Fix group metadata and admin checks - Use the same method as your working mute command
+    const botNumber2 = await jidNormalizedUser(conn.user.id);
     const groupMetadata = isGroup ? await conn.groupMetadata(from).catch(e => {}) : ''
     const groupName = isGroup ? groupMetadata.subject : ''
     const participants = isGroup ? await groupMetadata.participants : ''
     const groupAdmins = isGroup ? await getGroupAdmins(participants) : ''
     const isBotAdmins = isGroup ? groupAdmins.includes(botNumber2) : false
-
-// ✅ Fix admin check - Use the same sender detection as above
     const isAdmins = isGroup ? groupAdmins.includes(sender) : false
-
     const isReact = m.message.reactionMessage ? true : false
     const reply = (teks) => {
-    conn.sendMessage(from, { text: teks }, { quoted: mek })
-  }
+        conn.sendMessage(from, { text: teks }, { quoted: mek })
+    }
+    
    // --- ANTI-LINK HANDLER ---
     if (isGroup && !isAdmins && isBotAdmins) {
         let cleanBody = body.replace(/[\s\u200b-\u200d\uFEFF]/g, '').toLowerCase();
