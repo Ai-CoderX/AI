@@ -606,25 +606,31 @@ if (config.ANTI_DELETE === "true") {
     const args = body.trim().split(/ +/).slice(1)
     const q = args.join(' ')
     const text = args.join(' ')
+   // Fix the sender detection for both personal and group messages 
     const isGroup = from.endsWith('@g.us')
-    const sender = mek.key.fromMe ? (conn.user.id.split(':')[0]+'@s.whatsapp.net' || conn.user.id) : (mek.key.participant || mek.key.remoteJid)
+  // ✅ Fix for LID update - Use the same method as your working mute command
+    const sender = mek.key.fromMe ? (conn.user.id.split(':')[0]+'@s.whatsapp.net' || conn.user.id) : (mek.key.participant || mek.key.remoteJid || mek.key.participantAlt)
     const senderNumber = sender.split('@')[0]
     const botNumber = conn.user.id.split(':')[0]
     const pushname = mek.pushName || 'Sin Nombre'
     const isMe = botNumber.includes(senderNumber)
     const isOwner = ownerNumber.includes(senderNumber) || isMe
-    const botNumber2 = await jidNormalizedUser(conn.user.id);
+    const botNumber2 = await jidNormalizedUser(conn.user.lid);
+
+// ✅ Fix group metadata and admin checks - Use the same method as your working mute command
     const groupMetadata = isGroup ? await conn.groupMetadata(from).catch(e => {}) : ''
     const groupName = isGroup ? groupMetadata.subject : ''
     const participants = isGroup ? await groupMetadata.participants : ''
     const groupAdmins = isGroup ? await getGroupAdmins(participants) : ''
     const isBotAdmins = isGroup ? groupAdmins.includes(botNumber2) : false
+
+// ✅ Fix admin check - Use the same sender detection as above
     const isAdmins = isGroup ? groupAdmins.includes(sender) : false
+
     const isReact = m.message.reactionMessage ? true : false
     const reply = (teks) => {
-        conn.sendMessage(from, { text: teks }, { quoted: mek })
-    }
-    
+    conn.sendMessage(from, { text: teks }, { quoted: mek })
+  }
    // --- ANTI-LINK HANDLER ---
     if (isGroup && !isAdmins && isBotAdmins) {
         let cleanBody = body.replace(/[\s\u200b-\u200d\uFEFF]/g, '').toLowerCase();
@@ -1095,7 +1101,7 @@ if (!isReact && config.AUTO_REACT === 'true' && senderNumber !== botNumber) {
     else if (copy.key.remoteJid.includes("@broadcast")) sender = sender || copy.key.remoteJid;
     copy.key.remoteJid = jid;
     copy.key.fromMe = sender === conn.user.id.split(':')[0] + "@s.whatsapp.net";
-    return proto.WebMessageInfo.create(copy);
+    return proto.WebMessageInfo.fromObject(copy);
   };
 
   conn.getFile = async (PATH, save) => {
@@ -1264,19 +1270,19 @@ if (!isReact && config.AUTO_REACT === 'true' && senderNumber !== botNumber) {
   conn.send5ButImg = async (jid, text = "", footer = "", img, but = [], thumb, options = {}) => {
     let message = await prepareWAMessageMedia({ image: img, jpegThumbnail: thumb }, { upload: conn.waUploadToServer });
     var template = generateWAMessageFromContent(
-  jid,
-  proto.Message.create({  // ← CHANGED: fromObject → create
-    templateMessage: {
-      hydratedTemplate: {
-        imageMessage: message.imageMessage,
-        hydratedContentText: text,
-        hydratedFooterText: footer,
-        hydratedButtons: but,
-      },
-    },
-  }),
-  options
-);
+      jid,
+      proto.Message.fromObject({
+        templateMessage: {
+          hydratedTemplate: {
+            imageMessage: message.imageMessage,
+            hydratedContentText: text,
+            hydratedFooterText: footer,
+            hydratedButtons: but,
+          },
+        },
+      }),
+      options
+    );
     conn.relayMessage(jid, template.message, { messageId: template.key.id });
   };
 
@@ -1357,4 +1363,3 @@ process.on("unhandledRejection", (reason, p) => {
 setTimeout(() => {
   connectToWA();
 }, 4000);
-
