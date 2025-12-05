@@ -1,7 +1,7 @@
 // JawadTechXD ALWAYS ON TOP 💜
 
 const { cmd } = require('../command');
-const audioEditor = require('../data/audioeditor');
+const audioEditor = require('../lib/audioeditor');
 
 cmd({
     pattern: 'deep',
