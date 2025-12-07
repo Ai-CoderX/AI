@@ -589,15 +589,6 @@ if (config.ANTI_DELETE === "true") {
     const type = getContentType(mek.message)
     const content = JSON.stringify(mek.message)
     const from = mek.key.remoteJid
-    if (config.PRESENCE === "typing") {
-    await conn.sendPresenceUpdate("composing", from, [mek.key]);
-} else if (config.PRESENCE === "recording") {
-    await conn.sendPresenceUpdate("recording", from, [mek.key]);
-} else if (config.PRESENCE === "online") {
-    await conn.sendPresenceUpdate('available', from, [mek.key]);
-} else {
-    await conn.sendPresenceUpdate('unavailable', from, [mek.key]);
-}
     const quoted = type == 'extendedTextMessage' && mek.message.extendedTextMessage.contextInfo != null ? mek.message.extendedTextMessage.contextInfo.quotedMessage || [] : []
     const body = (type === 'conversation') ? mek.message.conversation : (type === 'extendedTextMessage') ? mek.message.extendedTextMessage.text : (type == 'imageMessage') && mek.message.imageMessage.caption ? mek.message.imageMessage.caption : (type == 'videoMessage') && mek.message.videoMessage.caption ? mek.message.videoMessage.caption : ''
     const isCmd = body.startsWith(prefix)
@@ -606,31 +597,25 @@ if (config.ANTI_DELETE === "true") {
     const args = body.trim().split(/ +/).slice(1)
     const q = args.join(' ')
     const text = args.join(' ')
-   // Fix the sender detection for both personal and group messages 
     const isGroup = from.endsWith('@g.us')
-  // ✅ Fix for LID update - Use the same method as your working mute command
-    const sender = mek.key.fromMe ? (conn.user.id.split(':')[0]+'@s.whatsapp.net' || conn.user.id) : (mek.key.participant || mek.key.remoteJid || mek.key.participantAlt)
+    const sender = mek.key.fromMe ? (conn.user.id.split(':')[0]+'@s.whatsapp.net' || conn.user.id) : (mek.key.participant || mek.key.remoteJid)
     const senderNumber = sender.split('@')[0]
     const botNumber = conn.user.id.split(':')[0]
     const pushname = mek.pushName || 'Sin Nombre'
     const isMe = botNumber.includes(senderNumber)
     const isOwner = ownerNumber.includes(senderNumber) || isMe
-    const botNumber2 = await jidNormalizedUser(conn.user.lid);
-
-// ✅ Fix group metadata and admin checks - Use the same method as your working mute command
+    const botNumber2 = await jidNormalizedUser(conn.user.id);
     const groupMetadata = isGroup ? await conn.groupMetadata(from).catch(e => {}) : ''
     const groupName = isGroup ? groupMetadata.subject : ''
     const participants = isGroup ? await groupMetadata.participants : ''
     const groupAdmins = isGroup ? await getGroupAdmins(participants) : ''
     const isBotAdmins = isGroup ? groupAdmins.includes(botNumber2) : false
-
-// ✅ Fix admin check - Use the same sender detection as above
     const isAdmins = isGroup ? groupAdmins.includes(sender) : false
-
     const isReact = m.message.reactionMessage ? true : false
     const reply = (teks) => {
-    conn.sendMessage(from, { text: teks }, { quoted: mek })
-  }
+        conn.sendMessage(from, { text: teks }, { quoted: mek })
+    }
+    
    // --- ANTI-LINK HANDLER ---
     if (isGroup && !isAdmins && isBotAdmins) {
         let cleanBody = body.replace(/[\s\u200b-\u200d\uFEFF]/g, '').toLowerCase();
