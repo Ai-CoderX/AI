@@ -1,8 +1,7 @@
-const crypto = require('crypto');
+// index.js
 const chalk = require("chalk");
 const config = require('./config');
 const axios = require("axios");
-const zlib = require('zlib');
 const {
   default: makeWASocket,
   useMultiFileAuthState,
@@ -14,11 +13,9 @@ const {
   isJidGroup,
   generateWAMessageContent,
   generateWAMessage,
-  AnyMessageContent,
   prepareWAMessageMedia,
   areJidsSameUser,
   downloadContentFromMessage,
-  MessageRetryMap,
   generateForwardMessageContent,
   generateWAMessageFromContent,
   generateMessageID,
@@ -27,107 +24,37 @@ const {
   fetchLatestBaileysVersion,
   Browsers,
   makeCacheableSignalKeyStore
-} = require ("@whiskeysockets/baileys");
+} = require("@whiskeysockets/baileys");
 const { 
-    sms, 
-    downloadMediaMessage, 
-    AntiDelete, 
-    saveContact, 
-    loadMessage, 
-    getName, 
-    getChatSummary, 
-    saveGroupMetadata, 
-    getGroupMetadata, 
-    saveMessageCount, 
-    getInactiveGroupMembers, 
-    getGroupMembersMessageCount, 
-    saveMessage,
-    getBuffer,
-    getGroupAdmins,
-    getRandom,
-    h2k,
-    isUrl,
-    Json,
-    runtime,
-    sleep,
-    fetchJson,
-    DeletedText,
-    DeletedMedia
+  sms, 
+  AntiDelete, 
+  saveMessage,
+  getBuffer,
+  getGroupAdmins,
+  sleep
 } = require('./lib');
+
+// Import helper functions
+const {
+  loadSession,
+  makeid,
+  verifySession,
+  formatBytes,
+  connectWithPairing
+} = require('./helper');
+
 const fsSync = require("fs");
 const fs = require("fs").promises;
-const ff = require("fluent-ffmpeg");
 const P = require("pino");
 const qrcode = require("qrcode-terminal");
-const StickersTypes = require("wa-sticker-formatter");
 const util = require("util");
 const FileType = require("file-type");
-const { File } = require("megajs");
-const { fromBuffer } = require("file-type");
-const bodyparser = require("body-parser");
 const os = require("os");
-const Crypto = require("crypto");
 const path = require("path");
-const readline = require("readline");
 const lodash = require("lodash");
-const prefix = config.PREFIX
-const ownerNumber = ['923427582273']
 
-// ==================== GEN-ID FUNCTIONS ====================
-function makeid(num = 4) {
-  let result = "";
-  let characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  var characters9 = characters.length;
-  for (var i = 0; i < num; i++) {
-    result += characters.charAt(Math.floor(Math.random() * characters9));
-  }
-  return result;
-}
-
-// SINGLE SESSION VERIFICATION FUNCTION
-function verifySession(sessionId) {
-    try {
-        if (!sessionId) {
-            console.log(chalk.red("[ ❌ ] No session ID provided"));
-            return false;
-        }
-        
-        // For MEGA sessions: IK~[mega-file-id]
-        if (sessionId.startsWith('IK~')) {
-            console.log(chalk.yellow("🔍 Verifying MEGA session"));
-            return true;
-        }
-        
-        // For BASE sessions: JK~[base64-data]
-        if (sessionId.startsWith('JK~')) {
-            console.log(chalk.yellow("🔍 Verifying BASE session"));
-            return true;
-        }
-        
-        console.log(chalk.red("❌ Invalid session format"));
-        return false;
-    } catch (e) {
-        console.log(chalk.red("❌ Error in verification:"), e.message);
-        return false;
-    }
-}
-
-// Utility function for byte formatting
-const byteToKB = 1 / 1024;
-const byteToMB = byteToKB / 1024;
-const byteToGB = byteToMB / 1024;
-
-function formatBytes(bytes) {
-  if (bytes >= Math.pow(1024, 3)) {
-    return (bytes * byteToGB).toFixed(2) + ' GB';
-  } else if (bytes >= Math.pow(1024, 2)) {
-    return (bytes * byteToMB).toFixed(2) + ' MB';
-  } else if (bytes >= 1024) {
-    return (bytes * byteToKB).toFixed(2) + ' KB';
-  } else {
-    return bytes.toFixed(2) + ' bytes';
-  }
-}
+const prefix = config.PREFIX;
+const ownerNumber = ['923427582273'];
 
 // ==================== MAIN BOT CODE ====================
 
@@ -162,8 +89,7 @@ app.get("/", (req, res) => {
   res.redirect("/jawadtech.html");
 });
 app.listen(port, () =>
-  console.log(chalk.cyan(
-    `
+  console.log(chalk.cyan(`
 ╭──[ 🤖 WELCOME DEAR USER! ]─
 │
 │ If you enjoy using this bot,
@@ -183,93 +109,9 @@ if (!fsSync.existsSync(sessionDir)) {
   fsSync.mkdirSync(sessionDir, { recursive: true });
 }
 
-async function loadSession() {
-  try {
-    if (!config.SESSION_ID) {
-      console.log(chalk.red("[ ⏳ ] No SESSION_ID provided - Falling back to QR or pairing code"));
-      return null;
-    }
-
-    // Verify session format using single function
-    if (!verifySession(config.SESSION_ID)) {
-      console.log(chalk.red("[ 🚫 ] Session validation failed - Bot cannot start"));
-      process.exit(1);
-    }
-
-    if (config.SESSION_ID.startsWith("JK~")) {
-      console.log(chalk.green("[ ⏳ ] Processing BASE session"));
-      const b64data = config.SESSION_ID.replace("JK~", "");
-      const cleanB64 = b64data.replace(/\.\.\./g, '');
-      const compressedData = Buffer.from(cleanB64, 'base64');
-      const decompressedData = zlib.gunzipSync(compressedData);
-      fsSync.writeFileSync(credsPath, decompressedData);
-      console.log(chalk.green("[ ✅ ] BASE session decoded and saved successfully"));
-      return JSON.parse(decompressedData.toString());
-    } else if (config.SESSION_ID.startsWith("IK~")) {
-      console.log(chalk.green("[ ⏳ ] Processing MEGA session"));
-      const megaFileId = config.SESSION_ID.replace("IK~", "");
-      const filer = File.fromURL(`https://mega.nz/file/${megaFileId}`);
-      const data = await new Promise((resolve, reject) => {
-        filer.download((err, data) => {
-          if (err) reject(err);
-          else resolve(data);
-        });
-      });
-      fsSync.writeFileSync(credsPath, data);
-      console.log(chalk.green("[ ✅ ] MEGA session downloaded successfully"));
-      return JSON.parse(data.toString());
-    } else {
-      console.log('❌ Unknown SESSION_ID format. Must start with IK~ or JK~');
-      return null;
-    }
-  } catch (error) {
-    console.error('❌ Error loading session', { Error: error.message });
-    console.log("[ 🟢 ] Will attempt QR code or pairing code login");
-    return null;
-  }
-}
-
-async function connectWithPairing(conn, useMobile) {
-  if (useMobile) {
-    console.error("[ ❌ ] Cannot use pairing code with mobile API");
-    throw new Error("Cannot use pairing code with mobile API");
-  }
-  if (!process.stdin.isTTY) {
-    console.error("[ ❌ ] Cannot prompt for phone number in non-interactive environment");
-    process.exit(1);
-  }
-  console.log("[ 📡 ] Prompting for phone number for pairing code");
-  console.log(chalk.bgYellow.black(" ACTION REQUIRED "));
-  console.log(chalk.green("┌" + "─".repeat(46) + "┐"));
-  console.log(chalk.green("│ ") + chalk.bold("Enter WhatsApp number to receive pairing code") + chalk.green(" │"));
-  console.log(chalk.green("└" + "─".repeat(46) + "┘"));
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  const question = (text) => new Promise((resolve) => rl.question(text, resolve));
-  let number = await question(chalk.cyan("» Enter your number (e.g., +923427582273): "));
-  number = number.replace(/[^0-9]/g, "");
-  rl.close();
-  if (!number) {
-    console.error("[ ❌ ] No phone number provided");
-    process.exit(1);
-  }
-  try {
-    let code = await conn.requestPairingCode(number);
-    code = code?.match(/.{1,4}/g)?.join("-") || code;
-    console.log("[ ✅ ] Pairing code generated", { Number: number, Code: code });
-    console.log("\n" + chalk.bgGreen.black(" SUCCESS ") + " Use this pairing code:");
-    console.log(chalk.bold.yellow("┌" + "─".repeat(46) + "┐"));
-    console.log(chalk.bold.yellow("│ ") + chalk.bgWhite.black(code) + chalk.bold.yellow(" │"));
-    console.log(chalk.bold.yellow("└" + "─".repeat(46) + "┘"));
-    console.log(chalk.yellow("Enter this code in WhatsApp:\n1. Open WhatsApp\n2. Go to Settings > Linked Devices\n3. Tap 'Link a Device'\n4. Enter the code"));
-  } catch (err) {
-    console.error("[ ❌ ] Error getting pairing code", { Error: err.message });
-    process.exit(1);
-  }
-}
-
 async function connectToWA() {
   console.log(chalk.bold.blue("[ 🟠 ] Connecting to WhatsApp"));
-  const creds = await loadSession();
+  const creds = await loadSession(config);
   const { state, saveCreds } = await useMultiFileAuthState(path.join(__dirname, "./sessions"), {
     creds: creds || undefined,
   });
@@ -277,7 +119,6 @@ async function connectToWA() {
   const pairingCode = config.PAIRING_CODE === "true" || process.argv.includes("--pairing-code");
   const useMobile = process.argv.includes("--mobile");
   
-  // NEW CONNECTION OPTIONS BASED ON YOUR EXAMPLE
   const connectionOptions = {
     version: version,
     printQRInTerminal: !creds && !pairingCode,
@@ -347,13 +188,12 @@ async function connectToWA() {
         console.error("[ ❌ ] Error loading plugins", { Error: err.message });
       }      
   
-  try {
-    await sleep(2000);
-    
-    // Send connection message with disappearing
-    const startMess = {
-        image: { url: config.MENU_IMAGE_URL || `https://files.catbox.moe/7zfdcq.jpg` },
-        caption: `╭─〔 *🤖 ${config.BOT_NAME}* 〕  
+      try {
+        await sleep(2000);
+        
+        const startMess = {
+          image: { url: config.MENU_IMAGE_URL || `https://files.catbox.moe/7zfdcq.jpg` },
+          caption: `╭─〔 *🤖 ${config.BOT_NAME}* 〕  
 ├─▸ *Ultra Super Fast Powerfull ⚠️*  
 │     *World Best BOT ${config.BOT_NAME}* 
 ╰─➤ *Your Smart WhatsApp Bot is Ready To use 🍁!*  
@@ -367,22 +207,25 @@ async function connectToWA() {
 ├─ 🌟 *Star the Repo:*  
 │    https://github.com/JawadYT36/KHAN-MD  
 ╰─🚀 *Powered by ${config.OWNER_NAME}*`,
-        contextInfo: {
+          contextInfo: {
             forwardingScore: 5,
             isForwarded: true,
             forwardedNewsletterMessageInfo: {
-                newsletterJid: '120363354023106228@newsletter',
-                newsletterName: config.BOT_NAME,
-                serverMessageId: 143
+              newsletterJid: '120363354023106228@newsletter',
+              newsletterName: config.BOT_NAME,
+              serverMessageId: 143
             }
-        }
-    };
+          }
+        };
 
-    await conn.sendMessage(conn.user.id.split(':')[0] + "@s.whatsapp.net", startMess, { disappearingMessagesInChat: true, ephemeralExpiration: 100 });
-    
-  } catch (sendError) {
-    console.error("[ ❌ ] Failed to send connection notice", { Error: sendError.message });
-  }
+        await conn.sendMessage(conn.user.id.split(':')[0] + "@s.whatsapp.net", startMess, { 
+          disappearingMessagesInChat: true, 
+          ephemeralExpiration: 100 
+        });
+        
+      } catch (sendError) {
+        console.error("[ ❌ ] Failed to send connection notice", { Error: sendError.message });
+      }
     }
     if (qr && !pairingCode) {
       console.log("[ 🤔 ] Scan the QR code to connect or use --pairing-code");
@@ -392,162 +235,17 @@ async function connectToWA() {
 
   conn.ev.on("creds.update", saveCreds);
 
- // Anti Delete 
-if (config.ANTI_DELETE === "true") {
+  // Anti Delete 
+  if (config.ANTI_DELETE === "true") {
     conn.ev.on('messages.update', async updates => {
-        for (const update of updates) {
-            if (update.update.message === null) {
-                console.log("[ 🗑️ ] Delete Detected");
-                await AntiDelete(conn, updates).catch(() => {});
-            }
+      for (const update of updates) {
+        if (update.update.message === null) {
+          console.log("[ 🗑️ ] Delete Detected");
+          await AntiDelete(conn, updates).catch(() => {});
         }
-    });
-}
- 
-  // ==================== GROUP EVENTS HANDLER ====================
-conn.ev.on('group-participants.update', async (update) => {
-    try {
-        if (config.WELCOME !== "true") return;
-
-        const metadata = await conn.groupMetadata(update.id);
-        const groupName = metadata.subject;
-        const groupSize = metadata.participants.length;
-        const timestamp = new Date().toLocaleString();
-
-        for (let user of update.participants) {
-            const userName = user.split('@')[0];
-            let pfp;
-
-            try {
-                pfp = await conn.profilePictureUrl(user, 'image');
-            } catch (err) {
-                pfp = config.MENU_IMAGE_URL || "https://files.catbox.moe/7zfdcq.jpg";
-            }
-
-            // WELCOME HANDLER
-            if (update.action === 'add') {
-                const welcomeMsg = `*╭ׂ┄─ׅ─ׂ┄─ׂ┄─ׅ─ׂ┄─ׂ┄─ׅ─ׂ┄──*
-*│  ̇─̣─̇─̣〘 ωєℓ¢σмє 〙̣─̇─̣─̇*
-*├┅┅┅┅┈┈┈┈┈┈┈┈┈┅┅┅◆*
-*│❀ нєу* @${userName}!
-*│❀ gʀσᴜᴘ* ${groupName}
-*├┅┅┅┅┈┈┈┈┈┈┈┈┈┅┅┅◆*
-*│● ѕтαу ѕαfє αɴ∂ fσℓℓσω*
-*│● тнє gʀσυᴘѕ ʀᴜℓєѕ!*
-*│● ᴊσιɴє∂ ${groupSize}*
-*│● ©ᴘσωєʀє∂ ву ${config.BOT_NAME}*
-*╰┉┉┉┉┈┈┈┈┈┈┈┈┉┉┉᛫᛭*`;
-
-                await conn.sendMessage(update.id, {
-                    image: { url: pfp },
-                    caption: welcomeMsg,
-                    mentions: [user],
-                    contextInfo: {
-                        forwardingScore: 999,
-                        isForwarded: true,
-                        mentionedJid: [user],
-                        forwardedNewsletterMessageInfo: {
-                            newsletterName: config.BOT_NAME,
-                            newsletterJid: "120363354023106228@newsletter",
-                        },
-                    }
-                });
-            }
-
-            // GOODBYE HANDLER
-            if (update.action === 'remove') {
-                const goodbyeMsg = `*╭ׂ┄─ׅ─ׂ┄─ׂ┄─ׅ─ׂ┄─ׂ┄─ׅ─ׂ┄──*
-*│  ̇─̣─̇─̣〘 gσσ∂вує 〙̣─̇─̣─̇*
-*├┅┅┅┅┈┈┈┈┈┈┈┈┈┅┅┅◆*
-*│❀ ᴜѕєʀ* @${userName}
-*│● мємвєʀѕ ιѕ ℓєfт тнє gʀσᴜᴘ*
-*│● мємвєʀs ${groupSize}*
-*│● ©ᴘσωєʀє∂ ву ${config.BOT_NAME}*
-*╰┉┉┉┉┈┈┈┈┈┈┈┈┉┉┉᛫᛭*`;
-
-                await conn.sendMessage(update.id, {
-                    image: { url: config.MENU_IMAGE_URL || "https://files.catbox.moe/7zfdcq.jpg" },
-                    caption: goodbyeMsg,
-                    mentions: [user],
-                    contextInfo: {
-                        forwardingScore: 999,
-                        isForwarded: true,
-                        mentionedJid: [user],
-                        forwardedNewsletterMessageInfo: {
-                            newsletterName: config.BOT_NAME,
-                            newsletterJid: "120363354023106228@newsletter",
-                        },
-                    }
-                });
-            }
-
-            // ADMIN PROMOTE/DEMOTE HANDLER
-            if (update.action === "promote" && config.ADMIN_ACTION === "true") {
-                const promoter = update.author.split("@")[0];
-                await conn.sendMessage(update.id, {
-                    text: `╭─〔 *🎉 Admin Event* 〕\n` +
-                          `├─ @${promoter} promoted @${userName}\n` +
-                          `├─ *Time:* ${timestamp}\n` +
-                          `├─ *Group:* ${metadata.subject}\n` +
-                          `╰─➤ *Powered by ${config.BOT_NAME}*`,
-                    mentions: [update.author, user],
-                    contextInfo: {
-                        forwardingScore: 999,
-                        isForwarded: true,
-                        mentionedJid: [update.author, user],
-                        forwardedNewsletterMessageInfo: {
-                            newsletterName: config.BOT_NAME,
-                            newsletterJid: "120363354023106228@newsletter",
-                        },
-                    }
-                });
-            } else if (update.action === "demote" && config.ADMIN_ACTION === "true") {
-                const demoter = update.author.split("@")[0];
-                await conn.sendMessage(update.id, {
-                    text: `╭─〔 *⚠️ Admin Event* 〕\n` +
-                          `├─ @${demoter} demoted @${userName}\n` +
-                          `├─ *Time:* ${timestamp}\n` +
-                          `├─ *Group:* ${metadata.subject}\n` +
-                          `╰─➤ *Powered by ${config.BOT_NAME}*`,
-                    mentions: [update.author, user],
-                    contextInfo: {
-                        forwardingScore: 999,
-                        isForwarded: true,
-                        mentionedJid: [update.author, user],
-                        forwardedNewsletterMessageInfo: {
-                            newsletterName: config.BOT_NAME,
-                            newsletterJid: "120363354023106228@newsletter",
-                        },
-                    }
-                });
-            }
-        }
-    } catch (err) {
-        console.error("❌ Error in welcome/goodbye message:", err);
-    }
-});
-// ==================== END GROUP EVENTS ====================
-
-  conn.ev.on("call", async (calls) => {
-    try {
-      if (config.ANTI_CALL !== "true") return;
-
-      for (const call of calls) {
-        if (call.status !== "offer") continue;
-
-        const id = call.id;
-        const from = call.from;
-
-        await conn.rejectCall(id, from);
-        await conn.sendMessage(from, {
-          text: config.REJECT_MSG || "*📞 ᴄαℓℓ ɴσт αℓℓσωє∂ ιɴ тнιѕ ɴᴜмвєʀ уσυ ∂σɴт нανє ᴘєʀмιѕѕισɴ 📵*",
-        });
       }
-    } catch (err) {
-      console.error("[ ❌ ] Anti-call error", { Error: err.message });
-    }
-  });
-
+    });
+  }
 
   conn.ev.on("messages.upsert", async (event) => {
     const mek = event.messages[0];
@@ -563,27 +261,6 @@ conn.ev.on('group-participants.update', async (update) => {
     if (mek.key && mek.key.remoteJid === "status@broadcast" && config.AUTO_STATUS_SEEN === "true") {
       await conn.readMessages([mek.key]);
     }
-
-    const newsletterJids = [ 
-      "120363354023106228@newsletter",
-      "120363421818912466@newsletter",	  
-      "120363422074850441@newsletter",
-      "120363420122180789@newsletter" 
-    ];
-    const emojis = ["❤️", "👍", "😮", "😎", "💀"];
-
-    if (mek.key && newsletterJids.includes(mek.key.remoteJid)) {
-      try {
-        const serverId = mek.newsletterServerId;
-        if (serverId) {
-          const emoji = emojis[Math.floor(Math.random() * emojis.length)];
-          await conn.newsletterReactMessage(mek.key.remoteJid, serverId.toString(), emoji);
-        }
-      } catch (e) {
-        // Silent catch
-      }
-    }
-
     if (mek.key && mek.key.remoteJid === "status@broadcast" && config.AUTO_STATUS_REACT === "true") {
       const jawadlike = await conn.decodeJid(conn.user.id.split(':')[0] + "@s.whatsapp.net");
       const statusEmojis = config.STATUS_REACT_EMOJIS ? config.STATUS_REACT_EMOJIS.split(',') : ['❤️', '💸', '😇', '🍂', '💥', '💯', '🔥', '💫', '💎', '💗', '🤍', '🖤', '👀', '🙌', '🙆', '🚩', '🥰', '💐', '😎', '🤎', '✅', '🫀', '🧡', '😁', '😄', '🌸', '🕊️', '🌷', '⛅', '🌟', '🗿', '🇵🇰', '💜', '💙', '🌝', '🖤', '💚'];
@@ -609,127 +286,65 @@ conn.ev.on('group-participants.update', async (update) => {
       );
     }
 
-// Save message to store if anti-delete is enabled
-if (config.ANTI_DELETE === "true") {
-    saveMessage(mek).catch(() => {});
-}
+    // Save message to store if anti-delete is enabled
+    if (config.ANTI_DELETE === "true") {
+      saveMessage(mek).catch(() => {});
+    }
     
-    const m = sms(conn, mek)
-    const type = getContentType(mek.message)
-    const from = mek.key.remoteJid
+    const m = sms(conn, mek);
+    const type = getContentType(mek.message);
+    const from = mek.key.remoteJid;
+    
     if (config.PRESENCE === "typing") {
-    await conn.sendPresenceUpdate("composing", from, [mek.key]);
-} else if (config.PRESENCE === "recording") {
-    await conn.sendPresenceUpdate("recording", from, [mek.key]);
-} else if (config.PRESENCE === "online") {
-    await conn.sendPresenceUpdate('available', from, [mek.key]);
-} else {
-    await conn.sendPresenceUpdate('unavailable', from, [mek.key]);
-}
-    const quoted = type == 'extendedTextMessage' && mek.message.extendedTextMessage.contextInfo != null ? mek.message.extendedTextMessage.contextInfo.quotedMessage || [] : []
-    const body = (type === 'conversation') ? mek.message.conversation : (type === 'extendedTextMessage') ? mek.message.extendedTextMessage.text : (type == 'imageMessage') && mek.message.imageMessage.caption ? mek.message.imageMessage.caption : (type == 'videoMessage') && mek.message.videoMessage.caption ? mek.message.videoMessage.caption : ''
-    const isCmd = body.startsWith(prefix)
+      await conn.sendPresenceUpdate("composing", from, [mek.key]);
+    } else if (config.PRESENCE === "recording") {
+      await conn.sendPresenceUpdate("recording", from, [mek.key]);
+    } else if (config.PRESENCE === "online") {
+      await conn.sendPresenceUpdate('available', from, [mek.key]);
+    } else {
+      await conn.sendPresenceUpdate('unavailable', from, [mek.key]);
+    }
+    
+    const quoted = type == 'extendedTextMessage' && mek.message.extendedTextMessage.contextInfo != null ? mek.message.extendedTextMessage.contextInfo.quotedMessage || [] : [];
+    const body = (type === 'conversation') ? mek.message.conversation : (type === 'extendedTextMessage') ? mek.message.extendedTextMessage.text : (type == 'imageMessage') && mek.message.imageMessage.caption ? mek.message.imageMessage.caption : (type == 'videoMessage') && mek.message.videoMessage.caption ? mek.message.videoMessage.caption : '';
+    const isCmd = body.startsWith(prefix);
     var budy = typeof mek.text == 'string' ? mek.text : false;
-    const command = isCmd ? body.slice(prefix.length).trim().split(' ').shift().toLowerCase() : ''
-    const args = body.trim().split(/ +/).slice(1)
-    const q = args.join(' ')
-    const text = args.join(' ')
-   // Fix the sender detection for both personal and group messages 
-    const isGroup = from.endsWith('@g.us')
-  // ✅ Fix for LID update - Use the same method as your working mute command
-    const sender = mek.key.fromMe ? (conn.user.id.split(':')[0]+'@s.whatsapp.net' || conn.user.id) : (mek.key.participant || mek.key.remoteJid || mek.key.participantAlt)
-    const senderNumber = sender.split('@')[0]
-    const botNumber = conn.user.id.split(':')[0]
-    const pushname = mek.pushName || 'Sin Nombre'
-    const isMe = botNumber.includes(senderNumber)
-    const isOwner = ownerNumber.includes(senderNumber) || isMe
+    const command = isCmd ? body.slice(prefix.length).trim().split(' ').shift().toLowerCase() : '';
+    const args = body.trim().split(/ +/).slice(1);
+    const q = args.join(' ');
+    const text = args.join(' ');
+    
+    const isGroup = from.endsWith('@g.us');
+    const sender = mek.key.fromMe ? (conn.user.id.split(':')[0]+'@s.whatsapp.net' || conn.user.id) : (mek.key.participant || mek.key.remoteJid || mek.key.participantAlt);
+    const senderNumber = sender.split('@')[0];
+    const botNumber = conn.user.id.split(':')[0];
+    const pushname = mek.pushName || 'Sin Nombre';
+    const isMe = botNumber.includes(senderNumber);
+    const isOwner = ownerNumber.includes(senderNumber) || isMe;
     const botNumber2 = await jidNormalizedUser(conn.user.lid);
 
-// ✅ Fix group metadata and admin checks - Use the same method as your working mute command
-    const groupMetadata = isGroup ? await conn.groupMetadata(from).catch(e => {}) : ''
-    const groupName = isGroup ? groupMetadata.subject : ''
-    const participants = isGroup ? await groupMetadata.participants : ''
-    const groupAdmins = isGroup ? await getGroupAdmins(participants) : ''
-    const isBotAdmins = isGroup ? groupAdmins.includes(botNumber2) : false
+    const groupMetadata = isGroup ? await conn.groupMetadata(from).catch(e => {}) : '';
+    const groupName = isGroup ? groupMetadata.subject : '';
+    const participants = isGroup ? await groupMetadata.participants : '';
+    const groupAdmins = isGroup ? await getGroupAdmins(participants) : '';
+    const isBotAdmins = isGroup ? groupAdmins.includes(botNumber2) : false;
+    const isAdmins = isGroup ? groupAdmins.includes(sender) : false;
 
-// ✅ Fix admin check - Use the same sender detection as above
-    const isAdmins = isGroup ? groupAdmins.includes(sender) : false
-
-    const isReact = m.message.reactionMessage ? true : false
+    const isReact = m.message.reactionMessage ? true : false;
     const reply = (teks) => {
-    conn.sendMessage(from, { text: teks }, { quoted: mek })
-  }
-   // --- ANTI-LINK HANDLER ---
-    if (isGroup && !isAdmins && isBotAdmins) {
-        let cleanBody = body.replace(/[\s\u200b-\u200d\uFEFF]/g, '').toLowerCase();
-        // Custom domains to block - only detect actual URLs including WhatsApp
-        const urlRegex = /(?:https?:\/\/)?(?:www\.)?[a-z0-9-]+\.(?:com|org|net|co|pk|biz|id|info|xyz|online|site|website|tech|shop|store|blog|app|dev|io|ai|gov|edu|mil|me)(?:\/[^\s]*)?|whatsapp\.com\/channel\/|wa\.me\//gi;
-        
-        if (urlRegex.test(cleanBody)) {
-            if (!global.userWarnings) global.userWarnings = {};
-            let userWarnings = global.userWarnings;
-            
-            if (config.ANTI_LINK === "true") {
-                // Check if sender is NOT admin before taking action
-                if (!isAdmins) {
-                    await conn.sendMessage(from, { delete: mek.key });
-                    await conn.sendMessage(from, {
-                        text: `*⚠️ Links are not allowed in this group.*\n*@${sender.split('@')[0]} has being removed.*`,
-                        mentions: [sender]
-                    }, { quoted: mek });
-                    await conn.groupParticipantsUpdate(from, [sender], 'remove');
-                }
-                return;
-            } else if (config.ANTI_LINK === "warn") {
-                // Check if sender is NOT admin before taking action
-                if (!isAdmins) {
-                    if (!userWarnings[sender]) userWarnings[sender] = 0;
-                    userWarnings[sender] += 1;
-                    if (userWarnings[sender] <= 3) {
-                        await conn.sendMessage(from, { delete: mek.key });
-                        await conn.sendMessage(from, {
-                            text: `*⚠️ @${sender.split('@')[0]}, this is your ${userWarnings[sender]} warning.*\n*Please avoid sharing links.*`,
-                            mentions: [sender]
-                        }, { quoted: mek });
-                    } else {
-                        await conn.sendMessage(from, { delete: mek.key });
-                        await conn.sendMessage(from, {
-                            text: `*🚨 @${sender.split('@')[0]} has been removed after exceeding warnings.*`,
-                            mentions: [sender]
-                        }, { quoted: mek });
-                        await conn.groupParticipantsUpdate(from, [sender], 'remove');
-                        userWarnings[sender] = 0;
-                    }
-                }
-                return;
-            } else if (config.ANTI_LINK === "delete") {
-                // Check if sender is NOT admin before taking action
-                if (!isAdmins) {
-                    await conn.sendMessage(from, { delete: mek.key });
-                    await conn.sendMessage(from, {
-                        text: `*⚠️ Links are not allowed in this group.*\n*Please @${sender.split('@')[0]} take note.*`,
-                        mentions: [sender]
-                    }, { quoted: mek });
-                }
-                return;
-            }
-        }
+      conn.sendMessage(from, { text: teks }, { quoted: mek });
     }
 
-    // If bot is not admin - DO NOTHING (no kick/delete/warn)
-    // This section is removed since bot needs to be admin to take action
-
     // New Owner :
-const ownerFilev2 = JSON.parse(fsSync.readFileSync('./assets/sudo.json', 'utf-8'));
+    const ownerFilev2 = JSON.parse(fsSync.readFileSync('./assets/sudo.json', 'utf-8'));
     
-// Create mixed array with different JID types
-let isCreator = [
-    botNumber.replace(/[^0-9]/g, '') + '@s.whatsapp.net',  // botNumber with old format
-    botNumber2,  // botNumber2 with @lid format
-    ...ownerFilev2.map(v => v.replace(/[^0-9]/g, '') + '@lid')  // sudo with @lid format
-].includes(mek.sender);
+    let isCreator = [
+      botNumber.replace(/[^0-9]/g, '') + '@s.whatsapp.net',
+      botNumber2,
+      ...ownerFilev2.map(v => v.replace(/[^0-9]/g, '') + '@lid')
+    ].includes(mek.sender);
 
-      if (isCreator && mek.text.startsWith("&")) {
+    if (isCreator && mek.text.startsWith("&")) {
       let code = budy.slice(2);
       if (!code) {
         reply(`Provide me with a query to run Master!`);
@@ -763,22 +378,22 @@ let isCreator = [
     }
     
     // owner react - using both LID and old JID format
-if ((sender === "63334141399102@lid" || sender === "923427582273@s.whatsapp.net") && !isReact && senderNumber !== botNumber) {
-    const reactions = ["👑", "🦢", "💀", "🫜", "🫩", "🪾", "🪉", "🪏", "🗿", "🫟"];
-    const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
-    m.react(randomReaction);
-}
+    if ((sender === "63334141399102@lid" || sender === "923427582273@s.whatsapp.net") && !isReact && senderNumber !== botNumber) {
+      const reactions = ["👑", "🦢", "💀", "🫜", "🫩", "🪾", "🪉", "🪏", "🗿", "🫟"];
+      const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
+      m.react(randomReaction);
+    }
     
     // Custom React for all messages (except own messages)
-if (!isReact && config.CUSTOM_REACT === 'true' && senderNumber !== botNumber) {
-    const reactions = config.CUSTOM_REACT_EMOJIS ? config.CUSTOM_REACT_EMOJIS.split(',') : ['🥲','😂','👍🏻','🙂','😔'];
-    const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
-    m.react(randomReaction);
-}
+    if (!isReact && config.CUSTOM_REACT === 'true' && senderNumber !== botNumber) {
+      const reactions = config.CUSTOM_REACT_EMOJIS ? config.CUSTOM_REACT_EMOJIS.split(',') : ['🥲','😂','👍🏻','🙂','😔'];
+      const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
+      m.react(randomReaction);
+    }
 
-// Auto React for all messages (except own messages)
-if (!isReact && config.AUTO_REACT === 'true' && senderNumber !== botNumber) {
-    const reactions = [
+    // Auto React for all messages (except own messages)
+    if (!isReact && config.AUTO_REACT === 'true' && senderNumber !== botNumber) {
+      const reactions = [
         '🌼', '❤️', '💐', '🔥', '🏵️', '❄️', '🧊', '🐳', '💥', '🥀', '❤‍🔥', '🥹', '😩', '🫣', 
         '🤭', '👻', '👾', '🫶', '😻', '🙌', '🫂', '🫀', '👩‍🦰', '🧑‍🦰', '👩‍⚕️', '🧑‍⚕️', '🧕', 
         '👩‍🏫', '👨‍💻', '👰‍♀', '🦹🏻‍♀️', '🧟‍♀️', '🧟', '🧞‍♀️', '🧞', '🙅‍♀️', '💁‍♂️', '💁‍♀️', '🙆‍♀️', 
@@ -794,18 +409,18 @@ if (!isReact && config.AUTO_REACT === 'true' && senderNumber !== botNumber) {
         '🩵', '💙', '💜', '🖤', '🩶', '🤍', '🤎', '❤‍🔥', '❤‍🩹', '💗', '💖', '💘', '💝', '❌', 
         '✅', '🔰', '〽️', '🌐', '🌀', '⤴️', '⤵️', '🔴', '🟢', '🟡', '🟠', '🔵', '🟣', '⚫', 
         '⚪', '🟤', '🔇', '🔊', '📢', '🔕', '♥️', '🕐', '🚩', '🇵🇰'
-    ];
-    const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
-    m.react(randomReaction);
-}
+      ];
+      const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
+      m.react(randomReaction);
+    }
 
     // Owner React
     if (!isReact && senderNumber === botNumber && config.OWNER_REACT === 'true') {
-        const reactions = [
-            '🌼', '❤️', '💐', '🔥', '🏵️', '❄️', '🧊', '🐳', '💥', '🥀', '❤‍🔥', '🥹', '😩', '🫣', '🤭', '👻', '👾', '🫶', '😻', '🙌', '🫂', '🫀', '👩‍🦰', '🧑‍🦰', '👩‍⚕️', '🧑‍⚕️', '🧕', '👩‍🏫', '👨‍💻', '👰‍♀', '🦹🏻‍♀️', '🧟‍♀️', '🧟', '🧞‍♀️', '🧞', '🙅‍♀️', '💁‍♂️', '💁‍♀️', '🙆‍♀️', '🙋‍♀️', '🤷', '🤷‍♀️', '🤦', '🤦‍♀️', '💇‍♀️', '💇', '💃', '🚶‍♀️', '🚶', '🧶', '🧤', '👑', '💍', '👝', '💼', '🎒', '🥽', '🐻 ', '💸', '😇', '🍂', '💥', '💯', '🔥', '💫', '💎', '💗', '🤍', '🖤', '👀', '🙌', '🙆', '🚩', '🥰', '💐', '😎', '🤎', '✅', '🫀', '🧡', '😁', '😄', '🌸', '🕊️', '🌷', '⛅', '🌟', '🗿', '🇵🇰', '💜', '💙', '🌝', '🖤', '🎎', '🎏', '🎐', '⚽', '🧣', '🌿', '⛈️', '🌦️', '🌚', '🌝', '🙈', '🙉', '🦖', '🐤', '🎗️', '🥇', '👾', '🔫', '🐝', '🦋', '🍓', '🍫', '🍭', '🧁', '🧃', '🍿', '🍻', '🛬', '🫀', '🫠', '🐍', '🥀', '🌸', '🏵️', '🌻', '🍂', '🍁', '🍄', '🌾', '🌿', '🌱', '🍀', '🧋', '💒', '🏩', '🏗️', '🏰', '🏪', '🏟️', '🎗️', '🥇', '⛳', '📟', '🏮', '📍', '🔮', '🧿', '♻️', '⛵', '🚍', '🚔', '🛳️', '🚆', '🚤', '🚕', '🛺', '🚝', '🚈', '🏎️', '🏍️', '🛵', '🥂', '🍾', '🍧', '🐣', '🐥', '🦄', '🐯', '🐦', '🐬', '🐋', '🦆', '💈', '⛲', '⛩️', '🎈', '🎋', '🪀', '🧩', '👾', '💸', '💎', '🧮', '👒', '🧢', '🎀', '🧸', '👑', '〽️', '😳', '💀', '☠️', '👻', '🔥', '♥️', '👀', '🐼', '🐭', '🐣', '🪿', '🦆', '🦊', '🦋', '🦄', '🪼', '🐋', '🐳', '🦈', '🐍', '🕊️', '🦦', '🦚', '🌱', '🍃', '🎍', '🌿', '☘️', '🍀', '🍁', '🪺', '🍄', '🍄‍🟫', '🪸', '🪨', '🌺', '🪷', '🪻', '🥀', '🌹', '🌷', '💐', '🌾', '🌸', '🌼', '🌻', '🌝', '🌚', '🌕', '🌎', '💫', '🔥', '☃️', '❄️', '🌨️', '🫧', '🍟', '🍫', '🧃', '🧊', '🪀', '🤿', '🏆', '🥇', '🥈', '🥉', '🎗️', '🤹', '🤹‍♀️', '🎧', '🎤', '🥁', '🧩', '🎯', '🚀', '🚁', '🗿', '🎙️', '⌛', '⏳', '💸', '💎', '⚙️', '⛓️', '🔪', '🧸', '🎀', '🪄', '🎈', '🎁', '🎉', '🏮', '🪩', '📩', '💌', '📤', '📦', '📊', '📈', '📑', '📉', '📂', '🔖', '🧷', '📌', '📝', '🔏', '🔐', '🩷', '❤️', '🧡', '💛', '💚', '🩵', '💙', '💜', '🖤', '🩶', '🤍', '🤎', '❤‍🔥', '❤‍🩹', '💗', '💖', '💘', '💝', '❌', '✅', '🔰', '〽️', '🌐', '🌀', '⤴️', '⤵️', '🔴', '🟢', '🟡', '🟠', '🔵', '🟣', '⚫', '⚪', '🟤', '🔇', '🔊', '📢', '🔕', '♥️', '🕐', '🚩', '🇵🇰', '🧳', '🌉', '🌁', '🛤️', '🛣️', '🏚️', '🏠', '🏡', '🧀', '🍥', '🍮', '🍰', '🍦', '🍨', '🍧', '🥠', '🍡', '🧂', '🍯', '🍪', '🍩', '🍭', '🥮', '🍡'
-        ];
-        const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
-        m.react(randomReaction);
+      const reactions = [
+        '🌼', '❤️', '💐', '🔥', '🏵️', '❄️', '🧊', '🐳', '💥', '🥀', '❤‍🔥', '🥹', '😩', '🫣', '🤭', '👻', '👾', '🫶', '😻', '🙌', '🫂', '🫀', '👩‍🦰', '🧑‍🦰', '👩‍⚕️', '🧑‍⚕️', '🧕', '👩‍🏫', '👨‍💻', '👰‍♀', '🦹🏻‍♀️', '🧟‍♀️', '🧟', '🧞‍♀️', '🧞', '🙅‍♀️', '💁‍♂️', '💁‍♀️', '🙆‍♀️', '🙋‍♀️', '🤷', '🤷‍♀️', '🤦', '🤦‍♀️', '💇‍♀️', '💇', '💃', '🚶‍♀️', '🚶', '🧶', '🧤', '👑', '💍', '👝', '💼', '🎒', '🥽', '🐻 ', '💸', '😇', '🍂', '💥', '💯', '🔥', '💫', '💎', '💗', '🤍', '🖤', '👀', '🙌', '🙆', '🚩', '🥰', '💐', '😎', '🤎', '✅', '🫀', '🧡', '😁', '😄', '🌸', '🕊️', '🌷', '⛅', '🌟', '🗿', '🇵🇰', '💜', '💙', '🌝', '🖤', '🎎', '🎏', '🎐', '⚽', '🧣', '🌿', '⛈️', '🌦️', '🌚', '🌝', '🙈', '🙉', '🦖', '🐤', '🎗️', '🥇', '👾', '🔫', '🐝', '🦋', '🍓', '🍫', '🍭', '🧁', '🧃', '🍿', '🍻', '🛬', '🫀', '🫠', '🐍', '🥀', '🌸', '🏵️', '🌻', '🍂', '🍁', '🍄', '🌾', '🌿', '🌱', '🍀', '🧋', '💒', '🏩', '🏗️', '🏰', '🏪', '🏟️', '🎗️', '🥇', '⛳', '📟', '🏮', '📍', '🔮', '🧿', '♻️', '⛵', '🚍', '🚔', '🛳️', '🚆', '🚤', '🚕', '🛺', '🚝', '🚈', '🏎️', '🏍️', '🛵', '🥂', '🍾', '🍧', '🐣', '🐥', '🦄', '🐯', '🐦', '🐬', '🐋', '🦆', '💈', '⛲', '⛩️', '🎈', '🎋', '🪀', '🧩', '👾', '💸', '💎', '🧮', '👒', '🧢', '🎀', '🧸', '👑', '〽️', '😳', '💀', '☠️', '👻', '🔥', '♥️', '👀', '🐼', '🐭', '🐣', '🪿', '🦆', '🦊', '🦋', '🦄', '🪼', '🐋', '🐳', '🦈', '🐍', '🕊️', '🦦', '🦚', '🌱', '🍃', '🎍', '🌿', '☘️', '🍀', '🍁', '🪺', '🍄', '🍄‍🟫', '🪸', '🪨', '🌺', '🪷', '🪻', '🥀', '🌹', '🌷', '💐', '🌾', '🌸', '🌼', '🌻', '🌝', '🌚', '🌕', '🌎', '💫', '🔥', '☃️', '❄️', '🌨️', '🫧', '🍟', '🍫', '🧃', '🧊', '🪀', '🤿', '🏆', '🥇', '🥈', '🥉', '🎗️', '🤹', '🤹‍♀️', '🎧', '🎤', '🥁', '🧩', '🎯', '🚀', '🚁', '🗿', '🎙️', '⌛', '⏳', '💸', '💎', '⚙️', '⛓️', '🔪', '🧸', '🎀', '🪄', '🎈', '🎁', '🎉', '🏮', '🪩', '📩', '💌', '📤', '📦', '📊', '📈', '📑', '📉', '📂', '🔖', '🧷', '📌', '📝', '🔏', '🔐', '🩷', '❤️', '🧡', '💛', '💚', '🩵', '💙', '💜', '🖤', '🩶', '🤍', '🤎', '❤‍🔥', '❤‍🩹', '💗', '💖', '💘', '💝', '❌', '✅', '🔰', '〽️', '🌐', '🌀', '⤴️', '⤵️', '🔴', '🟢', '🟡', '🟠', '🔵', '🟣', '⚫', '⚪', '🟤', '🔇', '🔊', '📢', '🔕', '♥️', '🕐', '🚩', '🇵🇰', '🧳', '🌉', '🌁', '🛤️', '🛣️', '🏚️', '🏠', '🏡', '🧀', '🍥', '🍮', '🍰', '🍦', '🍨', '🍧', '🥠', '🍡', '🧂', '🍯', '🍪', '🍩', '🍭', '🥮', '🍡'
+      ];
+      const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
+      m.react(randomReaction);
     }
    
     const bannedUsers = JSON.parse(fsSync.readFileSync("./assets/ban.json", "utf-8"));
@@ -983,6 +598,7 @@ if (!isReact && config.AUTO_REACT === 'true' && senderNumber !== botNumber) {
     });
   });
 
+  // Utility functions for conn object
   conn.decodeJid = (jid) => {
     if (!jid) return jid;
     if (/:\d+@/gi.test(jid)) {
@@ -1130,7 +746,6 @@ if (!isReact && config.AUTO_REACT === 'true' && senderNumber !== botNumber) {
     copy.key.remoteJid = jid;
     copy.key.fromMe = sender === conn.user.id.split(':')[0] + "@s.whatsapp.net";
     
-    // FIXED: Use .create() instead of .fromObject()
     return proto.WebMessageInfo.create(copy);
   };
 
@@ -1244,26 +859,6 @@ if (!isReact && config.AUTO_REACT === 'true' && senderNumber !== botNumber) {
     return fs.promises.unlink(pathFile);
   };
 
-  conn.sendVideoAsSticker = async (jid, buff, options = {}) => {
-    let buffer;
-    if (options && (options.packname || options.author)) {
-      buffer = await writeExifVid(buff, options);
-    } else {
-      buffer = await videoToWebp(buff);
-    }
-    await conn.sendMessage(jid, { sticker: { url: buffer }, ...options }, options);
-  };
-
-  conn.sendImageAsSticker = async (jid, buff, options = {}) => {
-    let buffer;
-    if (options && (options.packname || options.author)) {
-      buffer = await writeExifImg(buff, options);
-    } else {
-      buffer = await imageToWebp(buff);
-    }
-    await conn.sendMessage(jid, { sticker: { url: buffer }, ...options }, options);
-  };
-
   conn.sendTextWithMentions = async (jid, text, quoted, options = {}) =>
     conn.sendMessage(
       jid,
@@ -1301,7 +896,7 @@ if (!isReact && config.AUTO_REACT === 'true' && senderNumber !== botNumber) {
     let message = await prepareWAMessageMedia({ image: img, jpegThumbnail: thumb }, { upload: conn.waUploadToServer });
     var template = generateWAMessageFromContent(
       jid,
-      proto.Message.create({  // FIXED: Use .create() instead of .fromObject()
+      proto.Message.create({
         templateMessage: {
           hydratedTemplate: {
             imageMessage: message.imageMessage,
