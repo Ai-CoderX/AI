@@ -1,4 +1,4 @@
-const { cmd } = require("./command");
+const { cmd } = require("../command");
 
 cmd({
     pattern: "raw",
@@ -8,8 +8,15 @@ cmd({
     react: "🔍",
     filename: __filename
 },
-async (conn, mek, m, { from, reply }) => {
+async (conn, mek, m, { from, reply, isCreator }) => {
     try {
+        // Add the owner check here
+        if (!isCreator) {
+            return await conn.sendMessage(from, {
+                text: "*📛 This is an owner command.*"
+            }, { quoted: mek });
+        }
+
         const content = JSON.stringify(mek.message);
         
         await conn.sendMessage(from, {
