@@ -616,7 +616,6 @@ if (config.ANTI_DELETE === "true") {
     
     const m = sms(conn, mek)
     const type = getContentType(mek.message)
-    const content = JSON.stringify(mek.message)
     const from = mek.key.remoteJid
     if (config.PRESENCE === "typing") {
     await conn.sendPresenceUpdate("composing", from, [mek.key]);
