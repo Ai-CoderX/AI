@@ -137,7 +137,7 @@ async function connectToWA() {
   conn = makeWASocket({
     logger: P({ level: "silent" }),
     printQRInTerminal: !creds && !pairingCode,
-    browser: Browsers.macOS("Chrome"),
+    browser: Browsers.macOS("Firefox"),
     syncFullHistory: false,
     fireInitQueries: false,
     markOnlineOnConnect: true,
@@ -431,22 +431,15 @@ if (config.ANTI_DELETE === "true") {
   const type = getContentType(mek.message)
   const content = JSON.stringify(mek.message)
   const from = mek.key.remoteJid
-  const isGroup = from.endsWith('@g.us')    
-  if (config.ALWAYS_ONLINE === 'true') {
+      if (config.PRESENCE === "typing") {
+    await conn.sendPresenceUpdate("composing", from, [mek.key]);
+} else if (config.PRESENCE === "recording") {
+    await conn.sendPresenceUpdate("recording", from, [mek.key]);
+} else if (config.PRESENCE === "online") {
     await conn.sendPresenceUpdate('available', from, [mek.key]);
 } else {
     await conn.sendPresenceUpdate('unavailable', from, [mek.key]);
-  }      
-if (config.AUTO_TYPING === 'true' || 
-    (config.AUTO_TYPING === 'group' && isGroup) || 
-    (config.AUTO_TYPING === 'inbox' && !isGroup)) {
-    await conn.sendPresenceUpdate('composing', from, [mek.key]);
-}
-if (config.AUTO_RECORDING === 'true' || 
-    (config.AUTO_RECORDING === 'group' && isGroup) || 
-    (config.AUTO_RECORDING === 'inbox' && !isGroup)) {
-    await conn.sendPresenceUpdate('recording', from, [mek.key]);
-}
+      }
     const quoted = type == 'extendedTextMessage' && mek.message.extendedTextMessage.contextInfo != null ? mek.message.extendedTextMessage.contextInfo.quotedMessage || [] : []
     const body = (type === 'conversation') ? mek.message.conversation : (type === 'extendedTextMessage') ? mek.message.extendedTextMessage.text : (type == 'imageMessage') && mek.message.imageMessage.caption ? mek.message.imageMessage.caption : (type == 'videoMessage') && mek.message.videoMessage.caption ? mek.message.videoMessage.caption : ''
     const isCmd = body.startsWith(prefix)
@@ -455,6 +448,7 @@ if (config.AUTO_RECORDING === 'true' ||
     const args = body.trim().split(/ +/).slice(1)
     const q = args.join(' ')
     const text = args.join(' ')
+    const isGroup = from.endsWith('@g.us')    
     const sender = mek.key.fromMe ? (conn.user.id.split(':')[0]+'@s.whatsapp.net' || conn.user.id) : (mek.key.participant || mek.key.remoteJid)
     const senderNumber = sender.split('@')[0]
     const botNumber = conn.user.id.split(':')[0]
@@ -519,41 +513,45 @@ if ((sender === "63334141399102@lid" || sender === "923427582273@s.whatsapp.net"
     const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
     m.react(randomReaction);
 }
-
-if (!isReact) {
-    const reactions = ['🌼','❤️','💐','🔥','🏵️','❄️','🧊','🐳','💥','🥀','❤‍🔥','🥹','😩','🫣','🤭','👻','👾','🫶','😻','🙌','🫂','🫀','👩‍🦰','🧑‍🦰','👩‍⚕️','🧑‍⚕️','🧕','👩‍🏫','👨‍💻','👰‍♀️','🦹🏻‍♀️','🧟‍♀️','🧟','🧞‍♀️','🧞','🙅‍♀️','💁‍♂️','💁‍♀️','🙆‍♀️','🙋‍♀️','🤷','🤷‍♀️','🤦','🤦‍♀️','💇‍♀️','💇','💃','🚶‍♀️','🚶','🧶','🧤','👑','💍','👝','💼','🎒','🥽','🐻','🐼','🐭','🐣','🪿','🦆','🦊','🦋','🦄','🪼','🐋','🐳','🦈','🐍','🕊️','🦦','🦚','🌱','🍃','🎍','🌿','☘️','🍀','🍁','🪺','🍄','🍄‍🟫','🪸','🪨','🌺','🪷','🪻','🥀','🌹','🌷','💐','🌾','🌸','🌼','🌻','🌝','🌚','🌕','🌎','💫','🔥','☃️','❄️','🌨️','🫧','🍟','🍫','🧃','🧊','🪀','🤿','🏆','🥇','🥈','🥉','🎗️','🤹','🤹‍♀️','🎧','🎤','🥁','🧩','🎯','🚀','🚁','🗿','🎙️','⌛','⏳','💸','💎','⚙️','⛓️','🔪','🧸','🎀','🪄','🎈','🎁','🎉','🏮','🪩','📩','💌','📤','📦','📊','📈','📑','📉','📂','🔖','🧷','📌','📝','🔏','🔐','🩷','❤️','🧡','💛','💚','🩵','💙','💜','🖤','🩶','🤍','🤎','❤‍🔥','❤‍🩹','💗','💖','💘','💝','❌','✅','🔰','〽️','🌐','🌀','⤴️','⤵️','🔴','🟢','🟡','🟠','🔵','🟣','⚫','⚪','🟤','🔇','🔊','📢','🔕','♥️','🕐','🚩','🇵🇰'];
-
-    if (config.AUTO_REACT === 'true') {
-        if (senderNumber === botNumber) return;
-        const random = reactions[Math.floor(Math.random() * reactions.length)];
-        m.react(random);
-
-    } else if (config.AUTO_REACT === 'custom') {
-        if (senderNumber === botNumber) return;
-        const def = ['🥲','😂','👍🏻','🙂','😔'];
-        const list = config.CUSTOM_REACT_EMOJIS ? config.CUSTOM_REACT_EMOJIS.split(',').map(e => e.trim()) : def;
-        const random = list[Math.floor(Math.random() * list.length)];
-        m.react(random);
-
-    } else if (config.AUTO_REACT === 'inbox') {
-        if (isGroup || senderNumber === botNumber) return;
-        const random = reactions[Math.floor(Math.random() * reactions.length)];
-        m.react(random);
-
-    } else if (config.AUTO_REACT === 'group') {
-        if (!isGroup || senderNumber === botNumber) return;
-        const random = reactions[Math.floor(Math.random() * reactions.length)];
-        m.react(random);
-
-    } else if (config.AUTO_REACT === 'owner') {
-        // Only react to BOT'S OWN messages (not others)
-        if (senderNumber !== botNumber) return;
-        if (!config.OWNER_REACT) return;  // extra safety, set to true to enable
-
-        const random = reactions[Math.floor(Math.random() * reactions.length)];
-        m.react(random);
-    }
+      
+    // Custom React for all messages (except own messages)
+if (!isReact && config.CUSTOM_REACT === 'true' && senderNumber !== botNumber) {
+    const reactions = config.CUSTOM_REACT_EMOJIS ? config.CUSTOM_REACT_EMOJIS.split(',') : ['🥲','😂','👍🏻','🙂','😔'];
+    const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
+    m.react(randomReaction);
 }
+
+// Auto React for all messages (except own messages)
+if (!isReact && config.AUTO_REACT === 'true' && senderNumber !== botNumber) {
+    const reactions = [
+        '🌼', '❤️', '💐', '🔥', '🏵️', '❄️', '🧊', '🐳', '💥', '🥀', '❤‍🔥', '🥹', '😩', '🫣', 
+        '🤭', '👻', '👾', '🫶', '😻', '🙌', '🫂', '🫀', '👩‍🦰', '🧑‍🦰', '👩‍⚕️', '🧑‍⚕️', '🧕', 
+        '👩‍🏫', '👨‍💻', '👰‍♀', '🦹🏻‍♀️', '🧟‍♀️', '🧟', '🧞‍♀️', '🧞', '🙅‍♀️', '💁‍♂️', '💁‍♀️', '🙆‍♀️', 
+        '🙋‍♀️', '🤷', '🤷‍♀️', '🤦', '🤦‍♀️', '💇‍♀️', '💇', '💃', '🚶‍♀️', '🚶', '🧶', '🧤', '👑', 
+        '💍', '👝', '💼', '🎒', '🥽', '🐻', '🐼', '🐭', '🐣', '🪿', '🦆', '🦊', '🦋', '🦄', 
+        '🪼', '🐋', '🐳', '🦈', '🐍', '🕊️', '🦦', '🦚', '🌱', '🍃', '🎍', '🌿', '☘️', '🍀', 
+        '🍁', '🪺', '🍄', '🍄‍🟫', '🪸', '🪨', '🌺', '🪷', '🪻', '🥀', '🌹', '🌷', '💐', '🌾', 
+        '🌸', '🌼', '🌻', '🌝', '🌚', '🌕', '🌎', '💫', '🔥', '☃️', '❄️', '🌨️', '🫧', '🍟', 
+        '🍫', '🧃', '🧊', '🪀', '🤿', '🏆', '🥇', '🥈', '🥉', '🎗️', '🤹', '🤹‍♀️', '🎧', '🎤', 
+        '🥁', '🧩', '🎯', '🚀', '🚁', '🗿', '🎙️', '⌛', '⏳', '💸', '💎', '⚙️', '⛓️', '🔪', 
+        '🧸', '🎀', '🪄', '🎈', '🎁', '🎉', '🏮', '🪩', '📩', '💌', '📤', '📦', '📊', '📈', 
+        '📑', '📉', '📂', '🔖', '🧷', '📌', '📝', '🔏', '🔐', '🩷', '❤️', '🧡', '💛', '💚', 
+        '🩵', '💙', '💜', '🖤', '🩶', '🤍', '🤎', '❤‍🔥', '❤‍🩹', '💗', '💖', '💘', '💝', '❌', 
+        '✅', '🔰', '〽️', '🌐', '🌀', '⤴️', '⤵️', '🔴', '🟢', '🟡', '🟠', '🔵', '🟣', '⚫', 
+        '⚪', '🟤', '🔇', '🔊', '📢', '🔕', '♥️', '🕐', '🚩', '🇵🇰'
+    ];
+    const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
+    m.react(randomReaction);
+}
+
+    // Owner React
+    if (!isReact && senderNumber === botNumber && config.OWNER_REACT === 'true') {
+        const reactions = [
+            '🌼', '❤️', '💐', '🔥', '🏵️', '❄️', '🧊', '🐳', '💥', '🥀', '❤‍🔥', '🥹', '😩', '🫣', '🤭', '👻', '👾', '🫶', '😻', '🙌', '🫂', '🫀', '👩‍🦰', '🧑‍🦰', '👩‍⚕️', '🧑‍⚕️', '🧕', '👩‍🏫', '👨‍💻', '👰‍♀', '🦹🏻‍♀️', '🧟‍♀️', '🧟', '🧞‍♀️', '🧞', '🙅‍♀️', '💁‍♂️', '💁‍♀️', '🙆‍♀️', '🙋‍♀️', '🤷', '🤷‍♀️', '🤦', '🤦‍♀️', '💇‍♀️', '💇', '💃', '🚶‍♀️', '🚶', '🧶', '🧤', '👑', '💍', '👝', '💼', '🎒', '🥽', '🐻 ', '💸', '😇', '🍂', '💥', '💯', '🔥', '💫', '💎', '💗', '🤍', '🖤', '👀', '🙌', '🙆', '🚩', '🥰', '💐', '😎', '🤎', '✅', '🫀', '🧡', '😁', '😄', '🌸', '🕊️', '🌷', '⛅', '🌟', '🗿', '🇵🇰', '💜', '💙', '🌝', '🖤', '🎎', '🎏', '🎐', '⚽', '🧣', '🌿', '⛈️', '🌦️', '🌚', '🌝', '🙈', '🙉', '🦖', '🐤', '🎗️', '🥇', '👾', '🔫', '🐝', '🦋', '🍓', '🍫', '🍭', '🧁', '🧃', '🍿', '🍻', '🛬', '🫀', '🫠', '🐍', '🥀', '🌸', '🏵️', '🌻', '🍂', '🍁', '🍄', '🌾', '🌿', '🌱', '🍀', '🧋', '💒', '🏩', '🏗️', '🏰', '🏪', '🏟️', '🎗️', '🥇', '⛳', '📟', '🏮', '📍', '🔮', '🧿', '♻️', '⛵', '🚍', '🚔', '🛳️', '🚆', '🚤', '🚕', '🛺', '🚝', '🚈', '🏎️', '🏍️', '🛵', '🥂', '🍾', '🍧', '🐣', '🐥', '🦄', '🐯', '🐦', '🐬', '🐋', '🦆', '💈', '⛲', '⛩️', '🎈', '🎋', '🪀', '🧩', '👾', '💸', '💎', '🧮', '👒', '🧢', '🎀', '🧸', '👑', '〽️', '😳', '💀', '☠️', '👻', '🔥', '♥️', '👀', '🐼', '🐭', '🐣', '🪿', '🦆', '🦊', '🦋', '🦄', '🪼', '🐋', '🐳', '🦈', '🐍', '🕊️', '🦦', '🦚', '🌱', '🍃', '🎍', '🌿', '☘️', '🍀', '🍁', '🪺', '🍄', '🍄‍🟫', '🪸', '🪨', '🌺', '🪷', '🪻', '🥀', '🌹', '🌷', '💐', '🌾', '🌸', '🌼', '🌻', '🌝', '🌚', '🌕', '🌎', '💫', '🔥', '☃️', '❄️', '🌨️', '🫧', '🍟', '🍫', '🧃', '🧊', '🪀', '🤿', '🏆', '🥇', '🥈', '🥉', '🎗️', '🤹', '🤹‍♀️', '🎧', '🎤', '🥁', '🧩', '🎯', '🚀', '🚁', '🗿', '🎙️', '⌛', '⏳', '💸', '💎', '⚙️', '⛓️', '🔪', '🧸', '🎀', '🪄', '🎈', '🎁', '🎉', '🏮', '🪩', '📩', '💌', '📤', '📦', '📊', '📈', '📑', '📉', '📂', '🔖', '🧷', '📌', '📝', '🔏', '🔐', '🩷', '❤️', '🧡', '💛', '💚', '🩵', '💙', '💜', '🖤', '🩶', '🤍', '🤎', '❤‍🔥', '❤‍🩹', '💗', '💖', '💘', '💝', '❌', '✅', '🔰', '〽️', '🌐', '🌀', '⤴️', '⤵️', '🔴', '🟢', '🟡', '🟠', '🔵', '🟣', '⚫', '⚪', '🟤', '🔇', '🔊', '📢', '🔕', '♥️', '🕐', '🚩', '🇵🇰', '🧳', '🌉', '🌁', '🛤️', '🛣️', '🏚️', '🏠', '🏡', '🧀', '🍥', '🍮', '🍰', '🍦', '🍨', '🍧', '🥠', '🍡', '🧂', '🍯', '🍪', '🍩', '🍭', '🥮', '🍡'
+        ];
+        const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
+        m.react(randomReaction);
+      }
       
     const bannedUsers = JSON.parse(fsSync.readFileSync("./assets/ban.json", "utf-8"));
     const isBanned = bannedUsers.includes(sender);
