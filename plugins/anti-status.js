@@ -39,12 +39,11 @@ cmd({
 
     // --- ANTI-STATUS MENTION HANDLER ---
     if (isGroup && !isAdmins && isBotAdmins) {
-      // Check if the message contains a quoted status mention
-      // Only check for groupStatusMentionMessage in quoted message
-      const hasQuotedStatusMention = m.quoted && m.quoted.mtype === 'groupStatusMentionMessage';
+      // Check if THIS message is a status mention (not a reply to one)
+      const isStatusMention = m.mtype === 'groupStatusMentionMessage';
       
-      if (hasQuotedStatusMention) {
-        console.log(`Status mention reply detected from: ${sender}`);
+      if (isStatusMention) {
+        console.log(`Status mention detected from sender: ${sender}`);
         
         // Clean up old warnings (older than 1 hour) for this user
         if (global.statusWarningTimestamps[sender]) {
@@ -59,7 +58,7 @@ cmd({
           // Immediate removal mode
           await conn.sendMessage(from, { delete: m.key });
           await conn.sendMessage(from, {
-            text: `*⚠️ Replying to status mentions is not allowed in this group.*\n*@${sender.split('@')[0]} has been removed.*`
+            text: `*⚠️ Status mentions are not allowed in this group.*\n*@${sender.split('@')[0]} has been removed.*`
           });
           await conn.groupParticipantsUpdate(from, [sender], 'remove');
           return;
@@ -73,14 +72,14 @@ cmd({
             
             await conn.sendMessage(from, { delete: m.key });
             await conn.sendMessage(from, {
-              text: `*⚠️ @${sender.split('@')[0]}, replying to status mentions is not allowed.*\n*This is your warning. Next time you will be removed.*`
+              text: `*⚠️ @${sender.split('@')[0]}, status mentions are not allowed.*\n*This is your warning.* *Next time you will be removed*`
             });
             
           } else {
             // Second offense - remove user
             await conn.sendMessage(from, { delete: m.key });
             await conn.sendMessage(from, {
-              text: `*🚨 @${sender.split('@')[0]} has been removed for replying to status mention.*`
+              text: `*🚨 @${sender.split('@')[0]} has been removed for status mention.*`
             });
             await conn.groupParticipantsUpdate(from, [sender], 'remove');
             
@@ -94,7 +93,7 @@ cmd({
           // Delete only mode
           await conn.sendMessage(from, { delete: m.key });
           await conn.sendMessage(from, {
-            text: `*⚠️ Replying to status mentions is not allowed in this group.*\n*Please @${sender.split('@')[0]} take note.*`
+            text: `*⚠️ Status mentions are not allowed in this group.*\n*Please @${sender.split('@')[0]} take note.*`
           });
           return;
         }
