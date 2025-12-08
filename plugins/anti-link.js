@@ -48,9 +48,9 @@ cmd({
           // Immediate removal mode
           await conn.sendMessage(from, { delete: m.key });
           await conn.sendMessage(from, {
-            text: `*⚠️ Links are not allowed in this group.*\n*@${sender.split('@')[0]} has been removed.*`,
-            mentions: [sender]
-          }, { quoted: m });
+            text: `*⚠️ Links are not allowed in this group.*\n*@${sender.split('@')[0]} has been removed.*`
+            // No mentions, no quoted message
+          });
           await conn.groupParticipantsUpdate(from, [sender], 'remove');
           return;
           
@@ -67,16 +67,16 @@ cmd({
             // Warn user
             await conn.sendMessage(from, { delete: m.key });
             await conn.sendMessage(from, {
-              text: `*⚠️ @${sender.split('@')[0]}, this is your ${global.warnings[sender]} warning.*\n*Please avoid sharing links.*\n\n⚠️ *Note:* Warnings reset every 30 minutes`,
-              mentions: [sender]
-            }, { quoted: m });
+              text: `*⚠️ @${sender.split('@')[0]}, this is your ${global.warnings[sender]} warning.*\n*Please avoid sharing links.*\n\n⚠️ *Note:* Warnings reset every 30 minutes`
+              // No mentions, no quoted message
+            });
           } else {
             // Remove after 4th warning
             await conn.sendMessage(from, { delete: m.key });
             await conn.sendMessage(from, {
-              text: `*🚨 @${sender.split('@')[0]} has been removed after exceeding warnings.*`,
-              mentions: [sender]
-            }, { quoted: m });
+              text: `*🚨 @${sender.split('@')[0]} has been removed after exceeding warnings.*`
+              // No mentions, no quoted message
+            });
             await conn.groupParticipantsUpdate(from, [sender], 'remove');
             
             // Reset this user's warnings after removal
@@ -89,9 +89,9 @@ cmd({
           // Delete only mode
           await conn.sendMessage(from, { delete: m.key });
           await conn.sendMessage(from, {
-            text: `*⚠️ Links are not allowed in this group.*\n*Please @${sender.split('@')[0]} take note.*`,
-            mentions: [sender]
-          }, { quoted: m });
+            text: `*⚠️ Links are not allowed in this group.*\n*Please @${sender.split('@')[0]} take note.*`
+            // No mentions, no quoted message
+          });
           return;
         }
       }
@@ -102,7 +102,8 @@ cmd({
     
   } catch (error) {
     console.error("Anti-link error:", error);
-    reply("❌ An error occurred while processing the message.");
+    // Don't use reply() to avoid quoting
+    await conn.sendMessage(from, { text: "❌ An error occurred while processing the message." });
   }
 });
 
