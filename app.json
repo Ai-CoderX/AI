@@ -38,11 +38,23 @@
       "value": "true"  
     },
     
-     "PRESENCE": {
-      "description": "Bot presence status (set anyone: typing, recording, online, false)",
+    "AUTO_TYPING": {
+      "description": "Auto typing indicator: 'true' (always), 'false' (disabled), 'group' (groups only), 'inbox' (inbox only)",
+  "required": false,
+  "value": "false"
+},
+
+    "AUTO_RECORDING": {
+  "description": "Auto recording indicator: 'true' (always), 'false' (disabled), 'group' (groups only), 'inbox' (inbox only)",
       "required": false,
-      "value": "false"  
-    },    
+      "value": "false"
+},
+
+    "ALWAYS_ONLINE": {
+     "description": "Make bot always show online status: 'true' (always online), 'false' (show offline)",
+      "required": false,
+      "value": "false"
+}, 
    
     "AUTO_REPLY": {
       "description": "Make it true if you want automatic reply.",
@@ -131,31 +143,25 @@
       "required": false,
       "value": "*© ᴘᴏᴡᴇʀᴇᴅ ʙʏ Jᴀᴡᴀᴅ TᴇᴄʜX*"
     },
-        
+     
+ 
     "AUTO_REACT": {
-      "description": "Make it true if you want react on every message.",
+      "description": "AutoReact mode: 'true' (all), 'group' (groups only), 'inbox' (PM only), 'custom' (custom emojis), 'owner' (bot's own msgs), 'false' (disabled)",
       "required": false,
       "value": "false"
-    },
-    
-    "CUSTOM_REACT": {
-      "description": "Make it true if you want custom reactions.",
-      "required": false,
-      "value": "false"
-      
-    }, 
+    },  
     
     "CUSTOM_REACT_EMOJIS": {
       "description": "put here custom react react emojis.",
       "required": false,
-      "value": "💝,💖,💗,❤️‍🩹,❤️,🧡,💛,💚,💙,💜,🤎,🖤,🤍"
+      "value": "💙,🥰,💗,🥺,❤️,👻,💛,🌼,🫂,💜,🤎,🖤,🤍"
     }, 
 
     
     "STATUS_REACT_EMOJIS": {
       "description": "put here custom status react react emojis.",
       "required": false,
-      "value": "💝,💖,💗,❤️‍🩹,❤️,🧡,💛,💚,💙,💜,🤎,🖤,🤍"
+      "value": "❤️,🧡,💛,💚,💙,💜,🤎,🖤,🤍"
     }, 
     
     "ANTI_DELETE_PATH": {
@@ -191,4 +197,3 @@
      ],
   "stack": "heroku-24"
 }
-  
