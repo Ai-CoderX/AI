@@ -18,7 +18,7 @@ cmd({
       global.statusWarnings = {};
     }
     
-    // Initialize status warning timestamps if not exists
+    // Initialize warning timestamps for status warnings
     if (!global.statusWarningTimestamps) {
       global.statusWarningTimestamps = {};
     }
@@ -30,22 +30,28 @@ cmd({
     
     // Reset status warnings every 1 hour (60 * 60 * 1000 = 3,600,000 ms)
     const ONE_HOUR = 60 * 60 * 1000;
-    
-    // Clean old warnings (older than 1 hour)
-    if (global.statusWarningTimestamps[sender]) {
-      if (Date.now() - global.statusWarningTimestamps[sender] > ONE_HOUR) {
-        delete global.statusWarnings[sender];
-        delete global.statusWarningTimestamps[sender];
-      }
+    if (Date.now() - global.lastStatusWarningReset > ONE_HOUR) {
+      console.log('Resetting all status warnings after 1 hour...');
+      global.statusWarnings = {};
+      global.statusWarningTimestamps = {};
+      global.lastStatusWarningReset = Date.now();
     }
 
     // --- ANTI-STATUS MENTION HANDLER ---
     if (isGroup && !isAdmins && isBotAdmins) {
       // Check if the message contains a status mention
-      const hasStatusMention = m?.message?.extendedTextMessage?.contextInfo?.quotedMessage?.groupStatusMentionMessage ||
-                              m?.message?.extendedTextMessage?.contextInfo?.quotedMessage?.protocolMessage?.type === "STATUS_MENTION_MESSAGE";
+      // Only check for groupStatusMentionMessage
+      const hasStatusMention = m?.message?.extendedTextMessage?.contextInfo?.quotedMessage?.groupStatusMentionMessage;
       
       if (hasStatusMention) {
+        // Clean up old warnings (older than 1 hour) for this user
+        if (global.statusWarningTimestamps[sender]) {
+          if (Date.now() - global.statusWarningTimestamps[sender] > ONE_HOUR) {
+            delete global.statusWarnings[sender];
+            delete global.statusWarningTimestamps[sender];
+          }
+        }
+        
         // Check anti-status mention mode from config
         if (config.ANTI_STATUS_MENTION === "true") {
           // Immediate removal mode
@@ -57,23 +63,29 @@ cmd({
           return;
           
         } else if (config.ANTI_STATUS_MENTION === "warn") {
-          // Warning system mode - REMOVE ON FIRST WARNING
-          if (!global.statusWarnings[sender]) global.statusWarnings[sender] = 0;
-          global.statusWarnings[sender] += 1;
-          
-          // Store the timestamp of this warning
-          global.statusWarningTimestamps[sender] = Date.now();
-          
-          // Remove on first warning (since warnings reset after 1 hour)
-          await conn.sendMessage(from, { delete: m.key });
-          await conn.sendMessage(from, {
-            text: `*🚨 @${sender.split('@')[0]} has been removed for mentioning a status.*\n*Note:* Status mentions are strictly prohibited.`
-          });
-          await conn.groupParticipantsUpdate(from, [sender], 'remove');
-          
-          // Reset this user's warnings after removal
-          delete global.statusWarnings[sender];
-          delete global.statusWarningTimestamps[sender];
+          // Warning system mode - remove after 1 warning
+          if (!global.statusWarnings[sender]) {
+            // First warning
+            global.statusWarnings[sender] = 1;
+            global.statusWarningTimestamps[sender] = Date.now();
+            
+            await conn.sendMessage(from, { delete: m.key });
+            await conn.sendMessage(from, {
+              text: `*⚠️ @${sender.split('@')[0]}, status mentions are not allowed.*\n*This is your warning. Next time you will be removed.*\n\n⚠️ *Note:* Warnings reset after 1 hour`
+            });
+            
+          } else {
+            // Second offense - remove user
+            await conn.sendMessage(from, { delete: m.key });
+            await conn.sendMessage(from, {
+              text: `*🚨 @${sender.split('@')[0]} has been removed for status mention.*`
+            });
+            await conn.groupParticipantsUpdate(from, [sender], 'remove');
+            
+            // Reset this user's warnings after removal
+            delete global.statusWarnings[sender];
+            delete global.statusWarningTimestamps[sender];
+          }
           return;
           
         } else if (config.ANTI_STATUS_MENTION === "delete") {
@@ -89,31 +101,20 @@ cmd({
     
   } catch (error) {
     console.error("Anti-status mention error:", error);
-    await conn.sendMessage(from, { text: "❌ An error occurred while processing status mention." });
+    await conn.sendMessage(from, { text: "❌ An error occurred while processing the message." });
   }
 });
 
-// Optional: Add a periodic cleanup function that runs every hour
-// This removes old warnings even if no messages are processed
+// Optional: Add a periodic reset function that runs every 1 hour
+// This ensures status warnings are cleared even if no messages are processed
 setInterval(() => {
-  if (global.statusWarningTimestamps) {
-    const now = Date.now();
-    const ONE_HOUR = 60 * 60 * 1000;
-    let cleanedCount = 0;
-    
-    // Clean warnings older than 1 hour
-    for (const [userId, timestamp] of Object.entries(global.statusWarningTimestamps)) {
-      if (now - timestamp > ONE_HOUR) {
-        delete global.statusWarnings[userId];
-        delete global.statusWarningTimestamps[userId];
-        cleanedCount++;
-      }
+  if (global.statusWarnings) {
+    const userCount = Object.keys(global.statusWarnings).length;
+    if (userCount > 0) {
+      console.log(`Periodic reset: Clearing status warnings for ${userCount} user(s)`);
+      global.statusWarnings = {};
+      if (global.statusWarningTimestamps) global.statusWarningTimestamps = {};
     }
-    
-    if (cleanedCount > 0) {
-      console.log(`Periodic cleanup: Removed ${cleanedCount} old status warning(s)`);
-    }
-    
     global.lastStatusWarningReset = Date.now();
   }
 }, 60 * 60 * 1000); // 1 hour
