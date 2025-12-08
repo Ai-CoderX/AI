@@ -778,7 +778,7 @@ if (!isReact) {
                     ...options.contextInfo,
                   },
                 }
-              : {})
+              : {}),
           }
         : {}
     );
@@ -1126,6 +1126,14 @@ if (!isReact) {
 
   conn.serializeM = (mek) => sms(conn, mek, store);
 };
+
+process.on("uncaughtException", (err) => {
+  console.error(`[❗] Uncaught Exception`, { Error: err.stack || err });
+});
+
+process.on("unhandledRejection", (reason, p) => {
+  console.error(`[❗] Unhandled Promise Rejection`, { Reason: reason });
+});
 
 setTimeout(() => {
   connectToWA();
