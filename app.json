@@ -35,7 +35,7 @@
   "PRESENCE": {
     "description": "Sets the presence type for the bot when responding to messages. Options: 'typing', 'recording', 'online', or any other value for offline/unavailable",
     "required": false,
-    "value": "typing"
+    "value": "false"
   },
 
      "ANTI_DELETE": {
