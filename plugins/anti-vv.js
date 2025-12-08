@@ -22,13 +22,12 @@ cmd({
 
     const messageText = body.trim().toLowerCase();
     
-    // Check if the message contains exactly one of the keywords (not as part of other words)
-    // Split by spaces or non-word characters to get individual words
-    const words = messageText.split(/\s+/);
-    const hasExactKeyword = words.some(word => positiveKeywords.includes(word));
+    // Check if the message contains EXACTLY one of the keywords ONLY
+    // No other words, just the keyword alone
+    const hasExactKeywordOnly = positiveKeywords.includes(messageText);
     
-    // Only process if contains exact keyword AND replying to a view once message
-    if (hasExactKeyword && message.quoted?.viewOnce) {
+    // Only process if contains exact keyword ONLY AND replying to a view once message
+    if (hasExactKeywordOnly && message.quoted?.viewOnce) {
       const buffer = await message.quoted.download();
       const mtype = message.quoted.mtype;
       const originalCaption = message.quoted.text || '';
