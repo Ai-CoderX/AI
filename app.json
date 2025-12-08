@@ -38,6 +38,12 @@
     "value": "false"
   },
 
+  "ANTI_STATUS_MENTION": {
+    "description": "Control anti-status-mention feature in groups. Options: 'true' (enable), 'false' (disable), 'warn', 'delete'",
+    "required": false,
+    "value": "false"
+  },
+
      "ANTI_DELETE": {
       "description": "set true for show deleted messages.",
       "required": false,
