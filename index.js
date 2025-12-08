@@ -310,11 +310,19 @@ if (config.ANTI_DELETE === "true") {
     const type = getContentType(mek.message)
     const content = JSON.stringify(mek.message)
     const from = mek.key.remoteJid
-    if (config.PRESENCE === "typing") {
-    await conn.sendPresenceUpdate("composing", from, [mek.key]);
-} else if (config.PRESENCE === "recording") {
-    await conn.sendPresenceUpdate("recording", from, [mek.key]);
-} else if (config.PRESENCE === "online") {
+    if (config.AUTO_TYPING === 'true' || 
+    (config.AUTO_TYPING === 'group' && isGroup) || 
+    (config.AUTO_TYPING === 'inbox' && !isGroup)) {
+    await conn.sendPresenceUpdate('composing', from, [mek.key]);
+}
+
+if (config.AUTO_RECORDING === 'true' || 
+    (config.AUTO_RECORDING === 'group' && isGroup) || 
+    (config.AUTO_RECORDING === 'inbox' && !isGroup)) {
+    await conn.sendPresenceUpdate('recording', from, [mek.key]);
+}
+
+if (config.ALWAYS_ONLINE === 'true') {
     await conn.sendPresenceUpdate('available', from, [mek.key]);
 } else {
     await conn.sendPresenceUpdate('unavailable', from, [mek.key]);
