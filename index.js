@@ -1,5 +1,3 @@
-const crypto = require('crypto');
-const chalk = require("chalk");
 const config = require('./config');
 const axios = require("axios");
 const zlib = require('zlib');
@@ -31,6 +29,9 @@ const {
     sms, 
     downloadMediaMessage, 
     AntiDelete, 
+    connectWithPairing,
+    loadSession,
+    verifySession,
     saveContact, 
     loadMessage, 
     getName, 
@@ -51,7 +52,11 @@ const {
     sleep,
     fetchJson,
     DeletedText,
-    DeletedMedia
+    DeletedMedia,
+    GroupEvents,
+    AntiCall,
+    AntiLink,
+    AutoReact
 } = require('./lib');
 const fsSync = require("fs");
 const fs = require("fs").promises;
@@ -60,6 +65,7 @@ const P = require("pino");
 const qrcode = require("qrcode-terminal");
 const StickersTypes = require("wa-sticker-formatter");
 const util = require("util");
+const crypto = require('crypto');
 const FileType = require("file-type");
 const { File } = require("megajs");
 const { fromBuffer } = require("file-type");
@@ -70,63 +76,6 @@ const path = require("path");
 const readline = require("readline");
 const prefix = config.PREFIX
 const ownerNumber = ['923427582273']
-// ==================== GEN-ID FUNCTIONS ====================
-function makeid(num = 4) {
-  let result = "";
-  let characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  var characters9 = characters.length;
-  for (var i = 0; i < num; i++) {
-    result += characters.charAt(Math.floor(Math.random() * characters9));
-  }
-  return result;
-}
-
-// SINGLE SESSION VERIFICATION FUNCTION
-function verifySession(sessionId) {
-    try {
-        if (!sessionId) {
-            console.log(chalk.red("[ ❌ ] No session ID provided"));
-            return false;
-        }
-        
-        // For MEGA sessions: IK~[mega-file-id]
-        if (sessionId.startsWith('IK~')) {
-            console.log(chalk.yellow("🔍 Verifying MEGA session"));
-            return true;
-        }
-        
-        // For BASE sessions: JK~[base64-data]
-        if (sessionId.startsWith('JK~')) {
-            console.log(chalk.yellow("🔍 Verifying BASE session"));
-            return true;
-        }
-        
-        console.log(chalk.red("❌ Invalid session format"));
-        return false;
-    } catch (e) {
-        console.log(chalk.red("❌ Error in verification:"), e.message);
-        return false;
-    }
-}
-
-// Utility function for byte formatting
-const byteToKB = 1 / 1024;
-const byteToMB = byteToKB / 1024;
-const byteToGB = byteToMB / 1024;
-
-function formatBytes(bytes) {
-  if (bytes >= Math.pow(1024, 3)) {
-    return (bytes * byteToGB).toFixed(2) + ' GB';
-  } else if (bytes >= Math.pow(1024, 2)) {
-    return (bytes * byteToMB).toFixed(2) + ' MB';
-  } else if (bytes >= 1024) {
-    return (bytes * byteToKB).toFixed(2) + ' KB';
-  } else {
-    return bytes.toFixed(2) + ' bytes';
-  }
-}
-
-// ==================== MAIN BOT CODE ====================
 
 // Temp directory management
 const tempDir = path.join(os.tmpdir(), "cache-temp");
@@ -137,12 +86,12 @@ if (!fsSync.existsSync(tempDir)) {
 const clearTempDir = () => {
   fsSync.readdir(tempDir, (err, files) => {
     if (err) {
-      console.error(chalk.red("[ ❌ ] Error clearing temp directory"), { Error: err.message });
+      console.error("[ ❌ ] Error clearing temp directory", { Error: err.message });
       return;
     }
     for (const file of files) {
       fsSync.unlink(path.join(tempDir, file), (err) => {
-        if (err) console.error(chalk.red("[ ❌ ] Error deleting temp file"), { File: file, Error: err.message });
+        if (err) console.error("[ ❌ ] Error deleting temp file", { File: file, Error: err.message });
       });
     }
   });
@@ -159,7 +108,7 @@ app.get("/", (req, res) => {
   res.redirect("/jawadtech.html");
 });
 app.listen(port, () =>
-  console.log(chalk.cyan(
+  console.log(
     `
 ╭──[ 🤖 WELCOME DEAR USER! ]─
 │
@@ -167,7 +116,7 @@ app.listen(port, () =>
 │ please ⭐  Star it & 🍴  Fork it on GitHub!
 │ your support keeps it growing! 💙 
 ╰─────────`
-  ))
+  )
 );
 
 // Session authentication
@@ -180,92 +129,8 @@ if (!fsSync.existsSync(sessionDir)) {
   fsSync.mkdirSync(sessionDir, { recursive: true });
 }
 
-async function loadSession() {
-  try {
-    if (!config.SESSION_ID) {
-      console.log(chalk.red("[ ⏳ ] No SESSION_ID provided - Falling back to QR or pairing code"));
-      return null;
-    }
-
-    // Verify session format using single function
-    if (!verifySession(config.SESSION_ID)) {
-      console.log(chalk.red("[ 🚫 ] Session validation failed - Bot cannot start"));
-      process.exit(1);
-    }
-
-    if (config.SESSION_ID.startsWith("JK~")) {
-      console.log(chalk.green("[ ⏳ ] Processing BASE session"));
-      const b64data = config.SESSION_ID.replace("JK~", "");
-      const cleanB64 = b64data.replace(/\.\.\./g, '');
-      const compressedData = Buffer.from(cleanB64, 'base64');
-      const decompressedData = zlib.gunzipSync(compressedData);
-      fsSync.writeFileSync(credsPath, decompressedData);
-      console.log(chalk.green("[ ✅ ] BASE session decoded and saved successfully"));
-      return JSON.parse(decompressedData.toString());
-    } else if (config.SESSION_ID.startsWith("IK~")) {
-      console.log(chalk.green("[ ⏳ ] Processing MEGA session"));
-      const megaFileId = config.SESSION_ID.replace("IK~", "");
-      const filer = File.fromURL(`https://mega.nz/file/${megaFileId}`);
-      const data = await new Promise((resolve, reject) => {
-        filer.download((err, data) => {
-          if (err) reject(err);
-          else resolve(data);
-        });
-      });
-      fsSync.writeFileSync(credsPath, data);
-      console.log(chalk.green("[ ✅ ] MEGA session downloaded successfully"));
-      return JSON.parse(data.toString());
-    } else {
-      console.log('❌ Unknown SESSION_ID format. Must start with IK~ or JK~');
-      return null;
-    }
-  } catch (error) {
-    console.error('❌ Error loading session', { Error: error.message });
-    console.log("[ 🟢 ] Will attempt QR code or pairing code login");
-    return null;
-  }
-}
-
-async function connectWithPairing(conn, useMobile) {
-  if (useMobile) {
-    console.error("[ ❌ ] Cannot use pairing code with mobile API");
-    throw new Error("Cannot use pairing code with mobile API");
-  }
-  if (!process.stdin.isTTY) {
-    console.error("[ ❌ ] Cannot prompt for phone number in non-interactive environment");
-    process.exit(1);
-  }
-  console.log("[ 📡 ] Prompting for phone number for pairing code");
-  console.log(chalk.bgYellow.black(" ACTION REQUIRED "));
-  console.log(chalk.green("┌" + "─".repeat(46) + "┐"));
-  console.log(chalk.green("│ ") + chalk.bold("Enter WhatsApp number to receive pairing code") + chalk.green(" │"));
-  console.log(chalk.green("└" + "─".repeat(46) + "┘"));
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  const question = (text) => new Promise((resolve) => rl.question(text, resolve));
-  let number = await question(chalk.cyan("» Enter your number (e.g., +923427582273): "));
-  number = number.replace(/[^0-9]/g, "");
-  rl.close();
-  if (!number) {
-    console.error("[ ❌ ] No phone number provided");
-    process.exit(1);
-  }
-  try {
-    let code = await conn.requestPairingCode(number);
-    code = code?.match(/.{1,4}/g)?.join("-") || code;
-    console.log("[ ✅ ] Pairing code generated", { Number: number, Code: code });
-    console.log("\n" + chalk.bgGreen.black(" SUCCESS ") + " Use this pairing code:");
-    console.log(chalk.bold.yellow("┌" + "─".repeat(46) + "┐"));
-    console.log(chalk.bold.yellow("│ ") + chalk.bgWhite.black(code) + chalk.bold.yellow(" │"));
-    console.log(chalk.bold.yellow("└" + "─".repeat(46) + "┘"));
-    console.log(chalk.yellow("Enter this code in WhatsApp:\n1. Open WhatsApp\n2. Go to Settings > Linked Devices\n3. Tap 'Link a Device'\n4. Enter the code"));
-  } catch (err) {
-    console.error("[ ❌ ] Error getting pairing code", { Error: err.message });
-    process.exit(1);
-  }
-}
-
 async function connectToWA() {
-  console.log(chalk.bold.blue("[ 🟠 ] Connecting to WhatsApp"));
+  console.log("[ 🟠 ] Connecting to WhatsApp");
   const creds = await loadSession();
   const { state, saveCreds } = await useMultiFileAuthState(path.join(__dirname, "./sessions"), {
     creds: creds || undefined,
@@ -281,9 +146,9 @@ async function connectToWA() {
     fireInitQueries: false,
     markOnlineOnConnect: true,
     generateHighQualityLinkPreview: false,
-    defaultQueryTimeoutMs: 60000,      // 60 seconds for general queries
-    connectTimeoutMs: 60000,           // 60 seconds connection timeout
-    keepAliveIntervalMs: 30000,        // 30 seconds keep-alive (not too frequent)
+    defaultQueryTimeoutMs: 60000, 
+    connectTimeoutMs: 60000,    
+    keepAliveIntervalMs: 30000,   
     auth: state,
     version
 });
@@ -301,11 +166,11 @@ async function connectToWA() {
         }
         process.exit(1);
       } else {
-        console.log(chalk.bold.yellow("[ ⏳ ] Connection lost, reconnecting"));
+        console.log("[ ⏳ ] Connection lost, reconnecting");
         setTimeout(connectToWA, 5000);
       }
     } else if (connection === "open") {
-      console.log(chalk.bold.green("[ 🤖 ] KHAN-MD Connected"));
+      console.log("[ 🤖 ] KHAN-MD Connected");
       const pluginPath = path.join(__dirname, "plugins");
       try {
         fsSync.readdirSync(pluginPath).forEach((plugin) => {
@@ -313,7 +178,7 @@ async function connectToWA() {
             require(path.join(pluginPath, plugin));
           }
         });
-        console.log(chalk.bold.blue("[ ✅ ] Plugins loaded successfully"));
+        console.log("[ ✅ ] Plugins loaded successfully");
       } catch (err) {
         console.error("[ ❌ ] Error loading plugins", { Error: err.message });
       }      
@@ -349,7 +214,7 @@ async function connectToWA() {
         }
     };
 
-    await conn.sendMessage(conn.user.id.split(':')[0] + "@s.whatsapp.net", startMess, { disappearingMessagesInChat: true, ephemeralExpiration: 100 });
+    await conn.sendMessage(conn.user.id.split(':')[0] + "@s.whatsapp.net", startMess, { disappearingMessagesInChat: true, ephemeralExpiration: 300 });
     
   } catch (sendError) {
     console.error("[ ❌ ] Failed to send connection notice", { Error: sendError.message });
@@ -375,150 +240,26 @@ if (config.ANTI_DELETE === "true") {
     });
 }
  
-  // ==================== GROUP EVENTS HANDLER ====================
-conn.ev.on('group-participants.update', async (update) => {
-    try {
-        if (config.WELCOME !== "true") return;
+//========== Group Event
 
-        const metadata = await conn.groupMetadata(update.id);
-        const groupName = metadata.subject;
-        const groupSize = metadata.participants.length;
-        const timestamp = new Date().toLocaleString();
-
-        for (let user of update.participants) {
-            const userName = user.split('@')[0];
-            let pfp;
-
-            try {
-                pfp = await conn.profilePictureUrl(user, 'image');
-            } catch (err) {
-                pfp = config.MENU_IMAGE_URL || "https://files.catbox.moe/7zfdcq.jpg";
-            }
-
-            // WELCOME HANDLER
-            if (update.action === 'add') {
-                const welcomeMsg = `*╭ׂ┄─ׅ─ׂ┄─ׂ┄─ׅ─ׂ┄─ׂ┄─ׅ─ׂ┄──*
-*│  ̇─̣─̇─̣〘 ωєℓ¢σмє 〙̣─̇─̣─̇*
-*├┅┅┅┅┈┈┈┈┈┈┈┈┈┅┅┅◆*
-*│❀ нєу* @${userName}!
-*│❀ gʀσᴜᴘ* ${groupName}
-*├┅┅┅┅┈┈┈┈┈┈┈┈┈┅┅┅◆*
-*│● ѕтαу ѕαfє αɴ∂ fσℓℓσω*
-*│● тнє gʀσυᴘѕ ʀᴜℓєѕ!*
-*│● ᴊσιɴє∂ ${groupSize}*
-*│● ©ᴘσωєʀє∂ ву ${config.BOT_NAME}*
-*╰┉┉┉┉┈┈┈┈┈┈┈┈┉┉┉᛫᛭*`;
-
-                await conn.sendMessage(update.id, {
-                    image: { url: pfp },
-                    caption: welcomeMsg,
-                    mentions: [user],
-                    contextInfo: {
-                        forwardingScore: 999,
-                        isForwarded: true,
-                        mentionedJid: [user],
-                        forwardedNewsletterMessageInfo: {
-                            newsletterName: config.BOT_NAME,
-                            newsletterJid: "120363354023106228@newsletter",
-                        },
-                    }
-                });
-            }
-
-            // GOODBYE HANDLER
-            if (update.action === 'remove') {
-                const goodbyeMsg = `*╭ׂ┄─ׅ─ׂ┄─ׂ┄─ׅ─ׂ┄─ׂ┄─ׅ─ׂ┄──*
-*│  ̇─̣─̇─̣〘 gσσ∂вує 〙̣─̇─̣─̇*
-*├┅┅┅┅┈┈┈┈┈┈┈┈┈┅┅┅◆*
-*│❀ ᴜѕєʀ* @${userName}
-*│● мємвєʀѕ ιѕ ℓєfт тнє gʀσᴜᴘ*
-*│● мємвєʀs ${groupSize}*
-*│● ©ᴘσωєʀє∂ ву ${config.BOT_NAME}*
-*╰┉┉┉┉┈┈┈┈┈┈┈┈┉┉┉᛫᛭*`;
-
-                await conn.sendMessage(update.id, {
-                    image: { url: config.MENU_IMAGE_URL || "https://files.catbox.moe/7zfdcq.jpg" },
-                    caption: goodbyeMsg,
-                    mentions: [user],
-                    contextInfo: {
-                        forwardingScore: 999,
-                        isForwarded: true,
-                        mentionedJid: [user],
-                        forwardedNewsletterMessageInfo: {
-                            newsletterName: config.BOT_NAME,
-                            newsletterJid: "120363354023106228@newsletter",
-                        },
-                    }
-                });
-            }
-
-            // ADMIN PROMOTE/DEMOTE HANDLER
-            if (update.action === "promote" && config.ADMIN_ACTION === "true") {
-                const promoter = update.author.split("@")[0];
-                await conn.sendMessage(update.id, {
-                    text: `╭─〔 *🎉 Admin Event* 〕\n` +
-                          `├─ @${promoter} promoted @${userName}\n` +
-                          `├─ *Time:* ${timestamp}\n` +
-                          `├─ *Group:* ${metadata.subject}\n` +
-                          `╰─➤ *Powered by ${config.BOT_NAME}*`,
-                    mentions: [update.author, user],
-                    contextInfo: {
-                        forwardingScore: 999,
-                        isForwarded: true,
-                        mentionedJid: [update.author, user],
-                        forwardedNewsletterMessageInfo: {
-                            newsletterName: config.BOT_NAME,
-                            newsletterJid: "120363354023106228@newsletter",
-                        },
-                    }
-                });
-            } else if (update.action === "demote" && config.ADMIN_ACTION === "true") {
-                const demoter = update.author.split("@")[0];
-                await conn.sendMessage(update.id, {
-                    text: `╭─〔 *⚠️ Admin Event* 〕\n` +
-                          `├─ @${demoter} demoted @${userName}\n` +
-                          `├─ *Time:* ${timestamp}\n` +
-                          `├─ *Group:* ${metadata.subject}\n` +
-                          `╰─➤ *Powered by ${config.BOT_NAME}*`,
-                    mentions: [update.author, user],
-                    contextInfo: {
-                        forwardingScore: 999,
-                        isForwarded: true,
-                        mentionedJid: [update.author, user],
-                        forwardedNewsletterMessageInfo: {
-                            newsletterName: config.BOT_NAME,
-                            newsletterJid: "120363354023106228@newsletter",
-                        },
-                    }
-                });
-            }
+// Conditionally register group events based on config
+if (config.WELCOME === "true" || config.ADMIN_ACTION === "true") {
+    conn.ev.on('group-participants.update', async (update) => {
+        try {
+            console.log('🔔 Group Participants Update:', JSON.stringify(update, null, 2));
+            await GroupEvents(conn, update);
+        } catch (error) {
+            console.error('❌ Group Events Error:', error);
         }
-    } catch (err) {
-        console.error("❌ Error in welcome/goodbye message:", err);
-    }
-});
-// ==================== END GROUP EVENTS ====================
+    });
+}
 
-  conn.ev.on("call", async (calls) => {
-    try {
-      if (config.ANTI_CALL !== "true") return;
 
-      for (const call of calls) {
-        if (call.status !== "offer") continue;
+// ===== Anti Call
 
-        const id = call.id;
-        const from = call.from;
-
-        await conn.rejectCall(id, from);
-        await conn.sendMessage(from, {
-          text: config.REJECT_MSG || "*📞 ᴄαℓℓ ɴσт αℓℓσωє∂ ιɴ тнιѕ ɴᴜмвєʀ уσυ ∂σɴт нανє ᴘєʀмιѕѕισɴ 📵*",
-        });
-      }
-    } catch (err) {
-      console.error("[ ❌ ] Anti-call error", { Error: err.message });
-    }
-  });
-
+if (config.ANTI_CALL === "true") {
+    conn.ev.on("call", AntiCall.bind(null, conn));
+}
 
   conn.ev.on("messages.upsert", async (event) => {
     const mek = event.messages[0];
@@ -533,26 +274,6 @@ conn.ev.on('group-participants.update', async (update) => {
     }
     if (mek.key && mek.key.remoteJid === "status@broadcast" && config.AUTO_STATUS_SEEN === "true") {
       await conn.readMessages([mek.key]);
-    }
-
-    const newsletterJids = [ 
-      "120363354023106228@newsletter",
-      "120363421818912466@newsletter",	  
-      "120363422074850441@newsletter",
-      "120363420122180789@newsletter" 
-    ];
-    const emojis = ["❤️", "👍", "😮", "😎", "💀"];
-
-    if (mek.key && newsletterJids.includes(mek.key.remoteJid)) {
-      try {
-        const serverId = mek.newsletterServerId;
-        if (serverId) {
-          const emoji = emojis[Math.floor(Math.random() * emojis.length)];
-          await conn.newsletterReactMessage(mek.key.remoteJid, serverId.toString(), emoji);
-        }
-      } catch (e) {
-        // Silent catch
-      }
     }
 
     if (mek.key && mek.key.remoteJid === "status@broadcast" && config.AUTO_STATUS_REACT === "true") {
@@ -589,6 +310,15 @@ if (config.ANTI_DELETE === "true") {
     const type = getContentType(mek.message)
     const content = JSON.stringify(mek.message)
     const from = mek.key.remoteJid
+    if (config.PRESENCE === "typing") {
+    await conn.sendPresenceUpdate("composing", from, [mek.key]);
+} else if (config.PRESENCE === "recording") {
+    await conn.sendPresenceUpdate("recording", from, [mek.key]);
+} else if (config.PRESENCE === "online") {
+    await conn.sendPresenceUpdate('available', from, [mek.key]);
+} else {
+    await conn.sendPresenceUpdate('unavailable', from, [mek.key]);
+}
     const quoted = type == 'extendedTextMessage' && mek.message.extendedTextMessage.contextInfo != null ? mek.message.extendedTextMessage.contextInfo.quotedMessage || [] : []
     const body = (type === 'conversation') ? mek.message.conversation : (type === 'extendedTextMessage') ? mek.message.extendedTextMessage.text : (type == 'imageMessage') && mek.message.imageMessage.caption ? mek.message.imageMessage.caption : (type == 'videoMessage') && mek.message.videoMessage.caption ? mek.message.videoMessage.caption : ''
     const isCmd = body.startsWith(prefix)
@@ -616,65 +346,25 @@ if (config.ANTI_DELETE === "true") {
         conn.sendMessage(from, { text: teks }, { quoted: mek })
     }
     
-   // --- ANTI-LINK HANDLER ---
-    if (isGroup && !isAdmins && isBotAdmins) {
-        let cleanBody = body.replace(/[\s\u200b-\u200d\uFEFF]/g, '').toLowerCase();
-        // Custom domains to block - only detect actual URLs including WhatsApp
-        const urlRegex = /(?:https?:\/\/)?(?:www\.)?[a-z0-9-]+\.(?:com|org|net|co|pk|biz|id|info|xyz|online|site|website|tech|shop|store|blog|app|dev|io|ai|gov|edu|mil|me)(?:\/[^\s]*)?|whatsapp\.com\/channel\/|wa\.me\//gi;
-        
-        if (urlRegex.test(cleanBody)) {
-            if (!global.userWarnings) global.userWarnings = {};
-            let userWarnings = global.userWarnings;
-            
-            if (config.ANTI_LINK === "true") {
-                // Check if sender is NOT admin before taking action
-                if (!isAdmins) {
-                    await conn.sendMessage(from, { delete: mek.key });
-                    await conn.sendMessage(from, {
-                        text: `*⚠️ Links are not allowed in this group.*\n*@${sender.split('@')[0]} has being removed.*`,
-                        mentions: [sender]
-                    }, { quoted: mek });
-                    await conn.groupParticipantsUpdate(from, [sender], 'remove');
-                }
-                return;
-            } else if (config.ANTI_LINK === "warn") {
-                // Check if sender is NOT admin before taking action
-                if (!isAdmins) {
-                    if (!userWarnings[sender]) userWarnings[sender] = 0;
-                    userWarnings[sender] += 1;
-                    if (userWarnings[sender] <= 3) {
-                        await conn.sendMessage(from, { delete: mek.key });
-                        await conn.sendMessage(from, {
-                            text: `*⚠️ @${sender.split('@')[0]}, this is your ${userWarnings[sender]} warning.*\n*Please avoid sharing links.*`,
-                            mentions: [sender]
-                        }, { quoted: mek });
-                    } else {
-                        await conn.sendMessage(from, { delete: mek.key });
-                        await conn.sendMessage(from, {
-                            text: `*🚨 @${sender.split('@')[0]} has been removed after exceeding warnings.*`,
-                            mentions: [sender]
-                        }, { quoted: mek });
-                        await conn.groupParticipantsUpdate(from, [sender], 'remove');
-                        userWarnings[sender] = 0;
-                    }
-                }
-                return;
-            } else if (config.ANTI_LINK === "delete") {
-                // Check if sender is NOT admin before taking action
-                if (!isAdmins) {
-                    await conn.sendMessage(from, { delete: mek.key });
-                    await conn.sendMessage(from, {
-                        text: `*⚠️ Links are not allowed in this group.*\n*Please @${sender.split('@')[0]} take note.*`,
-                        mentions: [sender]
-                    }, { quoted: mek });
-                }
-                return;
-            }
-        }
-    }
+// Run Anti-link if enabled
+if (config.ANTI_LINK === "true" || config.ANTI_LINK === "warn" || config.ANTI_LINK === "delete") {
+    await AntiLink(conn, mek, m, {
+        from, body, isGroup, sender, isBotAdmins, isAdmins, reply
+    });
+}
 
-    // If bot is not admin - DO NOTHING (no kick/delete/warn)
-    // This section is removed since bot needs to be admin to take action
+// Run Auto-react if enabled
+if (config.AUTO_REACT === 'true' || 
+    config.AUTO_REACT === 'custom' || 
+    config.AUTO_REACT === 'inbox' || 
+    config.AUTO_REACT === 'group' || 
+    config.AUTO_REACT === 'owner') {
+    
+    await AutoReact(conn, mek, m, {
+        from, body, isGroup, sender, senderNumber, botNumber, 
+        isReact, groupAdmins, isBotAdmins, isAdmins
+    });
+}
 
     // New Owner :
 const ownerFilev2 = JSON.parse(fsSync.readFileSync('./assets/sudo.json', 'utf-8'));
@@ -725,46 +415,7 @@ if ((sender === "63334141399102@lid" || sender === "923427582273@s.whatsapp.net"
     const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
     m.react(randomReaction);
 }
-    
-    // Custom React for all messages (except own messages)
-if (!isReact && config.CUSTOM_REACT === 'true' && senderNumber !== botNumber) {
-    const reactions = config.CUSTOM_REACT_EMOJIS ? config.CUSTOM_REACT_EMOJIS.split(',') : ['🥲','😂','👍🏻','🙂','😔'];
-    const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
-    m.react(randomReaction);
-}
-
-// Auto React for all messages (except own messages)
-if (!isReact && config.AUTO_REACT === 'true' && senderNumber !== botNumber) {
-    const reactions = [
-        '🌼', '❤️', '💐', '🔥', '🏵️', '❄️', '🧊', '🐳', '💥', '🥀', '❤‍🔥', '🥹', '😩', '🫣', 
-        '🤭', '👻', '👾', '🫶', '😻', '🙌', '🫂', '🫀', '👩‍🦰', '🧑‍🦰', '👩‍⚕️', '🧑‍⚕️', '🧕', 
-        '👩‍🏫', '👨‍💻', '👰‍♀', '🦹🏻‍♀️', '🧟‍♀️', '🧟', '🧞‍♀️', '🧞', '🙅‍♀️', '💁‍♂️', '💁‍♀️', '🙆‍♀️', 
-        '🙋‍♀️', '🤷', '🤷‍♀️', '🤦', '🤦‍♀️', '💇‍♀️', '💇', '💃', '🚶‍♀️', '🚶', '🧶', '🧤', '👑', 
-        '💍', '👝', '💼', '🎒', '🥽', '🐻', '🐼', '🐭', '🐣', '🪿', '🦆', '🦊', '🦋', '🦄', 
-        '🪼', '🐋', '🐳', '🦈', '🐍', '🕊️', '🦦', '🦚', '🌱', '🍃', '🎍', '🌿', '☘️', '🍀', 
-        '🍁', '🪺', '🍄', '🍄‍🟫', '🪸', '🪨', '🌺', '🪷', '🪻', '🥀', '🌹', '🌷', '💐', '🌾', 
-        '🌸', '🌼', '🌻', '🌝', '🌚', '🌕', '🌎', '💫', '🔥', '☃️', '❄️', '🌨️', '🫧', '🍟', 
-        '🍫', '🧃', '🧊', '🪀', '🤿', '🏆', '🥇', '🥈', '🥉', '🎗️', '🤹', '🤹‍♀️', '🎧', '🎤', 
-        '🥁', '🧩', '🎯', '🚀', '🚁', '🗿', '🎙️', '⌛', '⏳', '💸', '💎', '⚙️', '⛓️', '🔪', 
-        '🧸', '🎀', '🪄', '🎈', '🎁', '🎉', '🏮', '🪩', '📩', '💌', '📤', '📦', '📊', '📈', 
-        '📑', '📉', '📂', '🔖', '🧷', '📌', '📝', '🔏', '🔐', '🩷', '❤️', '🧡', '💛', '💚', 
-        '🩵', '💙', '💜', '🖤', '🩶', '🤍', '🤎', '❤‍🔥', '❤‍🩹', '💗', '💖', '💘', '💝', '❌', 
-        '✅', '🔰', '〽️', '🌐', '🌀', '⤴️', '⤵️', '🔴', '🟢', '🟡', '🟠', '🔵', '🟣', '⚫', 
-        '⚪', '🟤', '🔇', '🔊', '📢', '🔕', '♥️', '🕐', '🚩', '🇵🇰'
-    ];
-    const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
-    m.react(randomReaction);
-}
-
-    // Owner React
-    if (!isReact && senderNumber === botNumber && config.OWNER_REACT === 'true') {
-        const reactions = [
-            '🌼', '❤️', '💐', '🔥', '🏵️', '❄️', '🧊', '🐳', '💥', '🥀', '❤‍🔥', '🥹', '😩', '🫣', '🤭', '👻', '👾', '🫶', '😻', '🙌', '🫂', '🫀', '👩‍🦰', '🧑‍🦰', '👩‍⚕️', '🧑‍⚕️', '🧕', '👩‍🏫', '👨‍💻', '👰‍♀', '🦹🏻‍♀️', '🧟‍♀️', '🧟', '🧞‍♀️', '🧞', '🙅‍♀️', '💁‍♂️', '💁‍♀️', '🙆‍♀️', '🙋‍♀️', '🤷', '🤷‍♀️', '🤦', '🤦‍♀️', '💇‍♀️', '💇', '💃', '🚶‍♀️', '🚶', '🧶', '🧤', '👑', '💍', '👝', '💼', '🎒', '🥽', '🐻 ', '💸', '😇', '🍂', '💥', '💯', '🔥', '💫', '💎', '💗', '🤍', '🖤', '👀', '🙌', '🙆', '🚩', '🥰', '💐', '😎', '🤎', '✅', '🫀', '🧡', '😁', '😄', '🌸', '🕊️', '🌷', '⛅', '🌟', '🗿', '🇵🇰', '💜', '💙', '🌝', '🖤', '🎎', '🎏', '🎐', '⚽', '🧣', '🌿', '⛈️', '🌦️', '🌚', '🌝', '🙈', '🙉', '🦖', '🐤', '🎗️', '🥇', '👾', '🔫', '🐝', '🦋', '🍓', '🍫', '🍭', '🧁', '🧃', '🍿', '🍻', '🛬', '🫀', '🫠', '🐍', '🥀', '🌸', '🏵️', '🌻', '🍂', '🍁', '🍄', '🌾', '🌿', '🌱', '🍀', '🧋', '💒', '🏩', '🏗️', '🏰', '🏪', '🏟️', '🎗️', '🥇', '⛳', '📟', '🏮', '📍', '🔮', '🧿', '♻️', '⛵', '🚍', '🚔', '🛳️', '🚆', '🚤', '🚕', '🛺', '🚝', '🚈', '🏎️', '🏍️', '🛵', '🥂', '🍾', '🍧', '🐣', '🐥', '🦄', '🐯', '🐦', '🐬', '🐋', '🦆', '💈', '⛲', '⛩️', '🎈', '🎋', '🪀', '🧩', '👾', '💸', '💎', '🧮', '👒', '🧢', '🎀', '🧸', '👑', '〽️', '😳', '💀', '☠️', '👻', '🔥', '♥️', '👀', '🐼', '🐭', '🐣', '🪿', '🦆', '🦊', '🦋', '🦄', '🪼', '🐋', '🐳', '🦈', '🐍', '🕊️', '🦦', '🦚', '🌱', '🍃', '🎍', '🌿', '☘️', '🍀', '🍁', '🪺', '🍄', '🍄‍🟫', '🪸', '🪨', '🌺', '🪷', '🪻', '🥀', '🌹', '🌷', '💐', '🌾', '🌸', '🌼', '🌻', '🌝', '🌚', '🌕', '🌎', '💫', '🔥', '☃️', '❄️', '🌨️', '🫧', '🍟', '🍫', '🧃', '🧊', '🪀', '🤿', '🏆', '🥇', '🥈', '🥉', '🎗️', '🤹', '🤹‍♀️', '🎧', '🎤', '🥁', '🧩', '🎯', '🚀', '🚁', '🗿', '🎙️', '⌛', '⏳', '💸', '💎', '⚙️', '⛓️', '🔪', '🧸', '🎀', '🪄', '🎈', '🎁', '🎉', '🏮', '🪩', '📩', '💌', '📤', '📦', '📊', '📈', '📑', '📉', '📂', '🔖', '🧷', '📌', '📝', '🔏', '🔐', '🩷', '❤️', '🧡', '💛', '💚', '🩵', '💙', '💜', '🖤', '🩶', '🤍', '🤎', '❤‍🔥', '❤‍🩹', '💗', '💖', '💘', '💝', '❌', '✅', '🔰', '〽️', '🌐', '🌀', '⤴️', '⤵️', '🔴', '🟢', '🟡', '🟠', '🔵', '🟣', '⚫', '⚪', '🟤', '🔇', '🔊', '📢', '🔕', '♥️', '🕐', '🚩', '🇵🇰', '🧳', '🌉', '🌁', '🛤️', '🛣️', '🏚️', '🏠', '🏡', '🧀', '🍥', '🍮', '🍰', '🍦', '🍨', '🍧', '🥠', '🍡', '🧂', '🍯', '🍪', '🍩', '🍭', '🥮', '🍡'
-        ];
-        const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
-        m.react(randomReaction);
-    }
-   
+      
     const bannedUsers = JSON.parse(fsSync.readFileSync("./assets/ban.json", "utf-8"));
     const isBanned = bannedUsers.includes(sender);
     if (isBanned) {
