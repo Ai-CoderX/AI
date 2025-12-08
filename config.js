@@ -16,7 +16,7 @@ global.jk = 'https://jawad-tech.vercel.app';
 global.pair = 'https://khanmd-pair.onrender.com';
 global.pairx = 'https://khanxmd-pair.onrender.com';
 
-// Bagian Ini Jangan Diubah Kalau Ga Mau Error!!!!
+// Don't Change This Part Unless You Want Errors!!!!
 global.APIs = {
   jk: 'https://jawad-tech.vercel.app',
   pair: 'https://khanmd-pair.onrender.com',
@@ -52,18 +52,17 @@ module.exports = {
   READ_MESSAGE: settings.READ_MESSAGE || process.env.READ_MESSAGE || "false",
   REJECT_MSG: process.env.REJECT_MSG || "*📞 ᴄαℓℓ ɴσт αℓℓσωє∂ ιɴ тнιѕ ɴᴜмвєʀ уσυ ∂σɴт нανє ᴘєʀмιѕѕισɴ 📵*",
 
-  // ===== REACTION & STICKER SETTINGS =====
+  // ===== REACTION SETTINGS =====
   AUTO_REACT: settings.AUTO_REACT || process.env.AUTO_REACT || "false",
-  OWNER_REACT: settings.OWNER_REACT || process.env.OWNER_REACT || "false",
   CUSTOM_REACT: settings.CUSTOM_REACT || process.env.CUSTOM_REACT || "false",
   CUSTOM_REACT_EMOJIS: settings.CUSTOM_REACT_EMOJIS || process.env.CUSTOM_REACT_EMOJIS || "💝,💖,💗,❤️‍🩹,❤️,🧡,💛,💚,💙,💜,🤎,🖤,🤍",
   STICKER_NAME: process.env.STICKER_NAME || "KHAN-MD",
   AUTO_STICKER: settings.AUTO_STICKER || process.env.AUTO_STICKER || "false",
 
+  // ===== PRESENCE SETTINGS =====
+  PRESENCE: settings.PRESENCE || process.env.PRESENCE || "false",
+
   // ===== MEDIA & AUTOMATION =====
-  AUTO_TYPING: settings.AUTO_TYPING || process.env.AUTO_TYPING || "false",
-  AUTO_RECORDING: settings.AUTO_RECORDING || process.env.AUTO_RECORDING || "false",
-  ALWAYS_ONLINE: settings.ALWAYS_ONLINE || process.env.ALWAYS_ONLINE || "true",
   MENTION_REPLY: settings.MENTION_REPLY || process.env.MENTION_REPLY || "false",
   MENU_IMAGE_URL: settings.MENU_IMAGE_URL || process.env.MENU_IMAGE_URL || "https://files.catbox.moe/7zfdcq.jpg",
   MENU_AUDIO_URL: settings.MENU_AUDIO_URL || process.env.MENU_AUDIO_URL || 'https://files.catbox.moe/xv42ur.mp3',
