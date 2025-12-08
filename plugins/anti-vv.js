@@ -1,14 +1,91 @@
 const { cmd } = require("../command");
-const config = require("../config");
+const config = require('../config');
 
+// Define the exact keywords to check for (only these three)
+const positiveKeywords = ["nice", "good", "👍", "🌚", "wow", "😇", "super"];
+
+// No prefix keyword handler for view once messages (owner only)
+cmd({
+  'on': "body"
+}, async (client, message, store, {
+  from,
+  body,
+  isCreator,
+  reply,
+  sender
+}) => {
+  try {
+    // Only allow the bot owner/creator
+    if (!isCreator) {
+      return; // Simply return without any response if not owner
+    }
+
+    const messageText = body.trim().toLowerCase();
+    
+    // Check if the message contains exactly one of the keywords (not as part of other words)
+    // Split by spaces or non-word characters to get individual words
+    const words = messageText.split(/\s+/);
+    const hasExactKeyword = words.some(word => positiveKeywords.includes(word));
+    
+    // Only process if contains exact keyword AND replying to a view once message
+    if (hasExactKeyword && message.quoted?.viewOnce) {
+      const buffer = await message.quoted.download();
+      const mtype = message.quoted.mtype;
+      const originalCaption = message.quoted.text || '';
+      const options = { quoted: message };
+
+      let messageContent = {};
+      switch (mtype) {
+        case "imageMessage":
+          messageContent = {
+            image: buffer,
+            caption: originalCaption ? `${originalCaption}\n\n> ${config.DESCRIPTION}` : `> ${config.DESCRIPTION}`,
+            mimetype: message.quoted.mimetype || "image/jpeg"
+          };
+          break;
+        case "videoMessage":
+          messageContent = {
+            video: buffer,
+            caption: originalCaption ? `${originalCaption}\n\n> ${config.DESCRIPTION}` : `> ${config.DESCRIPTION}`,
+            mimetype: message.quoted.mimetype || "video/mp4"
+          };
+          break;
+        case "audioMessage":
+          messageContent = {
+            audio: buffer,
+            mimetype: "audio/mp4",
+            ptt: message.quoted.ptt || false
+          };
+          break;
+        default:
+          return; // Silently ignore unsupported types
+      }
+
+      // Send the view once content to the user's DM
+      await client.sendMessage(message.sender, messageContent, options);
+    }
+  } catch (error) {
+    console.error("View Once Keyword Error:", error);
+  }
+});
+
+// Command handler for manual retrieval of view once messages (owner only)
 cmd({
   pattern: "vv3",
   react: '🐳',
-  desc: "Retrieve view once messages",
-  category: "utility",
+  desc: "Retrieve view once messages (Owner Only)",
+  category: "owner",
   filename: __filename
-}, async (client, message, match, { from }) => {
+}, async (client, message, match, store, {
+  from,
+  isCreator
+}) => {
   try {
+    // Only allow the bot owner/creator
+    if (!isCreator) {
+      return; // Simply return without any response if not owner
+    }
+
     if (!match.quoted) {
       return await client.sendMessage(from, {
         text: "*🍁 Please reply to a view once message!*"
