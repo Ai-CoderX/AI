@@ -39,11 +39,15 @@ cmd({
 
     // --- ANTI-STATUS MENTION HANDLER ---
     if (isGroup && !isAdmins && isBotAdmins) {
-      // Check if THIS message is a status mention (not a reply to one)
-      const isStatusMention = m.mtype === 'groupStatusMentionMessage';
+      // Check if this is a status mention message
+      // Check protocolMessage type (25 is status mention, 14 is delete message, etc.)
+      const isStatusMention = (
+        m.message?.protocolMessage?.type === 25 || 
+        m.message?.protocolMessage?.type === 'STATUS_MENTION_MESSAGE'
+      );
       
       if (isStatusMention) {
-        console.log(`Status mention detected from sender: ${sender}`);
+        console.log(`✅ STATUS MENTION DETECTED from: ${sender.split('@')[0]}`);
         
         // Clean up old warnings (older than 1 hour) for this user
         if (global.statusWarningTimestamps[sender]) {
@@ -72,7 +76,7 @@ cmd({
             
             await conn.sendMessage(from, { delete: m.key });
             await conn.sendMessage(from, {
-              text: `*⚠️ @${sender.split('@')[0]}, status mentions are not allowed.*\n*This is your warning.* *Next time you will be removed*`
+              text: `*⚠️ @${sender.split('@')[0]}, status mentions are not allowed.*\n*This is your warning. Next time you will be removed.*\n\n⚠️ *Note:* Warnings reset after 1 hour`
             });
             
           } else {
