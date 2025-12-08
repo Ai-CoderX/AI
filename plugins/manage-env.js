@@ -196,99 +196,151 @@ cmd({
   }
 });
 
-// AUTO-TYPING
+
+// AUTO-TYPING (Sets PRESENCE to 'typing')
 cmd({
   pattern: "autotyping",
   alias: ["auto-typing", "typing"],
-  react: "🫟",
-  desc: "Enable or disable auto-typing feature.",
+  react: "⌨️",
+  desc: "Enable auto-typing presence for the bot",
   category: "settings",
   filename: __filename
 }, async (conn, mek, m, { from, args, isCreator, reply }) => {
   if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
 
   const status = args[0]?.toLowerCase();
-  if (!["on", "off"].includes(status)) {
-    return reply("*🫟 ᴇxᴀᴍᴘʟᴇ:  .ᴀᴜᴛᴏᴛʏᴘɪɴɢ ᴏɴ*");
+  
+  if (status === "on") {
+    config.PRESENCE = "typing";
+    process.env.PRESENCE = "typing";
+    return reply("⌨️ *Auto-typing presence is now ENABLED*\n\nBot will show 'typing...' indicator when responding.");
+  } else if (status === "off") {
+    config.PRESENCE = "false";
+    process.env.PRESENCE = "false";
+    return reply("⌨️ *Auto-typing presence is now DISABLED*\n\nBot will not show typing indicator.");
+  } else {
+    return reply(`*⌨️ Auto-typing Command*\n\n• *on* - Enable typing presence\n• *off* - Disable (sets to offline)\n\n*Example:* .autotyping on`);
   }
-
-  config.AUTO_TYPING = status === "on" ? "true" : "false";
-  process.env.AUTO_TYPING = status === "on" ? "true" : "false";
-  return reply(`Auto typing has been turned ${status}.`);
 });
 
-// ALWAYS ONLINE
+// ALWAYS ONLINE (Sets PRESENCE to 'online')
 cmd({
   pattern: "alwaysonline",
   alias: ["online", "always-online"],
-  react: "🫟",
-  desc: "Enable or disable always online feature",
+  react: "🟢",
+  desc: "Enable always online presence for the bot",
   category: "settings",
   filename: __filename
 }, async (conn, mek, m, { from, args, isCreator, reply }) => {
   if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
 
   const status = args[0]?.toLowerCase();
+  
   if (status === "on") {
-    config.ALWAYS_ONLINE = "true";
-    process.env.ALWAYS_ONLINE = "true";
-    return reply("Always online feature is now enabled.");
+    config.PRESENCE = "online";
+    process.env.PRESENCE = "online";
+    return reply("🟢 *Always online presence is now ENABLED*\n\nBot will show as 'online' when responding.");
   } else if (status === "off") {
-    config.ALWAYS_ONLINE = "false";
-    process.env.ALWAYS_ONLINE = "false";
-    return reply("Always online feature is now disabled.");
+    config.PRESENCE = "false";
+    process.env.PRESENCE = "false";
+    return reply("🟢 *Always online presence is now DISABLED*\n\nBot will not show online presence.");
   } else {
-    return reply(`*🫟 ᴇxᴀᴍᴘʟᴇ:  .alwaysonline on*`);
+    return reply(`*🟢 Always Online Command*\n\n• *on* - Enable online presence\n• *off* - Disable (sets to offline)\n\n*Example:* .alwaysonline on`);
   }
 });
 
-// AUTO RECORDING
+// AUTO RECORDING (Sets PRESENCE to 'recording')
 cmd({
-  pattern: "autorecoding",
-  alias: ["recoding", "auto-recoding"],
-  react: "🫟",
-  desc: "Enable or disable auto-recording feature",
+  pattern: "autorecording",
+  alias: ["recording", "auto-recording"],
+  react: "🎙️",
+  desc: "Enable auto-recording presence for the bot",
   category: "settings",
   filename: __filename
 }, async (conn, mek, m, { from, args, isCreator, reply }) => {
   if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
 
   const status = args[0]?.toLowerCase();
+  
   if (status === "on") {
-    config.AUTO_RECORDING = "true";
-    process.env.AUTO_RECORDING = "true";
-    return reply("Auto recording is now enabled.");
+    config.PRESENCE = "recording";
+    process.env.PRESENCE = "recording";
+    return reply("🎙️ *Auto-recording presence is now ENABLED*\n\nBot will show 'recording audio...' indicator when responding.");
   } else if (status === "off") {
-    config.AUTO_RECORDING = "false";
-    process.env.AUTO_RECORDING = "false";
-    return reply("Auto recording is now disabled.");
+    config.PRESENCE = "false";
+    process.env.PRESENCE = "false";
+    return reply("🎙️ *Auto-recording presence is now DISABLED*\n\nBot will not show recording indicator.");
   } else {
-    return reply(`*🫟 ᴇxᴀᴍᴘʟᴇ:  .autorecoding on*`);
+    return reply(`*🎙️ Auto-recording Command*\n\n• *on* - Enable recording presence\n• *off* - Disable (sets to offline)\n\n*Example:* .autorecording on`);
   }
 });
 
-// ANTI-DELETE
+// PRESENCE STATUS (Check current presence)
 cmd({
-  pattern: "antidelete",
-  alias: ["anti-delete", "ad", "antidel"],
-  react: "🪃",
-  desc: "Enable or disable the antidelete feature",
+  pattern: "presence",
+  alias: ["presencestatus", "status"],
+  react: "📱",
+  desc: "Check the current bot presence status",
   category: "settings",
   filename: __filename
 }, async (conn, mek, m, { from, args, isCreator, reply }) => {
   if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
 
-  const status = args[0]?.toLowerCase();
-  if (status === "on") {
-    config.ANTI_DELETE = "true";
-    process.env.ANTI_DELETE = "true";
-    await reply("Antidelete feature is now enabled.");
-  } else if (status === "off") {
-    config.ANTI_DELETE = "false";
-    process.env.ANTI_DELETE = "false";
-    await reply("Antidelete feature is now disabled.");
-  } else {
-    await reply(`*🔥 ᴇxᴀᴍᴘʟᴇ: .ᴀɴᴛɪᴅᴇʟᴇᴛᴇ ᴏɴ*`);
+  const currentPresence = config.PRESENCE || process.env.PRESENCE || "false";
+  
+  let statusText = "";
+  switch(currentPresence) {
+    case "typing":
+      statusText = "⌨️ *Typing...* indicator";
+      break;
+    case "recording":
+      statusText = "🎙️ *Recording audio...* indicator";
+      break;
+    case "online":
+      statusText = "🟢 *Online* presence";
+      break;
+    case "false":
+    default:
+      statusText = "⚫ *Offline/Unavailable* (no presence)";
+      break;
+  }
+  
+  return reply(`*📱 Bot Presence Status*\n\nCurrent: ${statusText}\n\n*Available Commands:*\n• .autotyping on/off\n• .alwaysonline on/off\n• .autorecording on/off`);
+});
+
+// ANTI-STATUS-MENTION
+cmd({
+  pattern: "antistatus",
+  react: "🚫",
+  alias: ["anti-status", "antimention", "anti-status-mention"],
+  desc: "Enable or disable anti-status-mention feature in groups\nModes: on/off/warn/delete",
+  category: "group",
+  filename: __filename
+}, async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isCreator, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply }) => {
+  try {
+    if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+    if (args[0] === "on") {
+      config.ANTI_STATUS_MENTION = "true";
+      process.env.ANTI_STATUS_MENTION = "true";
+      await reply("🚫 *Anti-status-mention feature is now ENABLED*\n\nStatus mentions will be automatically deleted.");
+    } else if (args[0] === "off") {
+      config.ANTI_STATUS_MENTION = "false";
+      process.env.ANTI_STATUS_MENTION = "false";
+      await reply("🚫 *Anti-status-mention feature is now DISABLED*\n\nStatus mentions will be allowed.");
+    } else if (args[0] === "warn") {
+      config.ANTI_STATUS_MENTION = "warn";
+      process.env.ANTI_STATUS_MENTION = "warn";
+      await reply("⚠️ *Anti-status-mention feature is set to WARN mode*\n\nUsers will be warned when sending status mentions.");
+    } else if (args[0] === "delete") {
+      config.ANTI_STATUS_MENTION = "delete";
+      process.env.ANTI_STATUS_MENTION = "delete";
+      await reply("🗑️ *Anti-status-mention feature is set to DELETE mode*\n\nStatus mentions will be automatically deleted.");
+    } else {
+      await reply(`*Invalid input! Use one of the following modes:*\n\n• *on* - Enable anti-status-mention (delete mentions)\n• *off* - Disable anti-status-mention\n• *warn* - Warn users when sending status mentions\n• *delete* - Delete status mentions automatically\n\n*Example:* .antistatus warn`);
+    }
+  } catch (error) {
+    return reply(`*An error occurred while processing your request.*\n\n_Error:_ ${error.message}`);
   }
 });
 
