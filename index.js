@@ -212,7 +212,7 @@ async function connectToWA() {
         }
     };
 
-    await conn.sendMessage(conn.user.id.split(':')[0] + "@s.whatsapp.net", startMess, { disappearingMessagesInChat: true, ephemeralExpiration: 300 });
+    await conn.sendMessage(conn.user.id.split(':')[0] + "@s.whatsapp.net", startMess, { disappearingMessagesInChat: true, ephemeralExpiration: 100 });
     
   } catch (sendError) {
     console.error("[ ❌ ] Failed to send connection notice", { Error: sendError.message });
