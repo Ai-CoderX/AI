@@ -61,7 +61,9 @@ module.exports = {
   AUTO_STICKER: settings.AUTO_STICKER || process.env.AUTO_STICKER || "false",
 
   // ===== MEDIA & AUTOMATION =====
-  PRESENCE: settings.PRESENCE || process.env.PRESENCE || "false",
+  AUTO_TYPING: settings.AUTO_TYPING || process.env.AUTO_TYPING || "false",
+  AUTO_RECORDING: settings.AUTO_RECORDING || process.env.AUTO_RECORDING || "false",
+  ALWAYS_ONLINE: settings.ALWAYS_ONLINE || process.env.ALWAYS_ONLINE || "true",
   MENTION_REPLY: settings.MENTION_REPLY || process.env.MENTION_REPLY || "false",
   MENU_IMAGE_URL: settings.MENU_IMAGE_URL || process.env.MENU_IMAGE_URL || "https://files.catbox.moe/7zfdcq.jpg",
   MENU_AUDIO_URL: settings.MENU_AUDIO_URL || process.env.MENU_AUDIO_URL || 'https://files.catbox.moe/xv42ur.mp3',
@@ -76,6 +78,8 @@ module.exports = {
   ANTI_DELETE_PATH: process.env.ANTI_DELETE_PATH || "inbox",
   ANTI_BOT: settings.ANTI_BOT || process.env.ANTI_BOT || "false",
   PM_BLOCKER: settings.PM_BLOCKER || process.env.PM_BLOCKER || "false",
+  ANTI_MENTION: settings.ANTI_MENTION || process.env.ANTI_MENTION || "false",
+  ANTI_STATUS_MENTION: settings.ANTI_STATUS_MENTION || process.env.ANTI_STATUS_MENTION || "false",
 
   // ===== BOT BEHAVIOR & APPEARANCE =====
   DESCRIPTION: process.env.DESCRIPTION || "*© ᴘᴏᴡᴇʀᴇᴅ ʙʏ Jᴀᴡᴀᴅ TᴇᴄʜX*",
@@ -86,5 +90,4 @@ module.exports = {
   ADMIN_ACTION: settings.ADMIN_ACTION || process.env.ADMIN_ACTION || "false",
   VERSION: process.env.VERSION || "9.0.0 Bᴇᴛᴀ",
   TIMEZONE: settings.TIMEZONE || process.env.TIMEZONE || "Asia/Karachi",
- };        
-  
+ };
