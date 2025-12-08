@@ -32,29 +32,17 @@
       
     },
 
+  "PRESENCE": {
+    "description": "Sets the presence type for the bot when responding to messages. Options: 'typing', 'recording', 'online', or any other value for offline/unavailable",
+    "required": false,
+    "value": "typing"
+  },
+
      "ANTI_DELETE": {
       "description": "set true for show deleted messages.",
       "required": false,
       "value": "true"  
     },
-    
-    "AUTO_TYPING": {
-      "description": "Auto typing indicator: 'true' (always), 'false' (disabled), 'group' (groups only), 'inbox' (inbox only)",
-  "required": false,
-  "value": "false"
-},
-
-    "AUTO_RECORDING": {
-  "description": "Auto recording indicator: 'true' (always), 'false' (disabled), 'group' (groups only), 'inbox' (inbox only)",
-      "required": false,
-      "value": "false"
-},
-
-    "ALWAYS_ONLINE": {
-     "description": "Make bot always show online status: 'true' (always online), 'false' (show offline)",
-      "required": false,
-      "value": "false"
-}, 
    
     "AUTO_REPLY": {
       "description": "Make it true if you want automatic reply.",
@@ -146,10 +134,17 @@
      
  
     "AUTO_REACT": {
-      "description": "AutoReact mode: 'true' (all), 'group' (groups only), 'inbox' (PM only), 'custom' (custom emojis), 'owner' (bot's own msgs), 'false' (disabled)",
+      "description": "Make it true if you want react on every message.",
       "required": false,
       "value": "false"
-    },  
+    },
+    
+    "CUSTOM_REACT": {
+      "description": "Make it true if you want custom reactions.",
+      "required": false,
+      "value": "false"
+      
+    },   
     
     "CUSTOM_REACT_EMOJIS": {
       "description": "put here custom react react emojis.",
