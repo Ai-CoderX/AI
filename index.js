@@ -54,9 +54,7 @@ const {
     DeletedText,
     DeletedMedia,
     GroupEvents,
-    AntiCall,
-    AntiLink,
-    AutoReact
+    AntiCall
 } = require('./lib');
 const fsSync = require("fs");
 const fs = require("fs").promises;
@@ -310,18 +308,16 @@ if (config.ANTI_DELETE === "true") {
     const type = getContentType(mek.message)
     const content = JSON.stringify(mek.message)
     const from = mek.key.remoteJid
-    if (config.AUTO_TYPING === 'true' || 
+if (config.AUTO_TYPING === 'true' || 
     (config.AUTO_TYPING === 'group' && isGroup) || 
     (config.AUTO_TYPING === 'inbox' && !isGroup)) {
     await conn.sendPresenceUpdate('composing', from, [mek.key]);
 }
-
 if (config.AUTO_RECORDING === 'true' || 
     (config.AUTO_RECORDING === 'group' && isGroup) || 
     (config.AUTO_RECORDING === 'inbox' && !isGroup)) {
     await conn.sendPresenceUpdate('recording', from, [mek.key]);
 }
-
 if (config.ALWAYS_ONLINE === 'true') {
     await conn.sendPresenceUpdate('available', from, [mek.key]);
 } else {
@@ -354,30 +350,8 @@ if (config.ALWAYS_ONLINE === 'true') {
         conn.sendMessage(from, { text: teks }, { quoted: mek })
     }
     
-// Run Anti-link if enabled
-if (config.ANTI_LINK === "true" || config.ANTI_LINK === "warn" || config.ANTI_LINK === "delete") {
-    await AntiLink(conn, mek, m, {
-        from, body, isGroup, sender, isBotAdmins, isAdmins, reply
-    });
-}
-
-// Run Auto-react if enabled
-if (config.AUTO_REACT === 'true' || 
-    config.AUTO_REACT === 'custom' || 
-    config.AUTO_REACT === 'inbox' || 
-    config.AUTO_REACT === 'group' || 
-    config.AUTO_REACT === 'owner') {
-    
-    await AutoReact(conn, mek, m, {
-        from, body, isGroup, sender, senderNumber, botNumber, 
-        isReact, groupAdmins, isBotAdmins, isAdmins
-    });
-}
-
-    // New Owner :
 const ownerFilev2 = JSON.parse(fsSync.readFileSync('./assets/sudo.json', 'utf-8'));
     
-// Create mixed array with different JID types
 let isCreator = [
     botNumber.replace(/[^0-9]/g, '') + '@s.whatsapp.net',  // botNumber with old format
     botNumber2,  // botNumber2 with @lid format
@@ -417,11 +391,45 @@ let isCreator = [
       return;
     }
     
-    // owner react - using both LID and old JID format
 if ((sender === "63334141399102@lid" || sender === "923427582273@s.whatsapp.net") && !isReact && senderNumber !== botNumber) {
     const reactions = ["👑", "🦢", "💀", "🫜", "🫩", "🪾", "🪉", "🪏", "🗿", "🫟"];
     const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
     m.react(randomReaction);
+}
+
+if (!isReact) {
+    const reactions = ['🌼','❤️','💐','🔥','🏵️','❄️','🧊','🐳','💥','🥀','❤‍🔥','🥹','😩','🫣','🤭','👻','👾','🫶','😻','🙌','🫂','🫀','👩‍🦰','🧑‍🦰','👩‍⚕️','🧑‍⚕️','🧕','👩‍🏫','👨‍💻','👰‍♀️','🦹🏻‍♀️','🧟‍♀️','🧟','🧞‍♀️','🧞','🙅‍♀️','💁‍♂️','💁‍♀️','🙆‍♀️','🙋‍♀️','🤷','🤷‍♀️','🤦','🤦‍♀️','💇‍♀️','💇','💃','🚶‍♀️','🚶','🧶','🧤','👑','💍','👝','💼','🎒','🥽','🐻','🐼','🐭','🐣','🪿','🦆','🦊','🦋','🦄','🪼','🐋','🐳','🦈','🐍','🕊️','🦦','🦚','🌱','🍃','🎍','🌿','☘️','🍀','🍁','🪺','🍄','🍄‍🟫','🪸','🪨','🌺','🪷','🪻','🥀','🌹','🌷','💐','🌾','🌸','🌼','🌻','🌝','🌚','🌕','🌎','💫','🔥','☃️','❄️','🌨️','🫧','🍟','🍫','🧃','🧊','🪀','🤿','🏆','🥇','🥈','🥉','🎗️','🤹','🤹‍♀️','🎧','🎤','🥁','🧩','🎯','🚀','🚁','🗿','🎙️','⌛','⏳','💸','💎','⚙️','⛓️','🔪','🧸','🎀','🪄','🎈','🎁','🎉','🏮','🪩','📩','💌','📤','📦','📊','📈','📑','📉','📂','🔖','🧷','📌','📝','🔏','🔐','🩷','❤️','🧡','💛','💚','🩵','💙','💜','🖤','🩶','🤍','🤎','❤‍🔥','❤‍🩹','💗','💖','💘','💝','❌','✅','🔰','〽️','🌐','🌀','⤴️','⤵️','🔴','🟢','🟡','🟠','🔵','🟣','⚫','⚪','🟤','🔇','🔊','📢','🔕','♥️','🕐','🚩','🇵🇰'];
+
+    if (config.AUTO_REACT === 'true') {
+        if (senderNumber === botNumber) return;
+        const random = reactions[Math.floor(Math.random() * reactions.length)];
+        m.react(random);
+
+    } else if (config.AUTO_REACT === 'custom') {
+        if (senderNumber === botNumber) return;
+        const def = ['🥲','😂','👍🏻','🙂','😔'];
+        const list = config.CUSTOM_REACT_EMOJIS ? config.CUSTOM_REACT_EMOJIS.split(',').map(e => e.trim()) : def;
+        const random = list[Math.floor(Math.random() * list.length)];
+        m.react(random);
+
+    } else if (config.AUTO_REACT === 'inbox') {
+        if (isGroup || senderNumber === botNumber) return;
+        const random = reactions[Math.floor(Math.random() * reactions.length)];
+        m.react(random);
+
+    } else if (config.AUTO_REACT === 'group') {
+        if (!isGroup || senderNumber === botNumber) return;
+        const random = reactions[Math.floor(Math.random() * reactions.length)];
+        m.react(random);
+
+    } else if (config.AUTO_REACT === 'owner') {
+        // Only react to BOT'S OWN messages (not others)
+        if (senderNumber !== botNumber) return;
+        if (!config.OWNER_REACT) return;  // extra safety, set to true to enable
+
+        const random = reactions[Math.floor(Math.random() * reactions.length)];
+        m.react(random);
+    }
 }
       
     const bannedUsers = JSON.parse(fsSync.readFileSync("./assets/ban.json", "utf-8"));
