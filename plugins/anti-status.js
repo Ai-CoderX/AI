@@ -73,7 +73,7 @@ cmd({
             
             await conn.sendMessage(from, { delete: m.key });
             await conn.sendMessage(from, {
-              text: `*⚠️ @${sender.split('@')[0]}, replying to status mentions is not allowed.*\n*This is your warning. Next time you will be removed.*\n\n⚠️ *Note:* Warnings reset after 1 hour`
+              text: `*⚠️ @${sender.split('@')[0]}, replying to status mentions is not allowed.*\n*This is your warning. Next time you will be removed.*`
             });
             
           } else {
