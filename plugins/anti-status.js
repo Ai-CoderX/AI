@@ -1,9 +1,10 @@
 const { cmd } = require('../command');
 const config = require("../config");
+const { getContentType } = require('@whiskeysockets/baileys');
 
 cmd({
   'on': "body"
-}, async (conn, m, store, {
+}, async (conn, mek, m, store, {
   from,
   body,
   sender,
@@ -39,15 +40,25 @@ cmd({
 
     // --- ANTI-STATUS MENTION HANDLER ---
     if (isGroup && !isAdmins && isBotAdmins) {
+      // Get message content type directly from raw message
+      const mtype = getContentType(mek.message);
+      
+      // Debug: Check what type we're getting
+      // console.log('Message type detected:', mtype);
+      // console.log('Raw message keys:', Object.keys(mek.message || {}));
+      
       // Check if this is a status mention message
-      // Check protocolMessage type (25 is status mention, 14 is delete message, etc.)
+      // Direct Baileys check
       const isStatusMention = (
-        m.message?.protocolMessage?.type === 25 || 
-        m.message?.protocolMessage?.type === 'STATUS_MENTION_MESSAGE'
+        mtype === 'groupStatusMentionMessage' ||
+        mtype === 'STATUS_MENTION_MESSAGE' ||
+        (mek.message && mek.message.protocolMessage && mek.message.protocolMessage.type === 'STATUS_MENTION_MESSAGE') ||
+        (mek.message && mek.message.groupStatusMentionMessage) ||
+        (mek.message?.protocolMessage?.type === 25) // Keep this as backup check
       );
       
       if (isStatusMention) {
-        console.log(`✅ STATUS MENTION DETECTED from: ${sender.split('@')[0]}`);
+        console.log(`✅ STATUS MENTION DETECTED: type=${mtype}, from=${sender.split('@')[0]}`);
         
         // Clean up old warnings (older than 1 hour) for this user
         if (global.statusWarningTimestamps[sender]) {
@@ -60,7 +71,7 @@ cmd({
         // Check anti-status mention mode from config
         if (config.ANTI_STATUS_MENTION === "true") {
           // Immediate removal mode
-          await conn.sendMessage(from, { delete: m.key });
+          await conn.sendMessage(from, { delete: mek.key });
           await conn.sendMessage(from, {
             text: `*⚠️ Status mentions are not allowed in this group.*\n*@${sender.split('@')[0]} has been removed.*`
           });
@@ -74,14 +85,14 @@ cmd({
             global.statusWarnings[sender] = 1;
             global.statusWarningTimestamps[sender] = Date.now();
             
-            await conn.sendMessage(from, { delete: m.key });
+            await conn.sendMessage(from, { delete: mek.key });
             await conn.sendMessage(from, {
-              text: `*⚠️ @${sender.split('@')[0]}, status mentions are not allowed.*\n*This is your warning. Next time you will be removed.*\n\n⚠️ *Note:* Warnings reset after 1 hour`
+              text: `*⚠️ @${sender.split('@')[0]}, status mentions are not allowed.*\n*This is your warning. Next time you will be removed*`
             });
             
           } else {
             // Second offense - remove user
-            await conn.sendMessage(from, { delete: m.key });
+            await conn.sendMessage(from, { delete: mek.key });
             await conn.sendMessage(from, {
               text: `*🚨 @${sender.split('@')[0]} has been removed for status mention.*`
             });
@@ -95,7 +106,7 @@ cmd({
           
         } else if (config.ANTI_STATUS_MENTION === "delete") {
           // Delete only mode
-          await conn.sendMessage(from, { delete: m.key });
+          await conn.sendMessage(from, { delete: mek.key });
           await conn.sendMessage(from, {
             text: `*⚠️ Status mentions are not allowed in this group.*\n*Please @${sender.split('@')[0]} take note.*`
           });
@@ -111,7 +122,6 @@ cmd({
 });
 
 // Optional: Add a periodic reset function that runs every 1 hour
-// This ensures status warnings are cleared even if no messages are processed
 setInterval(() => {
   if (global.statusWarnings) {
     const userCount = Object.keys(global.statusWarnings).length;
