@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const { cmd } = require("../command");
 
-const OWNER_PATH = path.join(__dirname, "../assets/sudo.json");
+const OWNER_PATH = path.join(__dirname, "../lib/sudo.json");
 
 // Ensure the sudo.json file exists
 const ensureOwnerFile = () => {
