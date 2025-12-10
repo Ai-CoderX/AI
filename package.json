@@ -9,7 +9,7 @@
     "restart": "pm2 restart KHAN-MD"
   },
   "dependencies": {
-    "@whiskeysockets/baileys": "npm:whaileys",
+    "@whiskeysockets/baileys": "7.0.0-rc.9",
     "@adiwajshing/keyed-db": "^0.2.4",
     "@dark-yasiya/yt-dl.js": "1.0.5",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
@@ -48,7 +48,7 @@
     "gtts": "^0.2.1",
     "sqlite3": "^5.1.7",
     "human-readable": "^0.2.1",
-    "jimp": "^0.16.1",
+    "jimp": "latest",
     "libphonenumber-js": "^1.11.18",
     "libsignal": "^2.0.1",
     "mumaker": "^2.0.0",
