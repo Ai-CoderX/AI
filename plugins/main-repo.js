@@ -63,7 +63,7 @@ async (conn, mek, m, { from, reply }) => {
         }, { quoted: mek });
 
         // Send audio voice message after sending repo info
-        const audioPath = path.join(__dirname, '../assets/menux.m4a');
+        const audioPath = path.join(__dirname, '../lib/menux.m4a');
         
         if (fs.existsSync(audioPath)) {
             await conn.sendMessage(from, {
