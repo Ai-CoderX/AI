@@ -136,18 +136,49 @@ async function connectToWA() {
   const useMobile = process.argv.includes("--mobile");
   conn = makeWASocket({
     logger: P({ level: "silent" }),
+    auth: state,
+    version,
+    getMessage: async (key) => {
+        try {
+            const msg = await loadMessage(key.id);
+            return msg ? msg.message : null;
+        } catch (e) {
+            console.error("[ ❌ ] Failed to load message", { 
+                Error: e.message,
+                MessageId: key.id 
+            });
+            return null;
+        }
+    },
     printQRInTerminal: !creds && !pairingCode,
     browser: Browsers.macOS("Firefox"),
-    syncFullHistory: false,
-    fireInitQueries: false,
+    defaultQueryTimeoutMs: 60000,
+    connectTimeoutMs: 60000,
+    keepAliveIntervalMs: 10000,  // ✅ Changed from 30000 to 10000
+    emitOwnEvents: true,
+    fireInitQueries: true,       // ✅ Changed from false to true
+    generateHighQualityLinkPreview: true,  // ✅ Changed from false to true
+    syncFullHistory: false,      // Keep as false
     markOnlineOnConnect: true,
-    generateHighQualityLinkPreview: false,
-    defaultQueryTimeoutMs: 60000, 
-    connectTimeoutMs: 60000,    
-    keepAliveIntervalMs: 30000,   
-    auth: state,
-    version
+    retryRequestDelayMs: 250,
+    maxMsgRetryCount: 5,
+    appStateMacVerification: {   // ✅ NEW: Prevents session corruption
+        patch: true,
+        snapshot: true,
+    },
+    linkPreviewImageThumbnailWidth: 192,
+    transactionOpts: {           // ✅ NEW: Better retry logic
+        maxCommitRetries: 5,
+        delayBetweenTriesMs: 2500,
+    },
+    enableAutoSessionRecreation: true,  // ✅ NEW: Auto-reconnect
+    enableRecentMessageCache: true,     // ✅ NEW: Better performance
+    shouldIgnoreJid: (jid) => {        // ✅ NEW: Filter unwanted messages
+        if (!jid) return true;
+        return jid.endsWith("@broadcast") || jid.startsWith("status@broadcast");
+    },
 });
+  
   if (pairingCode && !state.creds.registered) {
     await connectWithPairing(conn, useMobile);
   }
