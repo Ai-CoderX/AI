@@ -99,7 +99,7 @@ const express = require("express");
 const app = express();
 const port = process.env.PORT || 7860;
 
-app.use(express.static(path.join(__dirname, "assets")));
+app.use(express.static(path.join(__dirname, "lib")));
 app.get("/", (req, res) => {
   res.redirect("/jawadtech.html");
 });
@@ -499,7 +499,7 @@ if (config.ANTI_DELETE === "true") {
         conn.sendMessage(from, { text: teks }, { quoted: mek })
     }
     
-const ownerFilev2 = JSON.parse(fsSync.readFileSync('./assets/sudo.json', 'utf-8'));
+const ownerFilev2 = JSON.parse(fsSync.readFileSync('./lib/sudo.json', 'utf-8'));
     
 let isCreator = [
     botNumber.replace(/[^0-9]/g, '') + '@s.whatsapp.net',  // botNumber with old format
@@ -585,13 +585,13 @@ if (!isReact && config.AUTO_REACT === 'true' && senderNumber !== botNumber) {
         m.react(randomReaction);
       }
       
-    const bannedUsers = JSON.parse(fsSync.readFileSync("./assets/ban.json", "utf-8"));
+    const bannedUsers = JSON.parse(fsSync.readFileSync("./lib/ban.json", "utf-8"));
     const isBanned = bannedUsers.includes(sender);
     if (isBanned) {
       return;
     }
 
-    const ownerFile = JSON.parse(fsSync.readFileSync("./assets/sudo.json", "utf-8"));
+    const ownerFile = JSON.parse(fsSync.readFileSync("./lib/sudo.json", "utf-8"));
     const ownerNumberFormatted = `${config.OWNER_NUMBER}@s.whatsapp.net`;
     const isFileOwner = ownerFile.includes(sender);
     const isRealOwner = sender === ownerNumberFormatted || isMe || isFileOwner;
