@@ -1,6 +1,5 @@
 const { cmd } = require('../command');
 const config = require("../config");
-const { getContentType } = require('@whiskeysockets/baileys');
 
 cmd({
   'on': "body"
@@ -14,27 +13,25 @@ cmd({
   reply
 }) => {
   try {
+    // Dynamically import Baileys
+    const baileys = await import('@whiskeysockets/baileys');
+    const { getContentType } = baileys;
+    
     // Initialize status warnings if not exists
     if (!global.statusWarnings) {
       global.statusWarnings = {};
     }
     
-    // Initialize warning timestamps for status warnings
-    if (!global.statusWarningTimestamps) {
-      global.statusWarningTimestamps = {};
-    }
-    
-    // Initialize lastResetTime for status warnings if not exists
+    // Initialize last reset time if not exists
     if (!global.lastStatusWarningReset) {
       global.lastStatusWarningReset = Date.now();
     }
     
-    // Reset status warnings every 1 hour (60 * 60 * 1000 = 3,600,000 ms)
-    const ONE_HOUR = 60 * 60 * 1000;
+    // COMPLETE RESET ALL WARNINGS EVERY 1 HOUR
+    const ONE_HOUR = 60 * 60 * 1000; // 3,600,000 ms
     if (Date.now() - global.lastStatusWarningReset > ONE_HOUR) {
-      console.log('Resetting all status warnings after 1 hour...');
-      global.statusWarnings = {};
-      global.statusWarningTimestamps = {};
+      console.log('🔄 Resetting ALL status warnings after 1 hour...');
+      global.statusWarnings = {}; // Clear ALL warnings
       global.lastStatusWarningReset = Date.now();
     }
 
@@ -43,30 +40,17 @@ cmd({
       // Get message content type directly from raw message
       const mtype = getContentType(mek.message);
       
-      // Debug: Check what type we're getting
-      // console.log('Message type detected:', mtype);
-      // console.log('Raw message keys:', Object.keys(mek.message || {}));
-      
       // Check if this is a status mention message
-      // Direct Baileys check
       const isStatusMention = (
         mtype === 'groupStatusMentionMessage' ||
         mtype === 'STATUS_MENTION_MESSAGE' ||
         (mek.message && mek.message.protocolMessage && mek.message.protocolMessage.type === 'STATUS_MENTION_MESSAGE') ||
         (mek.message && mek.message.groupStatusMentionMessage) ||
-        (mek.message?.protocolMessage?.type === 25) // Keep this as backup check
+        (mek.message?.protocolMessage?.type === 25)
       );
       
       if (isStatusMention) {
         console.log(`✅ STATUS MENTION DETECTED: type=${mtype}, from=${sender.split('@')[0]}`);
-        
-        // Clean up old warnings (older than 1 hour) for this user
-        if (global.statusWarningTimestamps[sender]) {
-          if (Date.now() - global.statusWarningTimestamps[sender] > ONE_HOUR) {
-            delete global.statusWarnings[sender];
-            delete global.statusWarningTimestamps[sender];
-          }
-        }
         
         // Check anti-status mention mode from config
         if (config.ANTI_STATUS_MENTION === "true") {
@@ -83,7 +67,6 @@ cmd({
           if (!global.statusWarnings[sender]) {
             // First warning
             global.statusWarnings[sender] = 1;
-            global.statusWarningTimestamps[sender] = Date.now();
             
             await conn.sendMessage(from, { delete: mek.key });
             await conn.sendMessage(from, {
@@ -98,9 +81,8 @@ cmd({
             });
             await conn.groupParticipantsUpdate(from, [sender], 'remove');
             
-            // Reset this user's warnings after removal
+            // Remove this user's warning after removal
             delete global.statusWarnings[sender];
-            delete global.statusWarningTimestamps[sender];
           }
           return;
           
@@ -117,19 +99,21 @@ cmd({
     
   } catch (error) {
     console.error("Anti-status mention error:", error);
-    await conn.sendMessage(from, { text: "❌ An error occurred while processing the message." });
+    try {
+      await conn.sendMessage(from, { text: "❌ An error occurred while processing the message." });
+    } catch (sendError) {
+      console.error("Failed to send error message:", sendError);
+    }
   }
 });
 
-// Optional: Add a periodic reset function that runs every 1 hour
-setInterval(() => {
-  if (global.statusWarnings) {
-    const userCount = Object.keys(global.statusWarnings).length;
-    if (userCount > 0) {
-      console.log(`Periodic reset: Clearing status warnings for ${userCount} user(s)`);
+// Periodic reset function that runs every 1 hour (as backup)
+if (typeof setInterval !== 'undefined') {
+  setInterval(() => {
+    if (global.statusWarnings && Object.keys(global.statusWarnings).length > 0) {
+      console.log(`⏰ Periodic reset: Clearing ALL status warnings`);
       global.statusWarnings = {};
-      if (global.statusWarningTimestamps) global.statusWarningTimestamps = {};
     }
-    global.lastStatusWarningReset = Date.now();
-  }
-}, 60 * 60 * 1000); // 1 hour
+    if (global.lastStatusWarningReset) global.lastStatusWarningReset = Date.now();
+  }, 60 * 60 * 1000); // 1 hour
+}
