@@ -121,7 +121,7 @@ ${menuOptions}*╰───────────────────⊷*
         }, { quoted: mek });
 
         // Send audio voice message
-        const audioPath = path.join(__dirname, '../assets/menux.m4a');
+        const audioPath = path.join(__dirname, '../lib/menux.m4a');
         if (fs.existsSync(audioPath)) {
             await conn.sendMessage(from, {
                 audio: { url: audioPath },
