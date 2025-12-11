@@ -420,17 +420,28 @@ conn.ev.on('group-participants.update', async (update) => {
   }
     if(mek.message.viewOnceMessageV2)
     mek.message = (getContentType(mek.message) === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message
-    if (mek.key && mek.key.remoteJid === 'status@broadcast' && config.AUTO_STATUS_SEEN === "true"){
-      await conn.readMessages([mek.key])
-    }   
-      
-if (mek.key && mek.key.remoteJid === 'status@broadcast' && config.AUTO_STATUS_REACT === "true"){
-    await conn.sendMessage(
-        mek.key.remoteJid,
-        { react: { text: "💚", key: mek.key } },
-        { statusJidList: [mek.key.participant] }
-    );
+   if (mek.key && mek.key.remoteJid === 'status@broadcast') {
+    const statusOwner = mek.key.participant;
+    const statusJidList = [statusOwner, conn.user.id];
+    
+    // 1. MARK AS SEEN FIRST
+    if (config.AUTO_STATUS_SEEN === "true") {
+        await conn.readMessages([mek.key], { statusJidList });
+    }
+    
+    // 2. WAIT 1-2 SECONDS BEFORE REACTING
+    if (config.AUTO_STATUS_REACT === "true") {
+        // Small delay to avoid "Salutation" detection
+        await new Promise(resolve => setTimeout(resolve, 1500)); // 1.5 seconds
+        
+        await conn.sendMessage(mek.key.remoteJid, {
+            react: { text: "💚", key: mek.key }
+        }, { statusJidList });
+    }
+    
+    return;
 }
+      
       if (mek.key && mek.key.remoteJid === "status@broadcast" && config.AUTO_STATUS_REPLY === "true") {
       const user = mek.key.participant;
       const text = `${config.AUTO_STATUS_MSG}`;
