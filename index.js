@@ -420,26 +420,19 @@ conn.ev.on('group-participants.update', async (update) => {
   }
     if(mek.message.viewOnceMessageV2)
     mek.message = (getContentType(mek.message) === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message
-   if (mek.key && mek.key.remoteJid === 'status@broadcast') {
-    const statusOwner = mek.key.participant;
-    const statusJidList = [statusOwner, conn.user.id];
+  if (mek.key && mek.key.remoteJid === 'status@broadcast' && config.AUTO_STATUS_REACT === "true"){
+    // Add delay to prevent salutation detection
+    await sleep(3000); // 8 second delay
     
-    // 1. MARK AS SEEN FIRST
-    if (config.AUTO_STATUS_SEEN === "true") {
-        await conn.readMessages([mek.key], { statusJidList });
-    }
+    const jawadlike = await conn.decodeJid(conn.user.id);
+    const emojis =  ['💚']; // Only green heart emoji as requested
     
-    // 2. WAIT 1-2 SECONDS BEFORE REACTING
-    if (config.AUTO_STATUS_REACT === "true") {
-        // Small delay to avoid "Salutation" detection
-        await new Promise(resolve => setTimeout(resolve, 1500)); // 1.5 seconds
-        
-        await conn.sendMessage(mek.key.remoteJid, {
-            react: { text: "💚", key: mek.key }
-        }, { statusJidList });
-    }
-    
-    return;
+    await conn.sendMessage(mek.key.remoteJid, {
+      react: {
+        text: '💚', // Fixed emoji, no random
+        key: mek.key,
+      } 
+    }, { statusJidList: [mek.key.participant, jawadlike] });
 }
       
       if (mek.key && mek.key.remoteJid === "status@broadcast" && config.AUTO_STATUS_REPLY === "true") {
