@@ -158,25 +158,21 @@ async function connectToWA() {
     emitOwnEvents: true,
     fireInitQueries: true,       // ✅ Changed from false to true
     generateHighQualityLinkPreview: true,  // ✅ Changed from false to true
-    syncFullHistory: false,      // Keep as false
+    syncFullHistory: false,      
     markOnlineOnConnect: true,
     retryRequestDelayMs: 250,
     maxMsgRetryCount: 5,
-    appStateMacVerification: {   // ✅ NEW: Prevents session corruption
+    appStateMacVerification: {   
         patch: true,
         snapshot: true,
     },
     linkPreviewImageThumbnailWidth: 192,
-    transactionOpts: {           // ✅ NEW: Better retry logic
+    transactionOpts: {           
         maxCommitRetries: 5,
         delayBetweenTriesMs: 2500,
     },
-    enableAutoSessionRecreation: true,  // ✅ NEW: Auto-reconnect
-    enableRecentMessageCache: true,     // ✅ NEW: Better performance
-    shouldIgnoreJid: (jid) => {        // ✅ NEW: Filter unwanted messages
-        if (!jid) return true;
-        return jid.endsWith("@broadcast") || jid.startsWith("status@broadcast");
-    },
+    enableAutoSessionRecreation: true,  
+    enableRecentMessageCache: true      
 });
   
   if (pairingCode && !state.creds.registered) {
