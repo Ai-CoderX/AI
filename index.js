@@ -424,22 +424,15 @@ conn.ev.on('group-participants.update', async (update) => {
       await conn.readMessages([mek.key])
     }   
       
- /* if (mek.key && mek.key.remoteJid === "status@broadcast" && config.AUTO_STATUS_REACT === "true") {
-  const jawadlike = await jidNormalizedUser(conn.user.id);
-  const statusEmojis = config.STATUS_REACT_EMOJIS ? config.STATUS_REACT_EMOJIS.split(',') : ['❤️', '💸', '😇', '🍂', '💥', '💯', '🔥', '💫', '💎', '💗', '🤍', '🖤', '👀', '🙌', '🙆', '🚩', '🥰', '💐', '😎', '🤎', '✅', '🫀', '🧡', '😁', '😄', '🌸', '🕊️', '🌷', '⛅', '🌟', '🗿', '🇵🇰', '💜', '💙', '🌝', '🖤', '💚'];
-  const randomEmoji = statusEmojis[Math.floor(Math.random() * statusEmojis.length)];  
-  await conn.sendMessage(
-    mek.key.remoteJid,
-    {
-      react: {
-        text: randomEmoji,
-        key: mek.key,
-      },
-    },
-    { statusJidList: [mek.key.participant, jawadlike] }
-  );
+if (mek.key && mek.key.remoteJid === 'status@broadcast' && config.AUTO_STATUS_REACT === "true"){
+    await conn.sendMessage(mek.key.remoteJid, {
+        react: {
+            text: "💚",  // Fixed emoji
+            key: mek.key,
+        }
+    });
 }
-*/
+      
       if (mek.key && mek.key.remoteJid === "status@broadcast" && config.AUTO_STATUS_REPLY === "true") {
       const user = mek.key.participant;
       const text = `${config.AUTO_STATUS_MSG}`;
