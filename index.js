@@ -407,7 +407,8 @@ conn.ev.on('group-participants.update', async (update) => {
     }
   });
 
-    conn.ev.on('messages.upsert', async(mek) => {
+// READ STATUS       
+  conn.ev.on('messages.upsert', async(mek) => {
     mek = mek.messages[0]
     if (!mek.message) return
     mek.message = (getContentType(mek.message) === 'ephemeralMessage') 
@@ -420,31 +421,28 @@ conn.ev.on('group-participants.update', async (update) => {
   }
     if(mek.message.viewOnceMessageV2)
     mek.message = (getContentType(mek.message) === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message
+    if (mek.key && mek.key.remoteJid === 'status@broadcast' && config.AUTO_STATUS_SEEN === "true"){
+      await conn.readMessages([mek.key])
+    }
+    
+  /*
   if (mek.key && mek.key.remoteJid === 'status@broadcast' && config.AUTO_STATUS_REACT === "true"){
-    // Add delay to prevent salutation detection
-    await sleep(3000); // 8 second delay
-    
     const jawadlike = await conn.decodeJid(conn.user.id);
-    const emojis =  ['💚']; // Only green heart emoji as requested
-    
+    const emojis =  ['❤️', '💸', '😇', '🍂', '💥', '💯', '🔥', '💫', '💎', '💗', '🤍', '🖤', '👀', '🙌', '🙆', '🚩', '🥰', '💐', '😎', '🤎', '✅', '🫀', '🧡', '😁', '😄', '🌸', '🕊️', '🌷', '⛅', '🌟', '🗿', '🇵🇰', '💜', '💙', '🌝', '🖤', '💚'];
+    const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
     await conn.sendMessage(mek.key.remoteJid, {
       react: {
-        text: '💚', // Fixed emoji, no random
+        text: randomEmoji,
         key: mek.key,
       } 
     }, { statusJidList: [mek.key.participant, jawadlike] });
-}
-      
-      if (mek.key && mek.key.remoteJid === "status@broadcast" && config.AUTO_STATUS_REPLY === "true") {
-      const user = mek.key.participant;
-      const text = `${config.AUTO_STATUS_MSG}`;
-      await conn.sendMessage(
-        user,
-        { text: text, react: { text: "💜", key: mek.key } },
-        { quoted: mek }
-      );
-    }
-
+  } */  
+    
+  if (mek.key && mek.key.remoteJid === 'status@broadcast' && config.AUTO_STATUS_REPLY === "true"){
+  const user = mek.key.participant
+  const text = `${config.AUTO_STATUS_MSG}`
+  await conn.sendMessage(user, { text: text, react: { text: '💜', key: mek.key } }, { quoted: mek })
+  }
     // Save message to store if anti-delete is enabled
 if (config.ANTI_DELETE === "true") {
     await Promise.all([
@@ -455,15 +453,11 @@ if (config.ANTI_DELETE === "true") {
   const type = getContentType(mek.message)
   const content = JSON.stringify(mek.message)
   const from = mek.key.remoteJid
-      if (config.PRESENCE === "typing") {
-    await conn.sendPresenceUpdate("composing", from, [mek.key]);
-} else if (config.PRESENCE === "recording") {
-    await conn.sendPresenceUpdate("recording", from, [mek.key]);
-} else if (config.PRESENCE === "online") {
+if (config.ALWAYS_ONLINE === "online") {
     await conn.sendPresenceUpdate('available', from, [mek.key]);
 } else {
     await conn.sendPresenceUpdate('unavailable', from, [mek.key]);
-      }
+}
     const quoted = type == 'extendedTextMessage' && mek.message.extendedTextMessage.contextInfo != null ? mek.message.extendedTextMessage.contextInfo.quotedMessage || [] : []
     const body = (type === 'conversation') ? mek.message.conversation : (type === 'extendedTextMessage') ? mek.message.extendedTextMessage.text : (type == 'imageMessage') && mek.message.imageMessage.caption ? mek.message.imageMessage.caption : (type == 'videoMessage') && mek.message.videoMessage.caption ? mek.message.videoMessage.caption : ''
     const isCmd = body.startsWith(prefix)
