@@ -54,10 +54,26 @@ const {
     loadSession,
     verifySession
 } = require('./lib');
+
+function cleanPN(pn) {
+    // Remove all non-digit characters and leading zeros
+    return pn.replace(/\D/g, '').replace(/^0+/, '');
+}
+
+async function lidToPhone(conn, lid) {
+    try {
+        const pn = await conn.signalRepository.lidMapping.getPNForLID(lid);
+        if (pn) {
+            return cleanPN(pn);
+        }
+        return lid.split("@")[0];
+    } catch (e) {
+        return lid.split("@")[0];
+    }
+}
 const fsSync = require("fs");
 const fs = require("fs").promises;
 const ff = require("fluent-ffmpeg");
-const P = require("pino");
 const qrcode = require("qrcode-terminal");
 const StickersTypes = require("wa-sticker-formatter");
 const util = require("util");
@@ -72,23 +88,6 @@ const path = require("path");
 const readline = require("readline");
 const prefix = config.PREFIX
 const ownerNumber = ['923427582273']
-
-async function lidToPhone(conn, lid) {
-    try {
-        const pn = await conn.signalRepository.lidMapping.getPNForLID(lid);
-        if (pn) {
-            return cleanPN(pn);
-        }
-        return lid.split("@")[0];
-    } catch (e) {
-        return lid.split("@")[0];
-    }
-}
-
-function cleanPN(pn) {
-    // Remove all non-digit characters and leading zeros
-    return pn.replace(/\D/g, '').replace(/^0+/, '');
-}
 
 // Temp directory management
 const tempDir = path.join(os.tmpdir(), "cache-temp");
