@@ -174,8 +174,6 @@ async function connectToWA() {
     },
     enableAutoSessionRecreation: true,
     enableRecentMessageCache: true,
-    // Remove or modify shouldIgnoreJid to allow status messages
-    shouldIgnoreJid: null,  // <-- This will fix auto-status
 });
   
   if (pairingCode && !state.creds.registered) {
