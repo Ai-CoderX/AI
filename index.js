@@ -94,24 +94,6 @@ const clearTempDir = () => {
 };
 setInterval(clearTempDir, 5 * 60 * 1000);
 
-//Lid Function 
-
-function cleanPN(pn) {
-    return pn.split(":")[0];
-}
-
-async function lidToPhone(conn, lid) {
-    try {
-        const pn = await conn.signalRepository.lidMapping.getPNForLID(lid);
-        if (pn) {
-            return cleanPN(pn);
-        }
-        return lid.split("@")[0];
-    } catch (e) {
-        return lid.split("@")[0];
-    }
-}
-
 // Express server
 const express = require("express");
 const app = express();
@@ -192,17 +174,8 @@ async function connectToWA() {
     },
     enableAutoSessionRecreation: true,
     enableRecentMessageCache: true,
-    shouldIgnoreJid: (jid) => {
-        if (!jid) return true;
-        
-        // Allow status updates (for auto-status-view feature)
-        if (jid === "status@broadcast") {
-            return false; // DO NOT ignore - let it through for auto-status
-        }
-        
-        // Only ignore other broadcasts
-        return jid.endsWith("@broadcast");
-    },
+    // Remove or modify shouldIgnoreJid to allow status messages
+    shouldIgnoreJid: null,  // <-- This will fix auto-status
 });
   
   if (pairingCode && !state.creds.registered) {
@@ -486,10 +459,19 @@ if (config.ANTI_DELETE === "true") {
     ]);
 }
 
-     const m = sms(conn, mek)
+  const m = sms(conn, mek)
   const type = getContentType(mek.message)
   const content = JSON.stringify(mek.message)
   const from = mek.key.remoteJid
+      if (config.PRESENCE === "typing") {
+    await conn.sendPresenceUpdate("composing", from, [mek.key]);
+} else if (config.PRESENCE === "recording") {
+    await conn.sendPresenceUpdate("recording", from, [mek.key]);
+} else if (config.PRESENCE === "online") {
+    await conn.sendPresenceUpdate('available', from, [mek.key]);
+} else {
+    await conn.sendPresenceUpdate('unavailable', from, [mek.key]);
+      }
     const quoted = type == 'extendedTextMessage' && mek.message.extendedTextMessage.contextInfo != null ? mek.message.extendedTextMessage.contextInfo.quotedMessage || [] : []
     const body = (type === 'conversation') ? mek.message.conversation : (type === 'extendedTextMessage') ? mek.message.extendedTextMessage.text : (type == 'imageMessage') && mek.message.imageMessage.caption ? mek.message.imageMessage.caption : (type == 'videoMessage') && mek.message.videoMessage.caption ? mek.message.videoMessage.caption : ''
     const isCmd = body.startsWith(prefix)
@@ -500,10 +482,7 @@ if (config.ANTI_DELETE === "true") {
     const text = args.join(' ')
     const isGroup = from.endsWith('@g.us')    
     const sender = mek.key.fromMe ? (conn.user.id.split(':')[0]+'@s.whatsapp.net' || conn.user.id) : (mek.key.participant || mek.key.remoteJid)
-    let senderNumber = sender.split('@')[0]
-    if (sender.includes('@lid')) {
-    senderNumber = await lidToPhone(conn, sender)
-}
+    const senderNumber = sender.split('@')[0]
     const botNumber = conn.user.id.split(':')[0]
     const pushname = mek.pushName || 'Sin Nombre'
     const isMe = botNumber.includes(senderNumber)
@@ -517,7 +496,7 @@ if (config.ANTI_DELETE === "true") {
     const isAdmins = isGroup ? groupAdmins.includes(sender) : false
     const isReact = m.message.reactionMessage ? true : false
     const reply = (teks) => {
-    conn.sendMessage(from, { text: teks }, { quoted: mek })
+        conn.sendMessage(from, { text: teks }, { quoted: mek })
     }
     
 const ownerFilev2 = JSON.parse(fsSync.readFileSync('./lib/sudo.json', 'utf-8'));
