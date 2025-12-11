@@ -54,26 +54,10 @@ const {
     loadSession,
     verifySession
 } = require('./lib');
-
-function cleanPN(pn) {
-    // Remove all non-digit characters and leading zeros
-    return pn.replace(/\D/g, '').replace(/^0+/, '');
-}
-
-async function lidToPhone(conn, lid) {
-    try {
-        const pn = await conn.signalRepository.lidMapping.getPNForLID(lid);
-        if (pn) {
-            return cleanPN(pn);
-        }
-        return lid.split("@")[0];
-    } catch (e) {
-        return lid.split("@")[0];
-    }
-}
 const fsSync = require("fs");
 const fs = require("fs").promises;
 const ff = require("fluent-ffmpeg");
+const P = require("pino");
 const qrcode = require("qrcode-terminal");
 const StickersTypes = require("wa-sticker-formatter");
 const util = require("util");
@@ -109,6 +93,24 @@ const clearTempDir = () => {
   });
 };
 setInterval(clearTempDir, 5 * 60 * 1000);
+
+//Lid Function 
+
+function cleanPN(pn) {
+    return pn.split(":")[0];
+}
+
+async function lidToPhone(conn, lid) {
+    try {
+        const pn = await conn.signalRepository.lidMapping.getPNForLID(lid);
+        if (pn) {
+            return cleanPN(pn);
+        }
+        return lid.split("@")[0];
+    } catch (e) {
+        return lid.split("@")[0];
+    }
+}
 
 // Express server
 const express = require("express");
