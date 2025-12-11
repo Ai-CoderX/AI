@@ -134,7 +134,8 @@ async function connectToWA() {
   const { version } = await fetchLatestBaileysVersion();
   const pairingCode = config.PAIRING_CODE === "true" || process.argv.includes("--pairing-code");
   const useMobile = process.argv.includes("--mobile");
-  conn = makeWASocket({
+    
+conn = makeWASocket({
     logger: P({ level: "silent" }),
     auth: state,
     version,
@@ -154,27 +155,12 @@ async function connectToWA() {
     browser: Browsers.macOS("Firefox"),
     defaultQueryTimeoutMs: 60000,
     connectTimeoutMs: 60000,
-    keepAliveIntervalMs: 10000,  // ✅ Changed from 30000 to 10000
-    emitOwnEvents: true,
-    fireInitQueries: true,       // ✅ Changed from false to true
-    generateHighQualityLinkPreview: true,  // ✅ Changed from false to true
-    syncFullHistory: false,      
+    keepAliveIntervalMs: 10000,
+    generateHighQualityLinkPreview: true, 
+    syncFullHistory: true,      
     markOnlineOnConnect: true,
-    retryRequestDelayMs: 250,
-    maxMsgRetryCount: 5,
-    appStateMacVerification: {   
-        patch: true,
-        snapshot: true,
-    },
-    linkPreviewImageThumbnailWidth: 192,
-    transactionOpts: {           
-        maxCommitRetries: 5,
-        delayBetweenTriesMs: 2500,
-    },
-    enableAutoSessionRecreation: true,  
-    enableRecentMessageCache: true      
 });
-  
+    
   if (pairingCode && !state.creds.registered) {
     await connectWithPairing(conn, useMobile);
   }
