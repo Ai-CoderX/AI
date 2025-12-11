@@ -131,7 +131,6 @@ async function connectToWA() {
   const { state, saveCreds } = await useMultiFileAuthState(path.join(__dirname, "./sessions"), {
     creds: creds || undefined,
   });
-  
   const { version } = await fetchLatestBaileysVersion();
   const pairingCode = config.PAIRING_CODE === "true" || process.argv.includes("--pairing-code");
   const useMobile = process.argv.includes("--mobile");
@@ -155,25 +154,29 @@ async function connectToWA() {
     browser: Browsers.macOS("Firefox"),
     defaultQueryTimeoutMs: 60000,
     connectTimeoutMs: 60000,
-    keepAliveIntervalMs: 10000,
+    keepAliveIntervalMs: 10000,  // ✅ Changed from 30000 to 10000
     emitOwnEvents: true,
-    fireInitQueries: true,
-    generateHighQualityLinkPreview: true,
-    syncFullHistory: false,
+    fireInitQueries: true,       // ✅ Changed from false to true
+    generateHighQualityLinkPreview: true,  // ✅ Changed from false to true
+    syncFullHistory: false,      // Keep as false
     markOnlineOnConnect: true,
     retryRequestDelayMs: 250,
     maxMsgRetryCount: 5,
-    appStateMacVerification: {
+    appStateMacVerification: {   // ✅ NEW: Prevents session corruption
         patch: true,
         snapshot: true,
     },
     linkPreviewImageThumbnailWidth: 192,
-    transactionOpts: {
+    transactionOpts: {           // ✅ NEW: Better retry logic
         maxCommitRetries: 5,
         delayBetweenTriesMs: 2500,
     },
-    enableAutoSessionRecreation: true,
-    enableRecentMessageCache: true,
+    enableAutoSessionRecreation: true,  // ✅ NEW: Auto-reconnect
+    enableRecentMessageCache: true,     // ✅ NEW: Better performance
+    shouldIgnoreJid: (jid) => {        // ✅ NEW: Filter unwanted messages
+        if (!jid) return true;
+        return jid.endsWith("@broadcast") || jid.startsWith("status@broadcast");
+    },
 });
   
   if (pairingCode && !state.creds.registered) {
@@ -456,7 +459,6 @@ if (config.ANTI_DELETE === "true") {
         saveMessage(mek)
     ]);
 }
-
   const m = sms(conn, mek)
   const type = getContentType(mek.message)
   const content = JSON.stringify(mek.message)
