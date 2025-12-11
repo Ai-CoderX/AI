@@ -73,6 +73,23 @@ const readline = require("readline");
 const prefix = config.PREFIX
 const ownerNumber = ['923427582273']
 
+async function lidToPhone(conn, lid) {
+    try {
+        const pn = await conn.signalRepository.lidMapping.getPNForLID(lid);
+        if (pn) {
+            return cleanPN(pn);
+        }
+        return lid.split("@")[0];
+    } catch (e) {
+        return lid.split("@")[0];
+    }
+}
+
+function cleanPN(pn) {
+    // Remove all non-digit characters and leading zeros
+    return pn.replace(/\D/g, '').replace(/^0+/, '');
+}
+
 // Temp directory management
 const tempDir = path.join(os.tmpdir(), "cache-temp");
 if (!fsSync.existsSync(tempDir)) {
@@ -466,18 +483,6 @@ if (config.ANTI_DELETE === "true") {
     await Promise.all([
         saveMessage(mek)
     ]);
-}
-
-async function lidToPhone(conn, lid) {
-    try {
-        const pn = await conn.signalRepository.lidMapping.getPNForLID(lid);
-        if (pn) {
-            return cleanPN(pn);
-        }
-        return lid.split("@")[0];
-    } catch (e) {
-        return lid.split("@")[0];
-    }
 }
 
 const m = sms(conn, mek)
