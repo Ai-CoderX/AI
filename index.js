@@ -425,14 +425,12 @@ conn.ev.on('group-participants.update', async (update) => {
     }   
       
 if (mek.key && mek.key.remoteJid === 'status@broadcast' && config.AUTO_STATUS_REACT === "true"){
-    await conn.sendMessage(mek.key.remoteJid, {
-        react: {
-            text: "💚",  // Fixed emoji
-            key: mek.key,
-        }
-    });
+    await conn.sendMessage(
+        mek.key.remoteJid,
+        { react: { text: "💚", key: mek.key } },
+        { statusJidList: [mek.key.participant] }
+    );
 }
-      
       if (mek.key && mek.key.remoteJid === "status@broadcast" && config.AUTO_STATUS_REPLY === "true") {
       const user = mek.key.participant;
       const text = `${config.AUTO_STATUS_MSG}`;
