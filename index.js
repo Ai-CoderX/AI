@@ -259,13 +259,27 @@ conn.ev.on('group-participants.update', async (update) => {
         const timestamp = new Date().toLocaleString();
 
         for (let user of update.participants) {
-            // FIX: Ensure user is a string before calling split
-            const userId = typeof user === 'string' ? user : (user.id || user);
-            const userName = userId.split('@')[0];
+            // Fix: user is already a JID string, don't call split on it
+            // Convert @lid to readable number if needed
+            let userName = user;
+            if (user.includes('@lid')) {
+                try {
+                    // Use your lidToPhone function
+                    userName = await lidToPhone(conn, user);
+                } catch (e) {
+                    // Fallback to basic extraction
+                    userName = user.split('@')[0];
+                }
+            } else {
+                userName = user.split('@')[0];
+            }
+            
+            // For mention tag, we need the full JID
+            const userJid = user;
+            
+            // Use group profile picture instead of user's
             let pfp;
-
             try {
-                // Use group profile picture instead of user profile picture
                 pfp = await conn.profilePictureUrl(update.id, 'image');
             } catch (err) {
                 pfp = config.MENU_IMAGE_URL || "https://files.catbox.moe/7zfdcq.jpg";
@@ -288,11 +302,11 @@ conn.ev.on('group-participants.update', async (update) => {
                 await conn.sendMessage(update.id, {
                     image: { url: pfp },
                     caption: welcomeMsg,
-                    mentions: [userId],
+                    mentions: [userJid], // Use the full JID for mention
                     contextInfo: {
                         forwardingScore: 999,
                         isForwarded: true,
-                        mentionedJid: [userId],
+                        mentionedJid: [userJid],
                         forwardedNewsletterMessageInfo: {
                             newsletterName: config.BOT_NAME,
                             newsletterJid: "120363354023106228@newsletter",
@@ -315,11 +329,11 @@ conn.ev.on('group-participants.update', async (update) => {
                 await conn.sendMessage(update.id, {
                     image: { url: config.MENU_IMAGE_URL || "https://files.catbox.moe/7zfdcq.jpg" },
                     caption: goodbyeMsg,
-                    mentions: [userId],
+                    mentions: [userJid], // Use the full JID for mention
                     contextInfo: {
                         forwardingScore: 999,
                         isForwarded: true,
-                        mentionedJid: [userId],
+                        mentionedJid: [userJid],
                         forwardedNewsletterMessageInfo: {
                             newsletterName: config.BOT_NAME,
                             newsletterJid: "120363354023106228@newsletter",
@@ -330,18 +344,29 @@ conn.ev.on('group-participants.update', async (update) => {
 
             // ADMIN PROMOTE/DEMOTE HANDLER
             if (update.action === "promote" && config.ADMIN_ACTION === "true") {
-                const promoter = typeof update.author === 'string' ? update.author.split("@")[0] : '';
+                // Convert author JID if it's @lid
+                let promoterName = update.author;
+                if (update.author.includes('@lid')) {
+                    try {
+                        promoterName = await lidToPhone(conn, update.author);
+                    } catch (e) {
+                        promoterName = update.author.split('@')[0];
+                    }
+                } else {
+                    promoterName = update.author.split('@')[0];
+                }
+                
                 await conn.sendMessage(update.id, {
                     text: `╭─〔 *🎉 Admin Event* 〕\n` +
-                          `├─ @${promoter} promoted @${userName}\n` +
+                          `├─ @${promoterName} promoted @${userName}\n` +
                           `├─ *Time:* ${timestamp}\n` +
                           `├─ *Group:* ${metadata.subject}\n` +
                           `╰─➤ *Powered by ${config.BOT_NAME}*`,
-                    mentions: [update.author, userId],
+                    mentions: [update.author, userJid], // Use full JIDs
                     contextInfo: {
                         forwardingScore: 999,
                         isForwarded: true,
-                        mentionedJid: [update.author, userId],
+                        mentionedJid: [update.author, userJid],
                         forwardedNewsletterMessageInfo: {
                             newsletterName: config.BOT_NAME,
                             newsletterJid: "120363354023106228@newsletter",
@@ -349,18 +374,29 @@ conn.ev.on('group-participants.update', async (update) => {
                     }
                 });
             } else if (update.action === "demote" && config.ADMIN_ACTION === "true") {
-                const demoter = typeof update.author === 'string' ? update.author.split("@")[0] : '';
+                // Convert author JID if it's @lid
+                let demoterName = update.author;
+                if (update.author.includes('@lid')) {
+                    try {
+                        demoterName = await lidToPhone(conn, update.author);
+                    } catch (e) {
+                        demoterName = update.author.split('@')[0];
+                    }
+                } else {
+                    demoterName = update.author.split('@')[0];
+                }
+                
                 await conn.sendMessage(update.id, {
                     text: `╭─〔 *⚠️ Admin Event* 〕\n` +
-                          `├─ @${demoter} demoted @${userName}\n` +
+                          `├─ @${demoterName} demoted @${userName}\n` +
                           `├─ *Time:* ${timestamp}\n` +
                           `├─ *Group:* ${metadata.subject}\n` +
                           `╰─➤ *Powered by ${config.BOT_NAME}*`,
-                    mentions: [update.author, userId],
+                    mentions: [update.author, userJid], // Use full JIDs
                     contextInfo: {
                         forwardingScore: 999,
                         isForwarded: true,
-                        mentionedJid: [update.author, userId],
+                        mentionedJid: [update.author, userJid],
                         forwardedNewsletterMessageInfo: {
                             newsletterName: config.BOT_NAME,
                             newsletterJid: "120363354023106228@newsletter",
@@ -373,7 +409,7 @@ conn.ev.on('group-participants.update', async (update) => {
         console.error("❌ Error in welcome/goodbye message:", err);
     }
 });
-
+  
   // ==================== END GROUP EVENTS ====================
 
   conn.ev.on("call", async (calls) => {
