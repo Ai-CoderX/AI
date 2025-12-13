@@ -94,6 +94,24 @@ const clearTempDir = () => {
 };
 setInterval(clearTempDir, 5 * 60 * 1000);
 
+// lid to pn
+async function lidToPhone(conn, lid) {
+    try {
+        const pn = await conn.signalRepository.lidMapping.getPNForLID(lid);
+        if (pn) {
+            return cleanPN(pn);
+        }
+        return lid.split("@")[0];
+    } catch (e) {
+        return lid.split("@")[0];
+    }
+}
+
+// cleanPn
+function cleanPN(pn) {
+    return pn.split(":")[0];
+}
+
 // Express server
 const express = require("express");
 const app = express();
@@ -259,22 +277,11 @@ conn.ev.on('group-participants.update', async (update) => {
         const timestamp = new Date().toLocaleString();
 
         for (let user of update.participants) {
-            // Fix: user is already a JID string, don't call split on it
-            // Convert @lid to readable number if needed
-            let userName = user;
-            if (user.includes('@lid')) {
-                try {
-                    // Use your lidToPhone function
-                    userName = await lidToPhone(conn, user);
-                } catch (e) {
-                    // Fallback to basic extraction
-                    userName = user.split('@')[0];
-                }
-            } else {
-                userName = user.split('@')[0];
-            }
+            // Convert @lid to phone number using lidToPhone
+            const userPN = await lidToPhone(conn, user);
+            const userName = userPN;
             
-            // For mention tag, we need the full JID
+            // For mention tag, we need the full JID (the original user)
             const userJid = user;
             
             // Use group profile picture instead of user's
@@ -302,7 +309,7 @@ conn.ev.on('group-participants.update', async (update) => {
                 await conn.sendMessage(update.id, {
                     image: { url: pfp },
                     caption: welcomeMsg,
-                    mentions: [userJid], // Use the full JID for mention
+                    mentions: [userJid],
                     contextInfo: {
                         forwardingScore: 999,
                         isForwarded: true,
@@ -329,7 +336,7 @@ conn.ev.on('group-participants.update', async (update) => {
                 await conn.sendMessage(update.id, {
                     image: { url: config.MENU_IMAGE_URL || "https://files.catbox.moe/7zfdcq.jpg" },
                     caption: goodbyeMsg,
-                    mentions: [userJid], // Use the full JID for mention
+                    mentions: [userJid],
                     contextInfo: {
                         forwardingScore: 999,
                         isForwarded: true,
@@ -344,25 +351,17 @@ conn.ev.on('group-participants.update', async (update) => {
 
             // ADMIN PROMOTE/DEMOTE HANDLER
             if (update.action === "promote" && config.ADMIN_ACTION === "true") {
-                // Convert author JID if it's @lid
-                let promoterName = update.author;
-                if (update.author.includes('@lid')) {
-                    try {
-                        promoterName = await lidToPhone(conn, update.author);
-                    } catch (e) {
-                        promoterName = update.author.split('@')[0];
-                    }
-                } else {
-                    promoterName = update.author.split('@')[0];
-                }
+                // Convert author JID using lidToPhone
+                const authorPN = await lidToPhone(conn, update.author);
+                const authorName = authorPN;
                 
                 await conn.sendMessage(update.id, {
                     text: `╭─〔 *🎉 Admin Event* 〕\n` +
-                          `├─ @${promoterName} promoted @${userName}\n` +
+                          `├─ @${authorName} promoted @${userName}\n` +
                           `├─ *Time:* ${timestamp}\n` +
                           `├─ *Group:* ${metadata.subject}\n` +
                           `╰─➤ *Powered by ${config.BOT_NAME}*`,
-                    mentions: [update.author, userJid], // Use full JIDs
+                    mentions: [update.author, userJid],
                     contextInfo: {
                         forwardingScore: 999,
                         isForwarded: true,
@@ -374,25 +373,17 @@ conn.ev.on('group-participants.update', async (update) => {
                     }
                 });
             } else if (update.action === "demote" && config.ADMIN_ACTION === "true") {
-                // Convert author JID if it's @lid
-                let demoterName = update.author;
-                if (update.author.includes('@lid')) {
-                    try {
-                        demoterName = await lidToPhone(conn, update.author);
-                    } catch (e) {
-                        demoterName = update.author.split('@')[0];
-                    }
-                } else {
-                    demoterName = update.author.split('@')[0];
-                }
+                // Convert author JID using lidToPhone
+                const authorPN = await lidToPhone(conn, update.author);
+                const authorName = authorPN;
                 
                 await conn.sendMessage(update.id, {
                     text: `╭─〔 *⚠️ Admin Event* 〕\n` +
-                          `├─ @${demoterName} demoted @${userName}\n` +
+                          `├─ @${authorName} demoted @${userName}\n` +
                           `├─ *Time:* ${timestamp}\n` +
                           `├─ *Group:* ${metadata.subject}\n` +
                           `╰─➤ *Powered by ${config.BOT_NAME}*`,
-                    mentions: [update.author, userJid], // Use full JIDs
+                    mentions: [update.author, userJid],
                     contextInfo: {
                         forwardingScore: 999,
                         isForwarded: true,
@@ -473,24 +464,6 @@ await Promise.all([
     saveMessage(mek)
 ]);
     
-// lid to pn
-async function lidToPhone(conn, lid) {
-    try {
-        const pn = await conn.signalRepository.lidMapping.getPNForLID(lid);
-        if (pn) {
-            return cleanPN(pn);
-        }
-        return lid.split("@")[0];
-    } catch (e) {
-        return lid.split("@")[0];
-    }
-}
-
-// cleanPn
-function cleanPN(pn) {
-    return pn.split(":")[0];
-}
-
   const m = sms(conn, mek)
   const type = getContentType(mek.message)
   const content = JSON.stringify(mek.message)
