@@ -43,6 +43,13 @@
       "value": "false"
     },
 
+    
+    "AUTO_DOWNLOADER": {
+        "description": "Auto-Download Media From links. Options: 'true' (both), 'inbox' (inbox only), 'group' (group only), 'owner' (owner only), 'false' (disabled)",
+        "required": false,
+        "value": "false"
+    },
+
     "AUTO_RECORDING": {
       "description": "Show recording indicator when receiving messages. Options: 'true' (both), 'ib' (inbox only), 'group' (group only), 'false' (disabled)",
       "required": false,
