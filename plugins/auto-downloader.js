@@ -20,18 +20,23 @@ const platforms = {
     },
     instagram: {
         pattern: /(?:https?:\/\/)?(?:www\.)?(instagram\.com|instagr\.am)\/[^\s]+/i,
-        api: "https://jawad-tech.vercel.app/igdl",
+        api: "https://api-aswin-sparky.koyeb.app/api/downloader/igdl",
         method: "media"
     },
     tiktok: {
         pattern: /(?:https?:\/\/)?(?:www\.)?(tiktok\.com|vm\.tiktok\.com)\/[^\s]+/i,
-        api: "https://jawad-tech.vercel.app/download/tiktok",
+        api: "https://delirius-apiofc.vercel.app/download/tiktok",
         method: "video"
     },
     pinterest: {
         pattern: /(?:https?:\/\/)?(?:www\.)?(pinterest\.com|pin\.it)\/[^\s]+/i,
         api: "https://jawad-tech.vercel.app/download/pinterest",
         method: "media"
+    },
+    mediafire: {
+        pattern: /https?:\/\/(?:www\.)?mediafire\.com\/(file|folder)\/[^\s]+/i,
+        api: "https://api.deline.web.id/downloader/mediafire",
+        method: "document"
     },
     // Direct file URLs
     image: {
@@ -77,26 +82,27 @@ cmd({
     sender
 }) => {
     try {
-        // Check AUTO_DOWNLOADER config
-        const autoDownload = config.AUTO_DOWNLOADER;
-        
-        if (!autoDownload || autoDownload === "false") return;
-        
-        // Owner check
-        if (autoDownload === "owner" && !isCreator) return;
-        
-        // Inbox only check
-        if (autoDownload === "inbox" && isGroup) return;
-        
-        // Group only check  
-        if (autoDownload === "group" && !isGroup) return;
-        
-        // "true" means both inbox and groups
+        // Direct check of config.AUTO_DOWNLOADER
+        if (config.AUTO_DOWNLOADER === "true") {
+            // Works for both inbox and groups - no additional check needed
+        } 
+        else if (config.AUTO_DOWNLOADER === "inbox") {
+            if (isGroup) return; // Only works in inbox
+        } 
+        else if (config.AUTO_DOWNLOADER === "group") {
+            if (!isGroup) return; // Only works in groups
+        } 
+        else if (config.AUTO_DOWNLOADER === "owner") {
+            if (!isCreator) return; // Only works for owner
+        } 
+        else {
+            // Anything else ("false", "off", "disable", or any other value) - DISABLE
+            return;
+        }
         
         // Check if message contains any platform URL
         let matchedPlatform = null;
         let matchedUrl = null;
-        
         for (const [platform, data] of Object.entries(platforms)) {
             const match = body.match(data.pattern);
             if (match) {
@@ -105,40 +111,30 @@ cmd({
                 break;
             }
         }
-        
         // Skip if no platform matched
         if (!matchedPlatform || !matchedUrl) return;
-        
+
         // Get platform config
         const platform = platforms[matchedPlatform];
         const caption = createCaption();
-        
         // Show processing reaction
         await client.sendMessage(from, { react: { text: '⏳', key: message.key } });
-        
+
         try {
             // Handle different platform types
             if (platform.method === "mega") {
-                // MEGA.nz download
                 await handleMegaDownload(client, from, matchedUrl, caption, message);
-                await client.sendMessage(from, { react: { text: '✅', key: message.key } });
-                
             } else if (platform.method === "direct") {
-                // Direct file URL
                 await handleDirectDownload(client, from, matchedUrl, matchedPlatform, caption, message);
-                await client.sendMessage(from, { react: { text: '✅', key: message.key } });
-                
             } else {
-                // API-based platforms (YouTube, Facebook, Instagram, etc.)
                 await handleApiDownload(client, from, matchedUrl, matchedPlatform, caption, message);
-                await client.sendMessage(from, { react: { text: '✅', key: message.key } });
             }
-            
+            await client.sendMessage(from, { react: { text: '✅', key: message.key } });
         } catch (apiError) {
             console.error(`Auto-downloader error for ${matchedPlatform}:`, apiError);
             await client.sendMessage(from, { react: { text: '❌', key: message.key } });
         }
-        
+
     } catch (error) {
         console.error("Auto-downloader error:", error);
     }
@@ -148,44 +144,34 @@ cmd({
 async function handleMegaDownload(client, from, url, caption, message) {
     try {
         const file = File.fromURL(url);
-        
-        // Download into buffer
         const data = await new Promise((resolve, reject) => {
             file.download((err, data) => {
                 if (err) reject(err);
                 else resolve(data);
             });
         });
-        
-        // Create temp file path
         const savePath = path.join(os.tmpdir(), file.name || "mega_download.bin");
         fs.writeFileSync(savePath, data);
-        
-        // Determine file type
         const ext = path.extname(file.name || '').toLowerCase();
         const fileName = file.name || "Downloaded_File";
-        
-        // Send based on file type
+
         if (['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'].includes(ext)) {
             await client.sendMessage(from, {
                 image: fs.readFileSync(savePath),
                 caption: caption
             }, { quoted: message });
-        } 
-        else if (['.mp4', '.avi', '.mov', '.mkv', '.webm'].includes(ext)) {
+        } else if (['.mp4', '.avi', '.mov', '.mkv', '.webm'].includes(ext)) {
             await client.sendMessage(from, {
                 video: fs.readFileSync(savePath),
                 caption: caption
             }, { quoted: message });
-        }
-        else if (['.mp3', '.wav', '.ogg', '.m4a'].includes(ext)) {
+        } else if (['.mp3', '.wav', '.ogg', '.m4a'].includes(ext)) {
             await client.sendMessage(from, {
                 audio: fs.readFileSync(savePath),
                 mimetype: "audio/mpeg",
                 ptt: false
             }, { quoted: message });
-        }
-        else {
+        } else {
             await client.sendMessage(from, {
                 document: fs.readFileSync(savePath),
                 fileName: fileName,
@@ -193,10 +179,7 @@ async function handleMegaDownload(client, from, url, caption, message) {
                 caption: caption
             }, { quoted: message });
         }
-        
-        // Clean up temp file
         fs.unlinkSync(savePath);
-        
     } catch (error) {
         console.error("MEGA download error:", error);
         throw error;
@@ -206,30 +189,26 @@ async function handleMegaDownload(client, from, url, caption, message) {
 // Handle direct file URLs
 async function handleDirectDownload(client, from, url, platformType, caption, message) {
     try {
-        // Determine file type from platformType or URL extension
         const extMatch = url.match(/\.([a-z0-9]+)(?:\?|$)/i);
         const ext = extMatch ? extMatch[1].toLowerCase() : '';
-        
-        if (platformType === "image" || ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'tiff', 'svg'].includes(ext)) {
+
+        if (platformType === "image" || ['jpg', 'jpeg', 'png', 'gif', '.webp', '.bmp', '.tiff', '.svg'].includes(ext)) {
             await client.sendMessage(from, {
                 image: { url: url },
                 caption: caption
             }, { quoted: message });
-        }
-        else if (platformType === "video" || ['mp4', 'avi', 'mov', 'wmv', 'flv', 'mkv', 'webm'].includes(ext)) {
+        } else if (platformType === "video" || ['mp4', '.avi', '.mov', '.wmv', '.flv', '.mkv', '.webm'].includes(ext)) {
             await client.sendMessage(from, {
                 video: { url: url },
                 caption: caption
             }, { quoted: message });
-        }
-        else if (platformType === "audio" || ['mp3', 'wav', 'ogg', 'flac', 'm4a'].includes(ext)) {
+        } else if (platformType === "audio" || ['mp3', '.wav', '.ogg', '.flac', '.m4a'].includes(ext)) {
             await client.sendMessage(from, {
                 audio: { url: url },
                 mimetype: "audio/mpeg",
                 ptt: false
             }, { quoted: message });
-        }
-        else {
+        } else {
             // For documents (zip, pdf, js, etc.)
             const fileName = url.split('/').pop().split('?')[0] || "Downloaded_File";
             await client.sendMessage(from, {
@@ -239,7 +218,6 @@ async function handleDirectDownload(client, from, url, platformType, caption, me
                 caption: caption
             }, { quoted: message });
         }
-        
     } catch (error) {
         console.error("Direct download error:", error);
         throw error;
@@ -252,13 +230,46 @@ async function handleApiDownload(client, from, url, platformType, caption, messa
         const platform = platforms[platformType];
         const apiUrl = `${platform.api}?url=${encodeURIComponent(url)}`;
         const response = await axios.get(apiUrl);
-        
+
+        // Handle TikTok with the new API
+        if (platformType === "tiktok") {
+            if (!response.data?.status || !response.data?.data) {
+                throw new Error("TikTok API returned error");
+            }
+            const data = response.data.data;
+            const videoUrl = data.meta?.media?.find(v => v.type === "video")?.org;
+            if (!videoUrl) throw new Error("No video URL found");
+            await client.sendMessage(from, {
+                video: { url: videoUrl },
+                caption: caption
+            }, { quoted: message });
+            return;
+        }
+
+        // Handle MediaFire (sends as document)
+        if (platformType === "mediafire") {
+            if (!response.data || !response.data.status || !response.data.result || !response.data.result.downloadUrl || !response.data.result.fileName) {
+                throw new Error("Failed to fetch MediaFire file info");
+            }
+            const fileInfo = response.data.result;
+            const fileName = fileInfo.fileName;
+            const fileResponse = await axios.get(fileInfo.downloadUrl, { responseType: 'arraybuffer' });
+            const fileBuffer = Buffer.from(fileResponse.data);
+            await client.sendMessage(from, {
+                document: fileBuffer,
+                fileName: fileName,
+                mimetype: "application/octet-stream",
+                caption: caption
+            }, { quoted: message });
+            return;
+        }
+
+        // Handle other APIs (YouTube, Facebook, Instagram, Pinterest)
         if (!response.data?.status) {
             throw new Error("API returned error");
         }
-        
         const data = response.data;
-        
+
         switch (platformType) {
             case "youtube":
                 if (data.result?.mp4) {
@@ -268,13 +279,12 @@ async function handleApiDownload(client, from, url, platformType, caption, messa
                     }, { quoted: message });
                 }
                 break;
-                
             case "instagram":
-                if (data.result?.length > 0) {
-                    for (const item of data.result) {
+                // Using the new API: api-aswin-sparky.koyeb.app/api/downloader/igdl
+                if (response.data?.data?.length > 0) {
+                    for (const item of response.data.data) {
                         if (item.url) {
-                            const isVideo = item.contentType?.includes('video') || item.format === 'mp4';
-                            
+                            const isVideo = item.type === 'video';
                             if (isVideo) {
                                 await client.sendMessage(from, {
                                     video: { url: item.url },
@@ -290,7 +300,6 @@ async function handleApiDownload(client, from, url, platformType, caption, messa
                     }
                 }
                 break;
-                
             case "facebook":
                 if (data.result?.length > 0) {
                     const video = data.result.find(v => v.quality === "HD") || data.result.find(v => v.quality === "SD");
@@ -302,20 +311,9 @@ async function handleApiDownload(client, from, url, platformType, caption, messa
                     }
                 }
                 break;
-                
-            case "tiktok":
-                if (data.result) {
-                    await client.sendMessage(from, {
-                        video: { url: data.result },
-                        caption: caption
-                    }, { quoted: message });
-                }
-                break;
-                
             case "pinterest":
                 if (data.result?.url) {
                     const isVideo = data.result.type === 'video';
-                    
                     if (isVideo) {
                         await client.sendMessage(from, {
                             video: { url: data.result.url },
@@ -330,7 +328,6 @@ async function handleApiDownload(client, from, url, platformType, caption, messa
                 }
                 break;
         }
-        
     } catch (error) {
         console.error(`API download error for ${platformType}:`, error);
         throw error;
