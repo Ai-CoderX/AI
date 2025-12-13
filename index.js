@@ -194,6 +194,7 @@ conn = makeWASocket({
   
   try {
     await sleep(2000);
+    const prefix = getPrefix();
     
     // Send connection message with disappearing
     const startMess = {
