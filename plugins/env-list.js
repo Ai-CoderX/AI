@@ -3,8 +3,15 @@ const { cmd, commands } = require('../command');
 const { runtime } = require('../lib/functions');
 const axios = require('axios');
 
-function isEnabled(value) {
-    return value && value.toString().toLowerCase() === "true";
+function getStatusText(value) {
+    if (!value || value === "false") return "❌ DISABLED";
+    if (value === "true") return "✅ ENABLED";
+    if (value === "warn") return "⚠️ WARN";
+    if (value === "delete") return "🗑️ DELETE";
+    if (value === "same") return "💬 SAME";
+    if (value === "group") return "👥 GROUP";
+    if (value === "inbox") return "📥 INBOX";
+    return value;
 }
 
 cmd({
@@ -22,53 +29,74 @@ async (conn, mek, m, { from, quoted, reply, isCreator }) => {
         }
 
         let envSettings = `
-╭───『 *${config.BOT_NAME} CONFIG* 』───❏
+╭───『 *${config.BOT_NAME} CONFIGURATION* 』───❏
 │
-├─❏ *🤖 BOT INFO*
+├─❏ *🤖 BOT CORE SETTINGS*
 │  ├─∘ *Name:* ${config.BOT_NAME}
 │  ├─∘ *Prefix:* ${config.PREFIX}
 │  ├─∘ *Owner:* ${config.OWNER_NAME}
 │  ├─∘ *Number:* ${config.OWNER_NUMBER}
-│  └─∘ *Mode:* ${config.MODE.toUpperCase()}
+│  ├─∘ *Mode:* ${config.MODE.toUpperCase()}
+│  ├─∘ *Chatbot:* ${config.CHATBOT}
+│  └─∘ *Version:* ${config.VERSION}
 │
-├─❏ *⚙️ CORE SETTINGS*
-│  ├─∘ *Public Mode:* ${isEnabled(config.PUBLIC_MODE) ? "✅" : "❌"}
-│  ├─∘ *Always Online:* ${isEnabled(config.ALWAYS_ONLINE) ? "✅" : "❌"}
-│  ├─∘ *Read Msgs:* ${isEnabled(config.READ_MESSAGE) ? "✅" : "❌"}
-│  └─∘ *Read Cmds:* ${isEnabled(config.READ_CMD) ? "✅" : "❌"}
+├─❏ *📱 AUTO PRESENCE*
+│  ├─∘ *Always Online:* ${getStatusText(config.ALWAYS_ONLINE)}
+│  ├─∘ *Auto Typing:* ${getStatusText(config.AUTO_TYPING)}
+│  └─∘ *Auto Recording:* ${getStatusText(config.AUTO_RECORDING)}
 │
 ├─❏ *🔌 AUTOMATION*
-│  ├─∘ *Auto Reply:* ${isEnabled(config.AUTO_REPLY) ? "✅" : "❌"}
-│  ├─∘ *Auto React:* ${isEnabled(config.AUTO_REACT) ? "✅" : "❌"}
-│  ├─∘ *Custom React:* ${isEnabled(config.CUSTOM_REACT) ? "✅" : "❌"}
+│  ├─∘ *Auto Reply:* ${getStatusText(config.AUTO_REPLY)}
+│  ├─∘ *Auto React:* ${getStatusText(config.AUTO_REACT)}
+│  ├─∘ *Custom React:* ${getStatusText(config.CUSTOM_REACT)}
 │  ├─∘ *React Emojis:* ${config.CUSTOM_REACT_EMOJIS}
-│  ├─∘ *Auto Sticker:* ${isEnabled(config.AUTO_STICKER) ? "✅" : "❌"}
+│  ├─∘ *Auto Sticker:* ${getStatusText(config.AUTO_STICKER)}
+│  ├─∘ *Mention Reply:* ${getStatusText(config.MENTION_REPLY)}
+│  └─∘ *Read Message:* ${getStatusText(config.READ_MESSAGE)}
 │
 ├─❏ *📢 STATUS SETTINGS*
-│  ├─∘ *Status Seen:* ${isEnabled(config.AUTO_STATUS_SEEN) ? "✅" : "❌"}
-│  ├─∘ *Status Reply:* ${isEnabled(config.AUTO_STATUS_REPLY) ? "✅" : "❌"}
-│  ├─∘ *Status React:* ${isEnabled(config.AUTO_STATUS_REACT) ? "✅" : "❌"}
+│  ├─∘ *Status Seen:* ${getStatusText(config.AUTO_STATUS_SEEN)}
+│  ├─∘ *Status Reply:* ${getStatusText(config.AUTO_STATUS_REPLY)}
+│  ├─∘ *Status React:* ${getStatusText(config.AUTO_STATUS_REACT)}
 │  └─∘ *Status Msg:* ${config.AUTO_STATUS_MSG}
 │
-├─❏ *🛡️ SECURITY*
-│  ├─∘ *Anti-Link:* ${isEnabled(config.ANTI_LINK) ? "✅" : "❌"}
-│  ├─∘ *Anti-Bad:* ${isEnabled(config.ANTI_BAD) ? "✅" : "❌"}
-│  ├─∘ *Anti-VV:* ${isEnabled(config.ANTI_VV) ? "✅" : "❌"}
-│  └─∘ *Del Links:* ${isEnabled(config.DELETE_LINKS) ? "✅" : "❌"}
+├─❏ *🛡️ ANTI-FEATURES*
+│  ├─∘ *Anti-Link:* ${getStatusText(config.ANTI_LINK)}
+│  ├─∘ *Anti-Bad:* ${getStatusText(config.ANTI_BAD_WORD)}
+│  ├─∘ *Anti-Call:* ${getStatusText(config.ANTI_CALL)}
+│  ├─∘ *Anti-Spam:* ${getStatusText(config.ANTI_SPAM)}
+│  ├─∘ *Anti-VV:* ${getStatusText(config.ANTI_VV)}
+│  ├─∘ *Anti-Bot:* ${getStatusText(config.ANTI_BOT)}
+│  ├─∘ *Anti-Mention:* ${getStatusText(config.ANTI_MENTION)}
+│  ├─∘ *Anti-Status Mention:* ${getStatusText(config.ANTI_STATUS_MENTION)}
+│  ├─∘ *PM Blocker:* ${getStatusText(config.PM_BLOCKER)}
+│  ├─∘ *Anti-Delete:* ${getStatusText(config.ANTI_DELETE)}
+│  ├─∘ *Anti-Delete Path:* ${getStatusText(config.ANTI_DELETE_PATH)}
+│  ├─∘ *Anti-Edit:* ${getStatusText(config.ANTI_EDIT)}
+│  └─∘ *Anti-Edit Path:* ${getStatusText(config.ANTI_EDIT_PATH)}
 │
-├─❏ *🎨 MEDIA*
-│  ├─∘ *Alive Img:* ${config.ALIVE_IMG}
-│  ├─∘ *Menu Img:* ${config.MENU_IMAGE_URL}
-│  ├─∘ *Alive Msg:* ${config.LIVE_MSG}
-│  └─∘ *Sticker Pack:* ${config.STICKER_NAME}
+├─❏ *🎨 MEDIA & APPEARANCE*
+│  ├─∘ *Menu Image:* ${config.MENU_IMAGE_URL}
+│  ├─∘ *Menu Audio:* ${config.MENU_AUDIO_URL}
+│  ├─∘ *Sticker Pack:* ${config.STICKER_NAME}
+│  └─∘ *Description:* ${config.DESCRIPTION}
 │
-├─❏ *⏳ MISC*
-│  ├─∘ *Auto Typing:* ${isEnabled(config.AUTO_TYPING) ? "✅" : "❌"}
-│  ├─∘ *Auto Record:* ${isEnabled(config.AUTO_RECORDING) ? "✅" : "❌"}
-│  ├─∘ *Anti-Del Path:* ${config.ANTI_DEL_PATH}
+├─❏ *👥 GROUP SETTINGS*
+│  ├─∘ *Welcome:* ${getStatusText(config.WELCOME)}
+│  ├─∘ *Admin Action:* ${getStatusText(config.ADMIN_ACTION)}
+│  └─∘ *Call Reject Msg:* ${config.REJECT_MSG}
+│
+├─❏ *🌍 SYSTEM*
+│  ├─∘ *Timezone:* ${config.TIMEZONE}
+│  ├─∘ *Repo:* ${config.REPO}
+│  ├─∘ *Baileys:* ${config.BAILEYS}
+│  ├─∘ *Pairing Code:* ${getStatusText(config.PAIRING_CODE)}
+│  ├─∘ *Auto Bio:* ${getStatusText(config.AUTO_BIO)}
 │  └─∘ *Dev Number:* ${config.DEV}
 │
 ╰───『 *${config.DESCRIPTION}* 』───❏
+
+*📝 Note:* Session ID is hidden for security.
 `;
 
         await conn.sendMessage(
