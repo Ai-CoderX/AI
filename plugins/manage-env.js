@@ -141,33 +141,6 @@ cmd({
   }
 });
 
-// ===== ANTI EDIT =====
-cmd({
-  pattern: "antiedit",
-  alias: ["edit", "anti-edit", "antied"],
-  react: "✏️",
-  desc: "Enable/Disable anti-edit feature to show edited messages",
-  category: "settings",
-  filename: __filename
-}, async (conn, mek, m, { from, args, isCreator, reply }) => {
-  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
-
-  const status = args[0]?.toLowerCase();
-  
-  if (status === "on") {
-    config.ANTI_EDIT = "true";
-    process.env.ANTI_EDIT = "true";
-    return reply("✏️ *Anti-edit is now ENABLED for both inbox and groups*");
-  } else if (status === "off") {
-    config.ANTI_EDIT = "false";
-    process.env.ANTI_EDIT = "false";
-    return reply("✏️ *Anti-edit is now DISABLED*");
-  } else {
-    return reply(`*✏️ Anti-edit Command*\n\n• *on* - Enable for both inbox and groups\n• *off* - Disable completely\n\n*Example:* .antiedit on`);
-  }
-});
-
-
 // ===== ANTI DELETE =====
 cmd({
   pattern: "antidelete",
@@ -753,33 +726,6 @@ cmd({
     return reply("🎙️ *Auto-recording is now DISABLED*");
   } else {
     return reply(`*🎙️ Auto-recording Command*\n\n• *on* - Enable for both\n• *ib* - Enable for inbox only\n• *gc* - Enable for groups only\n• *off* - Disable\n\n*Example:* .autorecording on`);
-  }
-});
-
-
-// ===== ANTI EDIT PATH =====
-cmd({
-  pattern: "antieditpath",
-  alias: ["editpath", "anti-edit-path"],
-  react: "✏️🛣️",
-  desc: "Configure where to show edited messages",
-  category: "settings",
-  filename: __filename
-}, async (conn, mek, m, { from, args, isCreator, reply }) => {
-  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
-
-  const option = args[0]?.toLowerCase();
-  
-  if (option === "ib") {
-    config.ANTI_EDIT_PATH = "inbox";
-    process.env.ANTI_EDIT_PATH = "inbox";
-    return reply("✏️🛣️ *Anti-edit path set to INBOX only*\n_Edited messages will be shown in the owner's inbox only._");
-  } else if (option === "same") {
-    config.ANTI_EDIT_PATH = "same";
-    process.env.ANTI_EDIT_PATH = "same";
-    return reply("✏️🛣️ *Anti-edit path set to SAME chat*\n_Edited messages will be shown in the same chat where they were edited._");
-  } else {
-    return reply(`*✏️🛣️ Anti-edit Path Command*\n\n• *ib* - Show edited messages in inbox only\n• *same* - Show edited messages in same chat\n\n*Example:* .antieditpath ib`);
   }
 });
 
