@@ -237,18 +237,16 @@ conn = makeWASocket({
 
   conn.ev.on("creds.update", saveCreds);
 
- // Anti Delete 
-if (config.ANTI_DELETE === "true") {
-    conn.ev.on('messages.update', async updates => {
-        for (const update of updates) {
-            if (update.update.message === null) {
-                console.log("[ 🗑️ ] Delete Detected");
-                await AntiDelete(conn, updates).catch(() => {});
-            }
+// Anti Delete
+conn.ev.on('messages.update', async updates => {
+    for (const update of updates) {
+        if (update.update.message === null) {
+            console.log("[ 🗑️ ] Delete Detected");
+            await AntiDelete(conn, updates).catch(() => {});
         }
-    });
-}
- 
+    }
+});
+  
   // ==================== GROUP EVENTS HANDLER ====================
 conn.ev.on('group-participants.update', async (update) => {
     try {
