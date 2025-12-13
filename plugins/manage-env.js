@@ -756,39 +756,6 @@ cmd({
   }
 });
 
-// ===== ANTI EDIT =====
-cmd({
-  pattern: "antiedit",
-  alias: ["edit", "anti-edit", "antied"],
-  react: "✏️",
-  desc: "Enable anti-edit feature to show edited messages",
-  category: "settings",
-  filename: __filename
-}, async (conn, mek, m, { from, args, isCreator, reply }) => {
-  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
-
-  const status = args[0]?.toLowerCase();
-  
-  if (status === "on") {
-    config.ANTI_EDIT = "true";
-    process.env.ANTI_EDIT = "true";
-    return reply("✏️ *Anti-edit is now ENABLED for both inbox and groups*");
-  } else if (status === "ib") {
-    config.ANTI_EDIT = "ib";
-    process.env.ANTI_EDIT = "ib";
-    return reply("✏️ *Anti-edit is now ENABLED for inbox only*");
-  } else if (status === "gc") {
-    config.ANTI_EDIT = "group";
-    process.env.ANTI_EDIT = "group";
-    return reply("✏️ *Anti-edit is now ENABLED for groups only*");
-  } else if (status === "off") {
-    config.ANTI_EDIT = "false";
-    process.env.ANTI_EDIT = "false";
-    return reply("✏️ *Anti-edit is now DISABLED*");
-  } else {
-    return reply(`*✏️ Anti-edit Command*\n\n• *on* - Enable for both\n• *ib* - Enable for inbox only\n• *gc* - Enable for groups only\n• *off* - Disable\n\n*Example:* .antiedit on`);
-  }
-});
 
 // ===== ANTI EDIT PATH =====
 cmd({
@@ -839,40 +806,6 @@ cmd({
     return reply("🛣️ *Anti-delete path set to SAME chat*\n_Deleted messages will be shown in the same chat where they were deleted._");
   } else {
     return reply(`*🛣️ Anti-delete Path Command*\n\n• *ib* - Show deleted messages in inbox only\n• *same* - Show deleted messages in same chat\n\n*Example:* .antidelpath ib`);
-  }
-});
-
-// ===== ANTI DELETE =====
-cmd({
-  pattern: "antidelete",
-  alias: ["ad", "anti-delete", "antidel"],
-  react: "🗑️",
-  desc: "Enable anti-delete feature to show deleted messages",
-  category: "settings",
-  filename: __filename
-}, async (conn, mek, m, { from, args, isCreator, reply }) => {
-  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
-
-  const status = args[0]?.toLowerCase();
-  
-  if (status === "on") {
-    config.ANTI_DELETE = "true";
-    process.env.ANTI_DELETE = "true";
-    return reply("🗑️ *Anti-delete is now ENABLED for both inbox and groups*");
-  } else if (status === "ib") {
-    config.ANTI_DELETE = "ib";
-    process.env.ANTI_DELETE = "ib";
-    return reply("🗑️ *Anti-delete is now ENABLED for inbox only*");
-  } else if (status === "gc") {
-    config.ANTI_DELETE = "group";
-    process.env.ANTI_DELETE = "group";
-    return reply("🗑️ *Anti-delete is now ENABLED for groups only*");
-  } else if (status === "off") {
-    config.ANTI_DELETE = "false";
-    process.env.ANTI_DELETE = "false";
-    return reply("🗑️ *Anti-delete is now DISABLED*");
-  } else {
-    return reply(`*🗑️ Anti-delete Command*\n\n• *on* - Enable for both\n• *ib* - Enable for inbox only\n• *gc* - Enable for groups only\n• *off* - Disable\n\n*Example:* .antidelete on`);
   }
 });
 
