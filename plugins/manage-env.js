@@ -197,122 +197,13 @@ cmd({
 });
 
 
-// AUTO-TYPING (Sets PRESENCE to 'typing')
-cmd({
-  pattern: "autotyping",
-  alias: ["auto-typing", "typing"],
-  react: "⌨️",
-  desc: "Enable auto-typing presence for the bot",
-  category: "settings",
-  filename: __filename
-}, async (conn, mek, m, { from, args, isCreator, reply }) => {
-  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
 
-  const status = args[0]?.toLowerCase();
-  
-  if (status === "on") {
-    config.PRESENCE = "typing";
-    process.env.PRESENCE = "typing";
-    return reply("⌨️ *Auto-typing presence is now ENABLED*\n\nBot will show 'typing...' indicator when responding.");
-  } else if (status === "off") {
-    config.PRESENCE = "false";
-    process.env.PRESENCE = "false";
-    return reply("⌨️ *Auto-typing presence is now DISABLED*\n\nBot will not show typing indicator.");
-  } else {
-    return reply(`*⌨️ Auto-typing Command*\n\n• *on* - Enable typing presence\n• *off* - Disable (sets to offline)\n\n*Example:* .autotyping on`);
-  }
-});
-
-// ALWAYS ONLINE (Sets PRESENCE to 'online')
-cmd({
-  pattern: "alwaysonline",
-  alias: ["online", "always-online"],
-  react: "🟢",
-  desc: "Enable always online presence for the bot",
-  category: "settings",
-  filename: __filename
-}, async (conn, mek, m, { from, args, isCreator, reply }) => {
-  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
-
-  const status = args[0]?.toLowerCase();
-  
-  if (status === "on") {
-    config.PRESENCE = "online";
-    process.env.PRESENCE = "online";
-    return reply("🟢 *Always online presence is now ENABLED*\n\nBot will show as 'online' when responding.");
-  } else if (status === "off") {
-    config.PRESENCE = "false";
-    process.env.PRESENCE = "false";
-    return reply("🟢 *Always online presence is now DISABLED*\n\nBot will not show online presence.");
-  } else {
-    return reply(`*🟢 Always Online Command*\n\n• *on* - Enable online presence\n• *off* - Disable (sets to offline)\n\n*Example:* .alwaysonline on`);
-  }
-});
-
-// AUTO RECORDING (Sets PRESENCE to 'recording')
-cmd({
-  pattern: "autorecording",
-  alias: ["recording", "auto-recording"],
-  react: "🎙️",
-  desc: "Enable auto-recording presence for the bot",
-  category: "settings",
-  filename: __filename
-}, async (conn, mek, m, { from, args, isCreator, reply }) => {
-  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
-
-  const status = args[0]?.toLowerCase();
-  
-  if (status === "on") {
-    config.PRESENCE = "recording";
-    process.env.PRESENCE = "recording";
-    return reply("🎙️ *Auto-recording presence is now ENABLED*\n\nBot will show 'recording audio...' indicator when responding.");
-  } else if (status === "off") {
-    config.PRESENCE = "false";
-    process.env.PRESENCE = "false";
-    return reply("🎙️ *Auto-recording presence is now DISABLED*\n\nBot will not show recording indicator.");
-  } else {
-    return reply(`*🎙️ Auto-recording Command*\n\n• *on* - Enable recording presence\n• *off* - Disable (sets to offline)\n\n*Example:* .autorecording on`);
-  }
-});
-
-// PRESENCE STATUS (Check current presence)
-cmd({
-  pattern: "presence",
-  alias: ["presencestatus", "status"],
-  react: "📱",
-  desc: "Check the current bot presence status",
-  category: "settings",
-  filename: __filename
-}, async (conn, mek, m, { from, args, isCreator, reply }) => {
-  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
-
-  const currentPresence = config.PRESENCE || process.env.PRESENCE || "false";
-  
-  let statusText = "";
-  switch(currentPresence) {
-    case "typing":
-      statusText = "⌨️ *Typing...* indicator";
-      break;
-    case "recording":
-      statusText = "🎙️ *Recording audio...* indicator";
-      break;
-    case "online":
-      statusText = "🟢 *Online* presence";
-      break;
-    case "false":
-    default:
-      statusText = "⚫ *Offline/Unavailable* (no presence)";
-      break;
-  }
-  
-  return reply(`*📱 Bot Presence Status*\n\nCurrent: ${statusText}\n\n*Available Commands:*\n• .autotyping on/off\n• .alwaysonline on/off\n• .autorecording on/off`);
-});
 
 // ANTI-STATUS-MENTION
 cmd({
   pattern: "antistatus",
   react: "🚫",
-  alias: ["anti-status", "antimention", "anti-status-mention"],
+  alias: ["anti-status", "anti-status-mention"],
   desc: "Enable or disable anti-status-mention feature in groups\nModes: on/off/warn/delete",
   category: "group",
   filename: __filename
@@ -680,6 +571,260 @@ cmd({
     await reply(`*🔥 ᴇxᴀᴍᴘʟᴇ: .ᴏᴡɴᴇʀʀᴇᴀᴄᴛ ᴏɴ*`);
   }
 });
+
+
+// ===== AUTO-TYPING =====
+cmd({
+  pattern: "autotyping",
+  alias: ["auto-typing", "typing"],
+  react: "⌨️",
+  desc: "Enable auto-typing presence for the bot",
+  category: "settings",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+  const status = args[0]?.toLowerCase();
+  
+  if (status === "on") {
+    config.AUTO_TYPING = "true";
+    process.env.AUTO_TYPING = "true";
+    return reply("⌨️ *Auto-typing is now ENABLED for both inbox and groups*");
+  } else if (status === "ib") {
+    config.AUTO_TYPING = "ib";
+    process.env.AUTO_TYPING = "ib";
+    return reply("⌨️ *Auto-typing is now ENABLED for inbox only*");
+  } else if (status === "gc") {
+    config.AUTO_TYPING = "group";
+    process.env.AUTO_TYPING = "group";
+    return reply("⌨️ *Auto-typing is now ENABLED for groups only*");
+  } else if (status === "off") {
+    config.AUTO_TYPING = "false";
+    process.env.AUTO_TYPING = "false";
+    return reply("⌨️ *Auto-typing is now DISABLED*");
+  } else {
+    return reply(`*⌨️ Auto-typing Command*\n\n• *on* - Enable for both\n• *ib* - Enable for inbox only\n• *gc* - Enable for groups only\n• *off* - Disable\n\n*Example:* .autotyping on`);
+  }
+});
+
+// ===== ALWAYS ONLINE =====
+cmd({
+  pattern: "alwaysonline",
+  alias: ["online", "always-online"],
+  react: "🟢",
+  desc: "Enable always online presence for the bot",
+  category: "settings",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+  const status = args[0]?.toLowerCase();
+  
+  if (status === "on") {
+    config.ALWAYS_ONLINE = "true";
+    process.env.ALWAYS_ONLINE = "true";
+    return reply("🟢 *Always online is now ENABLED*");
+  } else if (status === "off") {
+    config.ALWAYS_ONLINE = "false";
+    process.env.ALWAYS_ONLINE = "false";
+    return reply("🟢 *Always online is now DISABLED*");
+  } else {
+    return reply(`*🟢 Always Online Command*\n\n• *on* - Enable\n• *off* - Disable\n\n*Example:* .alwaysonline on`);
+  }
+});
+
+// ===== AUTO RECORDING =====
+cmd({
+  pattern: "autorecording",
+  alias: ["recording", "auto-recording"],
+  react: "🎙️",
+  desc: "Enable auto-recording presence for the bot",
+  category: "settings",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+  const status = args[0]?.toLowerCase();
+  
+  if (status === "on") {
+    config.AUTO_RECORDING = "true";
+    process.env.AUTO_RECORDING = "true";
+    return reply("🎙️ *Auto-recording is now ENABLED for both inbox and groups*");
+  } else if (status === "ib") {
+    config.AUTO_RECORDING = "ib";
+    process.env.AUTO_RECORDING = "ib";
+    return reply("🎙️ *Auto-recording is now ENABLED for inbox only*");
+  } else if (status === "gc") {
+    config.AUTO_RECORDING = "group";
+    process.env.AUTO_RECORDING = "group";
+    return reply("🎙️ *Auto-recording is now ENABLED for groups only*");
+  } else if (status === "off") {
+    config.AUTO_RECORDING = "false";
+    process.env.AUTO_RECORDING = "false";
+    return reply("🎙️ *Auto-recording is now DISABLED*");
+  } else {
+    return reply(`*🎙️ Auto-recording Command*\n\n• *on* - Enable for both\n• *ib* - Enable for inbox only\n• *gc* - Enable for groups only\n• *off* - Disable\n\n*Example:* .autorecording on`);
+  }
+});
+
+// ===== ANTI EDIT =====
+cmd({
+  pattern: "antiedit",
+  alias: ["edit", "anti-edit", "antied"],
+  react: "✏️",
+  desc: "Enable anti-edit feature to show edited messages",
+  category: "settings",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+  const status = args[0]?.toLowerCase();
+  
+  if (status === "on") {
+    config.ANTI_EDIT = "true";
+    process.env.ANTI_EDIT = "true";
+    return reply("✏️ *Anti-edit is now ENABLED for both inbox and groups*");
+  } else if (status === "ib") {
+    config.ANTI_EDIT = "ib";
+    process.env.ANTI_EDIT = "ib";
+    return reply("✏️ *Anti-edit is now ENABLED for inbox only*");
+  } else if (status === "gc") {
+    config.ANTI_EDIT = "group";
+    process.env.ANTI_EDIT = "group";
+    return reply("✏️ *Anti-edit is now ENABLED for groups only*");
+  } else if (status === "off") {
+    config.ANTI_EDIT = "false";
+    process.env.ANTI_EDIT = "false";
+    return reply("✏️ *Anti-edit is now DISABLED*");
+  } else {
+    return reply(`*✏️ Anti-edit Command*\n\n• *on* - Enable for both\n• *ib* - Enable for inbox only\n• *gc* - Enable for groups only\n• *off* - Disable\n\n*Example:* .antiedit on`);
+  }
+});
+
+// ===== ANTI EDIT PATH =====
+cmd({
+  pattern: "antieditpath",
+  alias: ["editpath", "anti-edit-path"],
+  react: "✏️🛣️",
+  desc: "Configure where to show edited messages",
+  category: "settings",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+  const option = args[0]?.toLowerCase();
+  
+  if (option === "ib") {
+    config.ANTI_EDIT_PATH = "inbox";
+    process.env.ANTI_EDIT_PATH = "inbox";
+    return reply("✏️🛣️ *Anti-edit path set to INBOX only*\n_Edited messages will be shown in the owner's inbox only._");
+  } else if (option === "same") {
+    config.ANTI_EDIT_PATH = "same";
+    process.env.ANTI_EDIT_PATH = "same";
+    return reply("✏️🛣️ *Anti-edit path set to SAME chat*\n_Edited messages will be shown in the same chat where they were edited._");
+  } else {
+    return reply(`*✏️🛣️ Anti-edit Path Command*\n\n• *ib* - Show edited messages in inbox only\n• *same* - Show edited messages in same chat\n\n*Example:* .antieditpath ib`);
+  }
+});
+
+// ===== ANTI DELETE PATH =====
+cmd({
+  pattern: "antidelpath",
+  alias: ["delpath", "anti-delete-path", "deletepath"],
+  react: "🛣️",
+  desc: "Configure where to show deleted messages",
+  category: "settings",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+  const option = args[0]?.toLowerCase();
+  
+  if (option === "ib") {
+    config.ANTI_DELETE_PATH = "inbox";
+    process.env.ANTI_DELETE_PATH = "inbox";
+    return reply("🛣️ *Anti-delete path set to INBOX only*\n_Deleted messages will be shown in the same inbox where they were deleted._");
+  } else if (option === "same") {
+    config.ANTI_DELETE_PATH = "same";
+    process.env.ANTI_DELETE_PATH = "same";
+    return reply("🛣️ *Anti-delete path set to SAME chat*\n_Deleted messages will be shown in the same chat where they were deleted._");
+  } else {
+    return reply(`*🛣️ Anti-delete Path Command*\n\n• *ib* - Show deleted messages in inbox only\n• *same* - Show deleted messages in same chat\n\n*Example:* .antidelpath ib`);
+  }
+});
+
+// ===== ANTI DELETE =====
+cmd({
+  pattern: "antidelete",
+  alias: ["ad", "anti-delete", "antidel"],
+  react: "🗑️",
+  desc: "Enable anti-delete feature to show deleted messages",
+  category: "settings",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+  const status = args[0]?.toLowerCase();
+  
+  if (status === "on") {
+    config.ANTI_DELETE = "true";
+    process.env.ANTI_DELETE = "true";
+    return reply("🗑️ *Anti-delete is now ENABLED for both inbox and groups*");
+  } else if (status === "ib") {
+    config.ANTI_DELETE = "ib";
+    process.env.ANTI_DELETE = "ib";
+    return reply("🗑️ *Anti-delete is now ENABLED for inbox only*");
+  } else if (status === "gc") {
+    config.ANTI_DELETE = "group";
+    process.env.ANTI_DELETE = "group";
+    return reply("🗑️ *Anti-delete is now ENABLED for groups only*");
+  } else if (status === "off") {
+    config.ANTI_DELETE = "false";
+    process.env.ANTI_DELETE = "false";
+    return reply("🗑️ *Anti-delete is now DISABLED*");
+  } else {
+    return reply(`*🗑️ Anti-delete Command*\n\n• *on* - Enable for both\n• *ib* - Enable for inbox only\n• *gc* - Enable for groups only\n• *off* - Disable\n\n*Example:* .antidelete on`);
+  }
+});
+
+// ===== PRESENCE STATUS =====
+cmd({
+  pattern: "presence",
+  alias: ["presencestatus", "status"],
+  react: "📱",
+  desc: "Check the current bot presence status",
+  category: "settings",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+  
+  let statusText = "*📱 Bot Presence Status*\n\n";
+  
+  // Always Online
+  const alwaysOnline = config.ALWAYS_ONLINE || process.env.ALWAYS_ONLINE || "false";
+  statusText += `🟢 *Always Online:* ${alwaysOnline === "true" ? "ENABLED" : "DISABLED"}\n`;
+  
+  // Auto Typing
+  const autoTyping = config.AUTO_TYPING || process.env.AUTO_TYPING || "false";
+  let typingStatus = "DISABLED";
+  if (autoTyping === "true") typingStatus = "ENABLED (both)";
+  else if (autoTyping === "ib") typingStatus = "ENABLED (inbox only)";
+  else if (autoTyping === "group") typingStatus = "ENABLED (groups only)";
+  statusText += `⌨️ *Auto Typing:* ${typingStatus}\n`;
+  
+  // Auto Recording
+  const autoRecording = config.AUTO_RECORDING || process.env.AUTO_RECORDING || "false";
+  let recordingStatus = "DISABLED";
+  if (autoRecording === "true") recordingStatus = "ENABLED (both)";
+  else if (autoRecording === "ib") recordingStatus = "ENABLED (inbox only)";
+  else if (autoRecording === "group") recordingStatus = "ENABLED (groups only)";
+  statusText += `🎙️ *Auto Recording:* ${recordingStatus}\n\n`;
+  
+  statusText += `*Available Commands:*\n• .autotyping on/ib/gc/off\n• .alwaysonline on/off\n• .autorecording on/ib/gc/off\n• .presence`;
+  
+  return reply(statusText);
+});
+
 
 // CUSTOM REACT
 cmd({
