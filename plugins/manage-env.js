@@ -141,6 +141,42 @@ cmd({
   }
 });
 
+cmd({
+    pattern: "autodl",
+    alias: ["downloader", "auto-downloader"],
+    react: "📥",
+    desc: "Enable/disable auto-downloader feature",
+    category: "settings",
+    filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+    if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+    const status = args[0]?.toLowerCase();
+    
+    if (status === "on") {
+        config.AUTO_DOWNLOADER = "true";
+        process.env.AUTO_DOWNLOADER = "true";
+        return reply("📥 *Auto-downloader is now ENABLED for both inbox and groups*");
+    } else if (status === "ib") {
+        config.AUTO_DOWNLOADER = "inbox";
+        process.env.AUTO_DOWNLOADER = "inbox";
+        return reply("📥 *Auto-downloader is now ENABLED for inbox only*");
+    } else if (status === "gc") {
+        config.AUTO_DOWNLOADER = "group";
+        process.env.AUTO_DOWNLOADER = "group";
+        return reply("📥 *Auto-downloader is now ENABLED for groups only*");
+    } else if (status === "owner") {
+        config.AUTO_DOWNLOADER = "owner";
+        process.env.AUTO_DOWNLOADER = "owner";
+        return reply("📥 *Auto-downloader is now ENABLED for owner only*");
+    } else if (status === "off") {
+        config.AUTO_DOWNLOADER = "false";
+        process.env.AUTO_DOWNLOADER = "false";
+        return reply("📥 *Auto-downloader is now DISABLED*");
+    } else {
+        return reply(`*📥 Auto-downloader Command*\n\n• *on* - Enable for both\n• *ib* - Enable for inbox only\n• *gc* - Enable for groups only\n• *owner* - Enable for owner only\n• *off* - Disable\n\n*Example:* .autodownloader on`);
+    }
+});
 
 // MODE
 cmd({
