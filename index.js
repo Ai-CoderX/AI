@@ -429,13 +429,9 @@ conn.ev.on('group-participants.update', async (update) => {
   const text = `${config.AUTO_STATUS_MSG}`
   await conn.sendMessage(user, { text: text, react: { text: '💜', key: mek.key } }, { quoted: mek })
   }
-    // Save message to store if anti-delete is enabled
-if (config.ANTI_DELETE === "true") {
-    await Promise.all([
-        saveMessage(mek)
-    ]);
-}
 
+  await Promise.all([saveMessage(mek)]);
+    
 // lid to pn
 async function lidToPhone(conn, lid) {
     try {
