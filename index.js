@@ -435,7 +435,8 @@ if (config.ANTI_DELETE === "true") {
         saveMessage(mek)
     ]);
 }
-// YOUR LID TO PHONE FUNCTION
+
+// lid to pn
 async function lidToPhone(conn, lid) {
     try {
         const pn = await conn.signalRepository.lidMapping.getPNForLID(lid);
@@ -448,25 +449,20 @@ async function lidToPhone(conn, lid) {
     }
 }
 
-// CLEAN PHONE NUMBER FUNCTION
+// cleanPn
 function cleanPN(pn) {
-    // Remove all non-digits and leading zeros
-    return pn.replace(/\D/g, '').replace(/^0+/, '');
+    return pn.split(":")[0];
 }
 
   const m = sms(conn, mek)
   const type = getContentType(mek.message)
   const content = JSON.stringify(mek.message)
   const from = mek.key.remoteJid
-  if (config.PRESENCE === "typing") {
-    await conn.sendPresenceUpdate("composing", from, [mek.key]);
-} else if (config.PRESENCE === "recording") {
-    await conn.sendPresenceUpdate("recording", from, [mek.key]);
-} else if (config.PRESENCE === "online") {
+  if (config.ALWAYS_ONLINE === "online") {
     await conn.sendPresenceUpdate('available', from, [mek.key]);
 } else {
     await conn.sendPresenceUpdate('unavailable', from, [mek.key]);
-      }
+}
     const quoted = type == 'extendedTextMessage' && mek.message.extendedTextMessage.contextInfo != null ? mek.message.extendedTextMessage.contextInfo.quotedMessage || [] : []
     const body = (type === 'conversation') ? mek.message.conversation : (type === 'extendedTextMessage') ? mek.message.extendedTextMessage.text : (type == 'imageMessage') && mek.message.imageMessage.caption ? mek.message.imageMessage.caption : (type == 'videoMessage') && mek.message.videoMessage.caption ? mek.message.videoMessage.caption : ''
     const isCmd = body.startsWith(prefix)
@@ -475,40 +471,29 @@ function cleanPN(pn) {
     const args = body.trim().split(/ +/).slice(1)
     const q = args.join(' ')
     const text = args.join(' ')
-    const isGroup = from.endsWith('@g.us')  
-const sender = mek.key.fromMe ? (conn.user.id.split(':')[0]+'@s.whatsapp.net' || conn.user.id) : (mek.key.participant || mek.key.remoteJid)
+    const isGroup = from.endsWith('@g.us')   
+    const sender = mek.key.fromMe ? (conn.user.id.split(':')[0]+'@s.whatsapp.net' || conn.user.id) : (mek.key.participant || mek.key.remoteJid)
 
-// CONVERT SENDER LID TO PHONE
+// lidToPhone for sender
 let senderNumber = sender.split('@')[0]
 if (sender.includes('@lid')) {
     senderNumber = await lidToPhone(conn, sender)
 }
-
-const botNumber = conn.user.id.split(':')[0]
-const pushname = mek.pushName || 'Sin Nombre'
-const isMe = botNumber.includes(senderNumber)
-const isOwner = ownerNumber.includes(senderNumber) || isMe
-const botNumber2 = await jidNormalizedUser(conn.user.id);
-
-// CREATE BOT NUMBER FOR ADMIN CHECK (CONVERT LID TO PN)
-let botNumber3 = botNumber2
-if (botNumber2.includes('@lid')) {
-    const botPhone = await lidToPhone(conn, botNumber2)
-    botNumber3 = botPhone + '@s.whatsapp.net'
-}
-
-const groupMetadata = isGroup ? await conn.groupMetadata(from).catch(e => {}) : ''
-const groupName = isGroup ? groupMetadata.subject : ''
-const participants = isGroup ? await groupMetadata.participants : ''
-const groupAdmins = isGroup ? await getGroupAdmins(participants) : ''
-
-// USE BOTNUMBER3 FOR ADMIN CHECK
-const isBotAdmins = isGroup ? groupAdmins.includes(botNumber3) : false
-const isAdmins = isGroup ? groupAdmins.includes(sender) : false
-const isReact = m.message.reactionMessage ? true : false
-const reply = (teks) => {
+    const botNumber = conn.user.id.split(':')[0]
+    const pushname = mek.pushName || 'Sin Nombre'
+    const isMe = botNumber.includes(senderNumber)
+    const isOwner = ownerNumber.includes(senderNumber) || isMe
+    const botNumber2 = await jidNormalizedUser(conn.user.lid);
+    const groupMetadata = isGroup ? await conn.groupMetadata(from).catch(e => {}) : ''
+    const groupName = isGroup ? groupMetadata.subject : ''
+    const participants = isGroup ? await groupMetadata.participants : ''
+    const groupAdmins = isGroup ? await getGroupAdmins(participants) : ''
+    const isBotAdmins = isGroup ? groupAdmins.includes(botNumber2) : false
+    const isAdmins = isGroup ? groupAdmins.includes(sender) : false
+    const isReact = m.message.reactionMessage ? true : false
+    const reply = (teks) => {
     conn.sendMessage(from, { text: teks }, { quoted: mek })
-}
+      }    
     
 const ownerFilev2 = JSON.parse(fsSync.readFileSync('./lib/sudo.json', 'utf-8'));
     
