@@ -24,7 +24,7 @@ const platforms = {
         method: "media"
     },
     tiktok: {
-        pattern: /(?:https?:\/\/)?(?:www\.)?(tiktok\.com|vm\.tiktok\.com)\/[^\s]+/i,
+        pattern: /(?:https?:\/\/)?(?:www\.)?(?:tiktok\.com|vt\.tiktok\.com)\/[^\s]+/i,
         api: "https://delirius-apiofc.vercel.app/download/tiktok",
         method: "video"
     },
@@ -67,10 +67,10 @@ const platforms = {
 
 // Create caption
 const createCaption = () => 
-`╭──〔 🤖 ${config.BOT_NAME} 〕──✧
-│ ⚡ *Auto Media Downloader*
-│ 📝 ${config.DESCRIPTION}
-╰───────────────✧`;
+`*╭───⬡ ${config.BOT_NAME} ⬡──*
+*┋ ⬡ Auto Media Downloader* 
+*┋ ⬡* ${config.DESCRIPTION}
+*╰────────────⊷*`;
 
 // No prefix auto-downloader handler
 cmd({
@@ -196,17 +196,17 @@ async function handleDirectDownload(client, from, url, platformType, caption, me
         const extMatch = url.match(/\.([a-z0-9]+)(?:\?|$)/i);
         const ext = extMatch ? extMatch[1].toLowerCase() : '';
 
-        if (platformType === "image" || ['jpg', 'jpeg', 'png', 'gif', '.webp', '.bmp', '.tiff', '.svg'].includes(ext)) {
+        if (platformType === "image" || ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'tiff', 'svg'].includes(ext)) {
             await client.sendMessage(from, {
                 image: { url: url },
                 caption: caption
             }, { quoted: message });
-        } else if (platformType === "video" || ['mp4', '.avi', '.mov', '.wmv', '.flv', '.mkv', '.webm'].includes(ext)) {
+        } else if (platformType === "video" || ['mp4', 'avi', 'mov', 'wmv', 'flv', 'mkv', 'webm'].includes(ext)) {
             await client.sendMessage(from, {
                 video: { url: url },
                 caption: caption
             }, { quoted: message });
-        } else if (platformType === "audio" || ['mp3', '.wav', '.ogg', '.flac', '.m4a'].includes(ext)) {
+        } else if (platformType === "audio" || ['mp3', 'wav', 'ogg', 'flac', 'm4a'].includes(ext)) {
             await client.sendMessage(from, {
                 audio: { url: url },
                 mimetype: "audio/mpeg",
@@ -235,18 +235,39 @@ async function handleApiDownload(client, from, url, platformType, caption, messa
         const apiUrl = `${platform.api}?url=${encodeURIComponent(url)}`;
         const response = await axios.get(apiUrl);
 
-        // Handle TikTok with the new API
+        // Handle TikTok with the new API response structure
         if (platformType === "tiktok") {
             if (!response.data?.status || !response.data?.data) {
                 throw new Error("TikTok API returned error");
             }
             const data = response.data.data;
-            const videoUrl = data.meta?.media?.find(v => v.type === "video")?.org;
-            if (!videoUrl) throw new Error("No video URL found");
-            await client.sendMessage(from, {
-                video: { url: videoUrl },
-                caption: caption
-            }, { quoted: message });
+            
+            // Get the first video URL from meta.media array
+            if (data.meta?.media?.length > 0) {
+                // Try to get HD video first, then WM, then original
+                const mediaItem = data.meta.media[0];
+                let videoUrl = mediaItem.hd || mediaItem.wm || mediaItem.org;
+                
+                if (!videoUrl) {
+                    throw new Error("No video URL found in media array");
+                }
+                
+                // Ensure we have a valid URL (add https if missing)
+                if (videoUrl.startsWith('//')) {
+                    videoUrl = 'https:' + videoUrl;
+                } else if (!videoUrl.startsWith('http')) {
+                    videoUrl = 'https://' + videoUrl;
+                }
+                
+                console.log(`Downloading TikTok video from: ${videoUrl}`);
+                
+                await client.sendMessage(from, {
+                    video: { url: videoUrl },
+                    caption: caption
+                }, { quoted: message });
+            } else {
+                throw new Error("No media found in TikTok response");
+            }
             return;
         }
 
