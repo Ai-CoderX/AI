@@ -66,7 +66,8 @@ module.exports = {
   MENTION_REPLY: settings.MENTION_REPLY || process.env.MENTION_REPLY || "false",
   MENU_IMAGE_URL: settings.MENU_IMAGE_URL || process.env.MENU_IMAGE_URL || "https://files.catbox.moe/7zfdcq.jpg",
   MENU_AUDIO_URL: settings.MENU_AUDIO_URL || process.env.MENU_AUDIO_URL || 'https://files.catbox.moe/xv42ur.mp3',
-
+  AUTO_DOWNLOADER: settings.AUTO_DOWNLOADER || process.env.AUTO_DOWNLOADER || "false",
+  
   // ===== SECURITY & ANTI-FEATURES =====
   ANTI_DELETE: settings.ANTI_DELETE || process.env.ANTI_DELETE || "true",
   ANTI_DELETE_PATH: process.env.ANTI_DELETE_PATH || "inbox",
