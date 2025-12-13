@@ -11,7 +11,7 @@ cmd({
         // Work for both inbox and groups
         await conn.sendPresenceUpdate('composing', from);
     } 
-    else if (config.AUTO_TYPING === 'ib') {
+    else if (config.AUTO_TYPING === 'inbox') {
         // Work only for inbox (private chats)
         if (!isGroup) {
             await conn.sendPresenceUpdate('composing', from);
@@ -34,7 +34,7 @@ cmd({
         // Work for both inbox and groups
         await conn.sendPresenceUpdate('recording', from);
     }
-    else if (config.AUTO_RECORDING === 'ib') {
+    else if (config.AUTO_RECORDING === 'inbox') {
         // Work only for inbox (private chats)
         if (!isGroup) {
             await conn.sendPresenceUpdate('recording', from);
