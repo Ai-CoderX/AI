@@ -7,12 +7,33 @@ cmd({
   from,
   body,
   sender,
+  botNumber2,
+  botNumber,
   isGroup,
   isAdmins,
   isBotAdmins,
   reply
 }) => {
   try {
+    // Get the original message object
+    const mek = m.mek || m;
+    
+    // CRITICAL CHECKS: Ignore messages from certain sources
+    // 1. Ignore if message is from the bot itself (fromMe)
+    if (mek.key.fromMe) {
+      return; // Ignore messages sent by the bot
+    }
+    
+    // 2. Check if sender is botNumber2 (same as isAdmins check)
+    if (sender === botNumber2) {
+      return; // Ignore messages from the bot
+    }
+    
+    // 3. Ignore if sender is an admin
+    if (isAdmins) {
+      return; // Admins can post links
+    }
+    
     // Initialize warnings if not exists
     if (!global.warnings) {
       global.warnings = {};
@@ -32,7 +53,8 @@ cmd({
     }
 
     // --- ANTI-LINK HANDLER ---
-    if (isGroup && !isAdmins && isBotAdmins) {
+    // Only proceed if: it's a group, bot is admin, and sender is NOT admin
+    if (isGroup && isBotAdmins) {
       // Clean the body for better detection
       let cleanBody = body.replace(/[\s\u200b-\u200d\uFEFF]/g, '').toLowerCase();
       
@@ -46,10 +68,10 @@ cmd({
         // Check anti-link mode from config
         if (config.ANTI_LINK === "true") {
           // Immediate removal mode
-          await conn.sendMessage(from, { delete: m.key });
+          await conn.sendMessage(from, { delete: mek.key });
           await conn.sendMessage(from, {
-            text: `*⚠️ Links are not allowed in this group.*\n*@${sender.split('@')[0]} has been removed.*`
-            // No mentions, no quoted message
+            text: `*⚠️ Links are not allowed in this group.*\n*@${sender.split('@')[0]} has been removed.*`,
+            mentions: [sender]
           });
           await conn.groupParticipantsUpdate(from, [sender], 'remove');
           return;
@@ -65,17 +87,17 @@ cmd({
           
           if (global.warnings[sender] <= 3) {
             // Warn user
-            await conn.sendMessage(from, { delete: m.key });
+            await conn.sendMessage(from, { delete: mek.key });
             await conn.sendMessage(from, {
-              text: `*⚠️ @${sender.split('@')[0]}, this is your ${global.warnings[sender]} warning.*\n*Please avoid sharing links.*\n\n⚠️ *Note:* Warnings reset every 30 minutes`
-              // No mentions, no quoted message
+              text: `*⚠️ @${sender.split('@')[0]}, this is your ${global.warnings[sender]} warning.*\n*Please avoid sharing links.*\n\n⚠️ *Note:* Warnings reset every 30 minutes`,
+              mentions: [sender]
             });
           } else {
             // Remove after 4th warning
-            await conn.sendMessage(from, { delete: m.key });
+            await conn.sendMessage(from, { delete: mek.key });
             await conn.sendMessage(from, {
-              text: `*🚨 @${sender.split('@')[0]} has been removed after exceeding warnings.*`
-              // No mentions, no quoted message
+              text: `*🚨 @${sender.split('@')[0]} has been removed after exceeding warnings.*`,
+              mentions: [sender]
             });
             await conn.groupParticipantsUpdate(from, [sender], 'remove');
             
@@ -87,10 +109,10 @@ cmd({
           
         } else if (config.ANTI_LINK === "delete") {
           // Delete only mode
-          await conn.sendMessage(from, { delete: m.key });
+          await conn.sendMessage(from, { delete: mek.key });
           await conn.sendMessage(from, {
-            text: `*⚠️ Links are not allowed in this group.*\n*Please @${sender.split('@')[0]} take note.*`
-            // No mentions, no quoted message
+            text: `*⚠️ Links are not allowed in this group.*\n*Please @${sender.split('@')[0]} take note.*`,
+            mentions: [sender]
           });
           return;
         }
@@ -98,12 +120,16 @@ cmd({
     }
     
     // If bot is not admin or sender is admin - DO NOTHING
-    // This section is removed since bot needs to be admin to take action
+    // The checks above already handle this with early returns
     
   } catch (error) {
     console.error("Anti-link error:", error);
     // Don't use reply() to avoid quoting
-    await conn.sendMessage(from, { text: "❌ An error occurred while processing the message." });
+    try {
+      await conn.sendMessage(from, { text: "❌ An error occurred while processing the message." });
+    } catch (e) {
+      console.error("Failed to send error message:", e);
+    }
   }
 });
 
