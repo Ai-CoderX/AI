@@ -247,8 +247,8 @@ conn.ev.on('messages.update', async updates => {
         }
     }
 });
-  
-  // ==================== GROUP EVENTS HANDLER ====================
+
+// ==================== GROUP EVENTS HANDLER ====================
 conn.ev.on('group-participants.update', async (update) => {
     try {
         if (config.WELCOME !== "true") return;
@@ -259,11 +259,14 @@ conn.ev.on('group-participants.update', async (update) => {
         const timestamp = new Date().toLocaleString();
 
         for (let user of update.participants) {
-            const userName = user.split('@')[0];
+            // FIX: Ensure user is a string before calling split
+            const userId = typeof user === 'string' ? user : (user.id || user);
+            const userName = userId.split('@')[0];
             let pfp;
 
             try {
-                pfp = await conn.profilePictureUrl(user, 'image');
+                // Use group profile picture instead of user profile picture
+                pfp = await conn.profilePictureUrl(update.id, 'image');
             } catch (err) {
                 pfp = config.MENU_IMAGE_URL || "https://files.catbox.moe/7zfdcq.jpg";
             }
@@ -285,11 +288,11 @@ conn.ev.on('group-participants.update', async (update) => {
                 await conn.sendMessage(update.id, {
                     image: { url: pfp },
                     caption: welcomeMsg,
-                    mentions: [user],
+                    mentions: [userId],
                     contextInfo: {
                         forwardingScore: 999,
                         isForwarded: true,
-                        mentionedJid: [user],
+                        mentionedJid: [userId],
                         forwardedNewsletterMessageInfo: {
                             newsletterName: config.BOT_NAME,
                             newsletterJid: "120363354023106228@newsletter",
@@ -312,11 +315,11 @@ conn.ev.on('group-participants.update', async (update) => {
                 await conn.sendMessage(update.id, {
                     image: { url: config.MENU_IMAGE_URL || "https://files.catbox.moe/7zfdcq.jpg" },
                     caption: goodbyeMsg,
-                    mentions: [user],
+                    mentions: [userId],
                     contextInfo: {
                         forwardingScore: 999,
                         isForwarded: true,
-                        mentionedJid: [user],
+                        mentionedJid: [userId],
                         forwardedNewsletterMessageInfo: {
                             newsletterName: config.BOT_NAME,
                             newsletterJid: "120363354023106228@newsletter",
@@ -327,18 +330,18 @@ conn.ev.on('group-participants.update', async (update) => {
 
             // ADMIN PROMOTE/DEMOTE HANDLER
             if (update.action === "promote" && config.ADMIN_ACTION === "true") {
-                const promoter = update.author.split("@")[0];
+                const promoter = typeof update.author === 'string' ? update.author.split("@")[0] : '';
                 await conn.sendMessage(update.id, {
                     text: `╭─〔 *🎉 Admin Event* 〕\n` +
                           `├─ @${promoter} promoted @${userName}\n` +
                           `├─ *Time:* ${timestamp}\n` +
                           `├─ *Group:* ${metadata.subject}\n` +
                           `╰─➤ *Powered by ${config.BOT_NAME}*`,
-                    mentions: [update.author, user],
+                    mentions: [update.author, userId],
                     contextInfo: {
                         forwardingScore: 999,
                         isForwarded: true,
-                        mentionedJid: [update.author, user],
+                        mentionedJid: [update.author, userId],
                         forwardedNewsletterMessageInfo: {
                             newsletterName: config.BOT_NAME,
                             newsletterJid: "120363354023106228@newsletter",
@@ -346,18 +349,18 @@ conn.ev.on('group-participants.update', async (update) => {
                     }
                 });
             } else if (update.action === "demote" && config.ADMIN_ACTION === "true") {
-                const demoter = update.author.split("@")[0];
+                const demoter = typeof update.author === 'string' ? update.author.split("@")[0] : '';
                 await conn.sendMessage(update.id, {
                     text: `╭─〔 *⚠️ Admin Event* 〕\n` +
                           `├─ @${demoter} demoted @${userName}\n` +
                           `├─ *Time:* ${timestamp}\n` +
                           `├─ *Group:* ${metadata.subject}\n` +
                           `╰─➤ *Powered by ${config.BOT_NAME}*`,
-                    mentions: [update.author, user],
+                    mentions: [update.author, userId],
                     contextInfo: {
                         forwardingScore: 999,
                         isForwarded: true,
-                        mentionedJid: [update.author, user],
+                        mentionedJid: [update.author, userId],
                         forwardedNewsletterMessageInfo: {
                             newsletterName: config.BOT_NAME,
                             newsletterJid: "120363354023106228@newsletter",
@@ -370,7 +373,8 @@ conn.ev.on('group-participants.update', async (update) => {
         console.error("❌ Error in welcome/goodbye message:", err);
     }
 });
-// ==================== END GROUP EVENTS ====================
+
+  // ==================== END GROUP EVENTS ====================
 
   conn.ev.on("call", async (calls) => {
     try {
