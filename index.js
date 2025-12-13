@@ -277,12 +277,12 @@ conn.ev.on('group-participants.update', async (update) => {
         const timestamp = new Date().toLocaleString();
 
         for (let user of update.participants) {
-            // Convert @lid to phone number using lidToPhone
-            const userPN = await lidToPhone(conn, user);
-            const userName = userPN;
+            // user is an object with id property in group events
+            const lid = user.id || user; // user.id might be the JID
             
-            // For mention tag, we need the full JID (the original user)
-            const userJid = user;
+            // Convert @lid to phone number using lidToPhone (for display only)
+            const userPN = await lidToPhone(conn, lid);
+            const userName = userPN; // Phone number for display
             
             // Use group profile picture instead of user's
             let pfp;
@@ -309,11 +309,11 @@ conn.ev.on('group-participants.update', async (update) => {
                 await conn.sendMessage(update.id, {
                     image: { url: pfp },
                     caption: welcomeMsg,
-                    mentions: [userJid],
+                    mentions: [lid], // Use the original JID for mention
                     contextInfo: {
                         forwardingScore: 999,
                         isForwarded: true,
-                        mentionedJid: [userJid],
+                        mentionedJid: [lid], // Use the original JID
                         forwardedNewsletterMessageInfo: {
                             newsletterName: config.BOT_NAME,
                             newsletterJid: "120363354023106228@newsletter",
@@ -336,11 +336,11 @@ conn.ev.on('group-participants.update', async (update) => {
                 await conn.sendMessage(update.id, {
                     image: { url: config.MENU_IMAGE_URL || "https://files.catbox.moe/7zfdcq.jpg" },
                     caption: goodbyeMsg,
-                    mentions: [userJid],
+                    mentions: [lid], // Use the original JID for mention
                     contextInfo: {
                         forwardingScore: 999,
                         isForwarded: true,
-                        mentionedJid: [userJid],
+                        mentionedJid: [lid], // Use the original JID
                         forwardedNewsletterMessageInfo: {
                             newsletterName: config.BOT_NAME,
                             newsletterJid: "120363354023106228@newsletter",
@@ -351,7 +351,7 @@ conn.ev.on('group-participants.update', async (update) => {
 
             // ADMIN PROMOTE/DEMOTE HANDLER
             if (update.action === "promote" && config.ADMIN_ACTION === "true") {
-                // Convert author JID using lidToPhone
+                // Convert author JID using lidToPhone (for display only)
                 const authorPN = await lidToPhone(conn, update.author);
                 const authorName = authorPN;
                 
@@ -361,11 +361,11 @@ conn.ev.on('group-participants.update', async (update) => {
                           `├─ *Time:* ${timestamp}\n` +
                           `├─ *Group:* ${metadata.subject}\n` +
                           `╰─➤ *Powered by ${config.BOT_NAME}*`,
-                    mentions: [update.author, userJid],
+                    mentions: [update.author, lid], // Use original JIDs
                     contextInfo: {
                         forwardingScore: 999,
                         isForwarded: true,
-                        mentionedJid: [update.author, userJid],
+                        mentionedJid: [update.author, lid], // Use original JIDs
                         forwardedNewsletterMessageInfo: {
                             newsletterName: config.BOT_NAME,
                             newsletterJid: "120363354023106228@newsletter",
@@ -373,7 +373,7 @@ conn.ev.on('group-participants.update', async (update) => {
                     }
                 });
             } else if (update.action === "demote" && config.ADMIN_ACTION === "true") {
-                // Convert author JID using lidToPhone
+                // Convert author JID using lidToPhone (for display only)
                 const authorPN = await lidToPhone(conn, update.author);
                 const authorName = authorPN;
                 
@@ -383,11 +383,11 @@ conn.ev.on('group-participants.update', async (update) => {
                           `├─ *Time:* ${timestamp}\n` +
                           `├─ *Group:* ${metadata.subject}\n` +
                           `╰─➤ *Powered by ${config.BOT_NAME}*`,
-                    mentions: [update.author, userJid],
+                    mentions: [update.author, lid], // Use original JIDs
                     contextInfo: {
                         forwardingScore: 999,
                         isForwarded: true,
-                        mentionedJid: [update.author, userJid],
+                        mentionedJid: [update.author, lid], // Use original JIDs
                         forwardedNewsletterMessageInfo: {
                             newsletterName: config.BOT_NAME,
                             newsletterJid: "120363354023106228@newsletter",
