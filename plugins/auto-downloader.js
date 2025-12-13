@@ -66,7 +66,11 @@ const platforms = {
 };
 
 // Create caption
-const createCaption = () => `${config.BOT_NAME} Auto Downloader\n\n> ${config.DESCRIPTION}`;
+const createCaption = () => 
+`╭──〔 🤖 ${config.BOT_NAME} 〕──✧
+│ ⚡ *Auto Media Downloader*
+│ 📝 ${config.DESCRIPTION}
+╰───────────────✧`;
 
 // No prefix auto-downloader handler
 cmd({
