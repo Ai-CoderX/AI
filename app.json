@@ -5,7 +5,7 @@
   "keywords": ["KHAN-MD"],
   "success_url": "/",
 
-    "stack": "container",
+  "stack": "container",
   "env": {
     "SESSION_ID": {
       "description": "Put the session-id here.",
@@ -29,27 +29,62 @@
       "description": "select your bot work type public-private-inbox-group.",
       "required": false,
       "value": "public"
-      
     },
 
-  "PRESENCE": {
-    "description": "Sets the presence type for the bot when responding to messages. Options: 'typing', 'recording', 'online', or any other value for offline/unavailable",
-    "required": false,
-    "value": "false"
-  },
+    "ALWAYS_ONLINE": {
+      "description": "Keep bot always online when receiving messages. Options: 'true' or 'false'",
+      "required": false,
+      "value": "false"
+    },
 
-  "ANTI_STATUS_MENTION": {
-    "description": "Control anti-status-mention feature in groups. Options: 'true' (enable), 'false' (disable), 'warn', 'delete'",
-    "required": false,
-    "value": "false"
-  },
+    "AUTO_TYPING": {
+      "description": "Show typing indicator when receiving messages. Options: 'true' (both), 'ib' (inbox only), 'group' (group only), 'false' (disabled)",
+      "required": false,
+      "value": "false"
+    },
 
-     "ANTI_DELETE": {
+    "AUTO_RECORDING": {
+      "description": "Show recording indicator when receiving messages. Options: 'true' (both), 'ib' (inbox only), 'group' (group only), 'false' (disabled)",
+      "required": false,
+      "value": "false"
+    },
+
+    "ANTI_STATUS_MENTION": {
+      "description": "Control anti-status-mention feature in groups. Options: 'true' (enable), 'false' (disable), 'warn', 'delete'",
+      "required": false,
+      "value": "false"
+    },
+
+    "ANTI_MENTION": {
+      "description": "Prevent unauthorized mentions of the bot. Options: 'true' (enable), 'false' (disable), 'warn', 'delete'",
+      "required": false,
+      "value": "false"
+    },
+
+    "ANTI_DELETE": {
       "description": "set true for show deleted messages.",
       "required": false,
       "value": "true"  
     },
-   
+
+    "ANTI_DELETE_PATH": {
+      "description": "change it to -same- if you want to resend deleted message in same chat otherwise inbox",
+      "required": false,
+      "value": "inbox"
+    },
+
+    "ANTI_EDIT": {
+      "description": "Detect and show edited messages. Options: 'true' or 'false'",
+      "required": false,
+      "value": "false"
+    },
+
+    "ANTI_EDIT_PATH": {
+      "description": "Where anti-edit should work. Options: 'inbox' (private chats only), 'group' (groups only), 'both' (both)",
+      "required": false,
+      "value": "inbox"
+    },
+
     "AUTO_REPLY": {
       "description": "Make it true if you want automatic reply.",
       "required": false,
@@ -61,7 +96,6 @@
       "required": false,
       "value": "false"
     }, 
-
 
     "AUTO_STATUS_SEEN": {
       "description": "Make it true for automatic status seen.",
@@ -85,30 +119,27 @@
       "description": "Type custom message on status reply",
       "required": true,
       "value": "*SEEN YOUR STATUS BY KHAN-MD 🖤*"
-   
-     }, 
+    }, 
     
     "OWNER_NAME": {
       "description": "Type Bot Owner Name.",
       "required": false,
       "value": "Jᴀᴡᴀᴅ TᴇᴄʜX"
-}, 
+    }, 
 
     "OWNER_NUMBER": {
       "description": "put the owner number for bot.",
       "required": false,
       "value": "923427582273"
-
     }, 
 
     "BOT_NAME": {
       "description": "Type here the bot name.",
       "required": false,
       "value": "KHAN-MD"
+    }, 
 
-      }, 
-
-     "ANTI_LINK": {
+    "ANTI_LINK": {
       "description": "Anti-Link System Mode: 'true' (delete+remove), 'false' (disabled), 'warn' (3 warnings), 'delete' (delete only)",
       "value": "true",
       "required": false
@@ -120,7 +151,7 @@
       "value": "false"
     },
 
-   "MENTION_REPLY": {
+    "MENTION_REPLY": {
       "description": "make it true if want mention reply if someone menetion you.",
       "required": false,
       "value": "false"
@@ -132,13 +163,12 @@
       "value": "https://files.catbox.moe/7zfdcq.jpg"
     },
     
-     "DESCRIPTION": {
+    "DESCRIPTION": {
       "description": "add caption for menu and other",
       "required": false,
       "value": "*© ᴘᴏᴡᴇʀᴇᴅ ʙʏ Jᴀᴡᴀᴅ TᴇᴄʜX*"
     },
      
- 
     "AUTO_REACT": {
       "description": "Make it true if you want react on every message.",
       "required": false,
@@ -149,7 +179,6 @@
       "description": "Make it true if you want custom reactions.",
       "required": false,
       "value": "false"
-      
     },   
     
     "CUSTOM_REACT_EMOJIS": {
@@ -158,17 +187,10 @@
       "value": "💙,🥰,💗,🥺,❤️,👻,💛,🌼,🫂,💜,🤎,🖤,🤍"
     }, 
 
-    
     "STATUS_REACT_EMOJIS": {
       "description": "put here custom status react react emojis.",
       "required": false,
       "value": "❤️,🧡,💛,💚,💙,💜,🤎,🖤,🤍"
-    }, 
-    
-    "ANTI_DELETE_PATH": {
-      "description": "change it to -same- if you want to resend deleted message in same chat othwise inbox",
-      "required": false,
-      "value": "inbox"
     }, 
 
     "ADMIN_ACTION": {
@@ -188,13 +210,12 @@
       "required": false,
       "value": "false"
     }
+  },
 
-},
-
-     "buildpacks": [
-        {
-            "url": "https://github.com/heroku/heroku-buildpack-nodejs.git"
-        }
-     ],
+  "buildpacks": [
+    {
+      "url": "https://github.com/heroku/heroku-buildpack-nodejs.git"
+    }
+  ],
   "stack": "heroku-24"
 }
