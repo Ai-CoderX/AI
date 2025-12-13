@@ -80,18 +80,6 @@
       "value": "inbox"
     },
 
-    "ANTI_EDIT": {
-      "description": "Show edited messages. Options: 'true' or 'false'",
-      "required": false,
-      "value": "false"
-    },
-
-    "ANTI_EDIT_PATH": {
-      "description": "change it to -same- if you want to see edited message in same chat otherwise inbox, 'group' (groups only), 'both' (both)",
-      "required": false,
-      "value": "inbox"
-    },
-
     "AUTO_REPLY": {
       "description": "Make it true if you want automatic reply.",
       "required": false,
