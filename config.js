@@ -41,9 +41,7 @@ module.exports = {
   // ===== OWNER & DEVELOPER SETTINGS =====
   OWNER_NUMBER: settings.OWNER_NUMBER || process.env.OWNER_NUMBER || "923427582273",
   OWNER_NAME: settings.OWNER_NAME || process.env.OWNER_NAME || "Jᴀᴡᴀᴅ TᴇᴄʜX",
-  DEV_NAME: process.env.DEV_NAME || "Jᴀᴡᴀᴅ TᴇᴄʜX",
   DEV: process.env.DEV || "923427582273",
-  DEVELOPER_NUMBER: '923427582273@s.whatsapp.net',
   
   // ===== AUTO-RESPONSE SETTINGS =====
   AUTO_REPLY: settings.AUTO_REPLY || process.env.AUTO_REPLY || "false",
@@ -59,8 +57,10 @@ module.exports = {
   STICKER_NAME: process.env.STICKER_NAME || "KHAN-MD",
   AUTO_STICKER: settings.AUTO_STICKER || process.env.AUTO_STICKER || "false",
 
-  // ===== PRESENCE SETTINGS =====
-  PRESENCE: settings.PRESENCE || process.env.PRESENCE || "false",
+  // ===== AUTO PRESENCE SETTINGS =====
+  ALWAYS_ONLINE: settings.ALWAYS_ONLINE || process.env.ALWAYS_ONLINE || "false",
+  AUTO_TYPING: settings.AUTO_TYPING || process.env.AUTO_TYPING || "false",
+  AUTO_RECORDING: settings.AUTO_RECORDING || process.env.AUTO_RECORDING || "false",
 
   // ===== MEDIA & AUTOMATION =====
   MENTION_REPLY: settings.MENTION_REPLY || process.env.MENTION_REPLY || "false",
@@ -69,12 +69,14 @@ module.exports = {
 
   // ===== SECURITY & ANTI-FEATURES =====
   ANTI_DELETE: settings.ANTI_DELETE || process.env.ANTI_DELETE || "true",
+  ANTI_DELETE_PATH: process.env.ANTI_DELETE_PATH || "inbox",
+  ANTI_EDIT: settings.ANTI_EDIT || process.env.ANTI_EDIT || "false",
+  ANTI_EDIT_PATH: settings.ANTI_EDIT_PATH || process.env.ANTI_EDIT_PATH || "inbox",
   ANTI_CALL: settings.ANTI_CALL || process.env.ANTI_CALL || "false",
   ANTI_BAD_WORD: settings.ANTI_BAD_WORD || process.env.ANTI_BAD_WORD || "false",
   ANTI_LINK: settings.ANTI_LINK || process.env.ANTI_LINK || "true",
   ANTI_SPAM: settings.ANTI_SPAM || process.env.ANTI_SPAM || "false",
   ANTI_VV: settings.ANTI_VV || process.env.ANTI_VV || "false",
-  ANTI_DELETE_PATH: process.env.ANTI_DELETE_PATH || "inbox",
   ANTI_BOT: settings.ANTI_BOT || process.env.ANTI_BOT || "false",
   PM_BLOCKER: settings.PM_BLOCKER || process.env.PM_BLOCKER || "false",
   ANTI_MENTION: settings.ANTI_MENTION || process.env.ANTI_MENTION || "false",
@@ -89,4 +91,4 @@ module.exports = {
   ADMIN_ACTION: settings.ADMIN_ACTION || process.env.ADMIN_ACTION || "false",
   VERSION: process.env.VERSION || "9.0.0 Bᴇᴛᴀ",
   TIMEZONE: settings.TIMEZONE || process.env.TIMEZONE || "Asia/Karachi",
- };
+};
