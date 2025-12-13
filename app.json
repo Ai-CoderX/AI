@@ -69,7 +69,7 @@
     },
 
     "ANTI_DELETE": {
-      "description": "set true for show deleted messages.",
+      "description": "set true for show deleted messages. ( true / false )",
       "required": false,
       "value": "true"  
     },
