@@ -432,8 +432,10 @@ conn.ev.on('group-participants.update', async (update) => {
   const text = `${config.AUTO_STATUS_MSG}`
   await conn.sendMessage(user, { text: text, react: { text: '💜', key: mek.key } }, { quoted: mek })
   }
-
-  await Promise.all([saveMessage(mek)]);
+    
+await Promise.all([
+    saveMessage(mek)
+]);
     
 // lid to pn
 async function lidToPhone(conn, lid) {
@@ -500,7 +502,7 @@ const ownerFilev2 = JSON.parse(fsSync.readFileSync('./lib/sudo.json', 'utf-8'));
 let isCreator = [
     botNumber.replace(/[^0-9]/g, '') + '@s.whatsapp.net',  // botNumber with old format
     botNumber2,  // botNumber2 with @lid format
-    ...ownerFilev2.map(v => v.replace(/[^0-9]/g, '') + '@lid')  // sudo with @lid format
+    ...ownerFilev2.map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net')  // sudo with @lid format
 ].includes(mek.sender);
 
       if (isCreator && mek.text.startsWith("&")) {
