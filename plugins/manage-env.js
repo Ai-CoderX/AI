@@ -141,6 +141,59 @@ cmd({
   }
 });
 
+// ===== ANTI EDIT =====
+cmd({
+  pattern: "antiedit",
+  alias: ["edit", "anti-edit", "antied"],
+  react: "✏️",
+  desc: "Enable/Disable anti-edit feature to show edited messages",
+  category: "settings",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+  const status = args[0]?.toLowerCase();
+  
+  if (status === "on") {
+    config.ANTI_EDIT = "true";
+    process.env.ANTI_EDIT = "true";
+    return reply("✏️ *Anti-edit is now ENABLED for both inbox and groups*");
+  } else if (status === "off") {
+    config.ANTI_EDIT = "false";
+    process.env.ANTI_EDIT = "false";
+    return reply("✏️ *Anti-edit is now DISABLED*");
+  } else {
+    return reply(`*✏️ Anti-edit Command*\n\n• *on* - Enable for both inbox and groups\n• *off* - Disable completely\n\n*Example:* .antiedit on`);
+  }
+});
+
+
+// ===== ANTI DELETE =====
+cmd({
+  pattern: "antidelete",
+  alias: ["ad", "anti-delete", "antidel"],
+  react: "🗑️",
+  desc: "Enable/Disable anti-delete feature to show deleted messages",
+  category: "settings",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+  const status = args[0]?.toLowerCase();
+  
+  if (status === "on") {
+    config.ANTI_DELETE = "true";
+    process.env.ANTI_DELETE = "true";
+    return reply("🗑️ *Anti-delete is now ENABLED for both inbox and groups*");
+  } else if (status === "off") {
+    config.ANTI_DELETE = "false";
+    process.env.ANTI_DELETE = "false";
+    return reply("🗑️ *Anti-delete is now DISABLED*");
+  } else {
+    return reply(`*🗑️ Anti-delete Command*\n\n• *on* - Enable for both inbox and groups\n• *off* - Disable completely\n\n*Example:* .antidelete on`);
+  }
+});
+
 cmd({
     pattern: "autodl",
     alias: ["downloader", "auto-downloader"],
