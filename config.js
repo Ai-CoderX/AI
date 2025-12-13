@@ -71,8 +71,6 @@ module.exports = {
   // ===== SECURITY & ANTI-FEATURES =====
   ANTI_DELETE: settings.ANTI_DELETE || process.env.ANTI_DELETE || "true",
   ANTI_DELETE_PATH: process.env.ANTI_DELETE_PATH || "inbox",
-  ANTI_EDIT: settings.ANTI_EDIT || process.env.ANTI_EDIT || "false",
-  ANTI_EDIT_PATH: settings.ANTI_EDIT_PATH || process.env.ANTI_EDIT_PATH || "inbox",
   ANTI_CALL: settings.ANTI_CALL || process.env.ANTI_CALL || "false",
   ANTI_BAD_WORD: settings.ANTI_BAD_WORD || process.env.ANTI_BAD_WORD || "false",
   ANTI_LINK: settings.ANTI_LINK || process.env.ANTI_LINK || "true",
