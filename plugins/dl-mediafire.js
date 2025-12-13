@@ -28,8 +28,6 @@ cmd({
     const fileName = data.result.fileName;
     const downloadUrl = data.result.downloadUrl;
 
-    await reply(`📥 Downloading File:\n📄 *Name:* ${fileName}\n\nPlease wait...`);
-
     const fileResponse = await axios.get(downloadUrl, { responseType: 'arraybuffer' });
     const fileBuffer = Buffer.from(fileResponse.data);
 
