@@ -23,6 +23,9 @@ async (conn, mek, m, { from, participants, reply, isGroup, isAdmins, isCreator, 
             return reply("❌ Only group admins or the bot owner can use this command.");
         }
 
+        // ✅ Add 3-second delay before processing
+        await sleep(3000);
+
         // ✅ Fetch group info
         let groupInfo = await conn.groupMetadata(from).catch(() => null);
         if (!groupInfo) return reply("❌ Failed to fetch group information.");
@@ -38,40 +41,43 @@ async (conn, mek, m, { from, participants, reply, isGroup, isAdmins, isCreator, 
         // ✅ Readmore for better formatting
         const readmore = '\u200B'.repeat(4001);
         
-        // ✅ Random symbols for info section
-        const symbols = ['❖', '◈', '◆', '◇', '▣', '▤', '▥', '▦', '▧', '▨', '▩', '◉', '◊', '◎', '●', '○', '◎', '◐', '◑', '◒', '◓'];
+        // ✅ Single set of symbols for both sections
+        const symbols = ['⬡', '⬦', '⬨', '⬫', '⬭', '⬯', '◈', '◉', '◊', '◎'];
         const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
-        
-        // ✅ Random symbols for mention section
-        const mentionSymbols = ['⬡', '⬢', '⬣', '⬤', '⬥', '⬦', '⬧', '⬨', '⬩', '⬪', '⬫', '⬬', '⬭', '⬮', '⬯', '◈', '◉', '◊', '◎'];
-        const randomMentionSymbol = mentionSymbols[Math.floor(Math.random() * mentionSymbols.length)];
 
-        // ✅ Create the formatted message with readmore
-        let teks = `*╭──❖ ɢʀᴏᴜᴘ ᴀɴɴᴏᴜɴᴄᴇᴍᴇɴᴛ ❖──*
-*│*
-*│ ${randomSymbol} ɢʀᴏᴜᴘ: ${groupName}*
-*│ ${randomSymbol} ᴍᴇᴍʙᴇʀs: ${totalMembers}*
-*│ ${randomSymbol} ᴍᴇssᴀɢᴇ: ${message}*
-*│*
-*│ 📢 ᴛᴀᴘ 'ʀᴇᴀᴅ ᴍᴏʀᴇ' ᴛᴏ sᴇᴇ ᴀʟʟ ᴍᴇᴍʙᴇʀs*
+        // ✅ Create the formatted message with unified styling
+        let teks = `*╭───${randomSymbol} ɢʀᴏᴜᴘ ᴀɴɴᴏᴜɴᴄᴇᴍᴇɴᴛ ${randomSymbol}───*
+*┋ ${randomSymbol} ɢʀᴏᴜᴘ: ${groupName}*
+*┋ ${randomSymbol} ᴍᴇᴍʙᴇʀs: ${totalMembers}*
+*┋ ${randomSymbol} ᴍᴇssᴀɢᴇ: ${message}*
+*┋*
+*┋ 📢 ᴛᴀᴘ 'ʀᴇᴀᴅ ᴍᴏʀᴇ' ᴛᴏ sᴇᴇ ᴀʟʟ ᴍᴇᴍʙᴇʀs*
 *╰─────────────────────⊷*
 ${readmore}
-*╭───${randomMentionSymbol} ᴍᴇɴᴛɪᴏɴs ${randomMentionSymbol}───*`;
+*╭───${randomSymbol} ᴍᴇɴᴛɪᴏɴs ${randomSymbol}───*`;
 
-        // ✅ Add members with requested formatting
+        // ✅ Add members without asterisks (plain text for mentions section)
         for (let mem of participants) {
             if (!mem.id) continue;
-            teks += `\n*┋ ${randomMentionSymbol} @${mem.id.split('@')[0]}*`;
+            teks += `\n${randomSymbol} @${mem.id.split('@')[0]}`;
         }
 
         teks += `\n*╰───────────────────⊷*\n> ${config.DESCRIPTION}`;
+
+        // ✅ Create mentions array
+        let mentions = [];
+        for (let mem of participants) {
+            if (mem.id) {
+                mentions.push(mem.id);
+            }
+        }
 
         // ✅ Send the message with mentions
         await conn.sendMessage(
             from, 
             { 
                 text: teks, 
-                mentions: participants.map(a => a.id)
+                mentions: mentions
             }, 
             { 
                 quoted: mek 
