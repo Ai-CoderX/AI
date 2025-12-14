@@ -6,7 +6,7 @@ cmd({
     pattern: "tagall",
     alias: ["gc_tagall", "mentionall", "everyone"],
     desc: "To Tag all Members in Group",
-    react: "📢",
+    react: "⚡",
     category: "group",
     use: '.tagall [message]',
     filename: __filename
@@ -24,7 +24,7 @@ async (conn, mek, m, { from, participants, reply, isGroup, isAdmins, isCreator, 
         }
 
         // ✅ Add 3-second delay before processing
-        await sleep(3000);
+        await sleep(1500);
 
         // ✅ Fetch group info
         let groupInfo = await conn.groupMetadata(from).catch(() => null);
