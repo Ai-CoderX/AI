@@ -49,7 +49,8 @@ module.exports = {
   AUTO_STATUS_MSG: process.env.AUTO_STATUS_MSG || "*KHAN MD VIEWED YOUR STATUS 🤖*",
   READ_MESSAGE: settings.READ_MESSAGE || process.env.READ_MESSAGE || "false",
   REJECT_MSG: process.env.REJECT_MSG || "*📞 ᴄαℓℓ ɴσт αℓℓσωє∂ ιɴ тнιѕ ɴᴜмвєʀ уσυ ∂σɴт нανє ᴘєʀмιѕѕισɴ 📵*",
-
+  AUTO_VOICE: settings.AUTO_VOICE || process.env.AUTO_VOICE || "false",
+  
   // ===== REACTION SETTINGS =====
   AUTO_REACT: settings.AUTO_REACT || process.env.AUTO_REACT || "false",
   CUSTOM_REACT: settings.CUSTOM_REACT || process.env.CUSTOM_REACT || "false",
@@ -70,7 +71,8 @@ module.exports = {
   
   // ===== SECURITY & ANTI-FEATURES =====
   ANTI_DELETE: settings.ANTI_DELETE || process.env.ANTI_DELETE || "true",
-  ANTI_DELETE_PATH: settings.ANTI_DELETE_PATH || process.env.ANTI_DELETE_PATH || "inbox",
+  RECOVERY_PATH: settings.RECOVERY_PATH || process.env.RECOVERY_PATH || "inbox",
+  ANTI_EDIT: settings.ANTI_EDIT || process.env.ANTI_EDIT || "true",
   ANTI_CALL: settings.ANTI_CALL || process.env.ANTI_CALL || "false",
   ANTI_BAD_WORD: settings.ANTI_BAD_WORD || process.env.ANTI_BAD_WORD || "false",
   ANTI_LINK: settings.ANTI_LINK || process.env.ANTI_LINK || "true",
