@@ -17,7 +17,7 @@ async (conn, mek, m, { from, reply, react }) => {
             {
                 audio: { url: RUN_MUREED_AUDIO },
                 mimetype: "audio/mpeg",
-                ptt: false
+                ptt: true
             },
             { quoted: mek }
         );
