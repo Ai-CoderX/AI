@@ -20,7 +20,7 @@ const platforms = {
     },
     instagram: {
         pattern: /(?:https?:\/\/)?(?:www\.)?(instagram\.com|instagr\.am)\/[^\s]+/i,
-        api: "https://api-aswin-sparky.koyeb.app/api/downloader/igdl",
+        api: "https://jawad-tech.vercel.app/igdl",
         method: "media"
     },
     tiktok: {
@@ -38,23 +38,6 @@ const platforms = {
         api: "https://api.deline.web.id/downloader/mediafire",
         method: "document"
     },
-    // Direct file URLs
-    image: {
-        pattern: /(https?:\/\/[^\s]+\.(jpg|jpeg|png|gif|webp|bmp|tiff|svg))(\?[^\s]*)?/i,
-        method: "direct"
-    },
-    audio: {
-        pattern: /(https?:\/\/[^\s]+\.(mp3|wav|ogg|flac|m4a))(\?[^\s]*)?/i,
-        method: "direct"
-    },
-    video: {
-        pattern: /(https?:\/\/[^\s]+\.(mp4|avi|mov|wmv|flv|mkv|webm))(\?[^\s]*)?/i,
-        method: "direct"
-    },
-    document: {
-        pattern: /(https?:\/\/[^\s]+\.(zip|rar|7z|tar\.gz|pdf|doc|docx|xls|xlsx|ppt|pptx|txt|js|json|xml|html|css))(\?[^\s]*)?/i,
-        method: "direct"
-    },
     catbox: {
         pattern: /https?:\/\/files\.catbox\.moe\/[^\s]+/i,
         method: "direct"
@@ -66,7 +49,7 @@ const platforms = {
 };
 
 const createCaption = () =>
-`> *${config.BOT_NAME} Auto Downloader*`;
+`*${config.BOT_NAME} Auto Downloader*`;
 
 // No prefix auto-downloader handler
 cmd({
@@ -186,30 +169,11 @@ async function handleMegaDownload(client, from, url, caption, message) {
     }
 }
 
-// Handle direct file URLs
+// Handle direct file URLs (only for catbox now)
 async function handleDirectDownload(client, from, url, platformType, caption, message) {
     try {
-        const extMatch = url.match(/\.([a-z0-9]+)(?:\?|$)/i);
-        const ext = extMatch ? extMatch[1].toLowerCase() : '';
-
-        if (platformType === "image" || ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'tiff', 'svg'].includes(ext)) {
-            await client.sendMessage(from, {
-                image: { url: url },
-                caption: caption
-            }, { quoted: message });
-        } else if (platformType === "video" || ['mp4', 'avi', 'mov', 'wmv', 'flv', 'mkv', 'webm'].includes(ext)) {
-            await client.sendMessage(from, {
-                video: { url: url },
-                caption: caption
-            }, { quoted: message });
-        } else if (platformType === "audio" || ['mp3', 'wav', 'ogg', 'flac', 'm4a'].includes(ext)) {
-            await client.sendMessage(from, {
-                audio: { url: url },
-                mimetype: "audio/mpeg",
-                ptt: false
-            }, { quoted: message });
-        } else {
-            // For documents (zip, pdf, js, etc.)
+        // Only handling catbox now
+        if (platformType === "catbox") {
             const fileName = url.split('/').pop().split('?')[0] || "Downloaded_File";
             await client.sendMessage(from, {
                 document: { url: url },
@@ -285,7 +249,38 @@ async function handleApiDownload(client, from, url, platformType, caption, messa
             return;
         }
 
-        // Handle other APIs (YouTube, Facebook, Instagram, Pinterest)
+        // Handle Instagram with the new API
+        if (platformType === "instagram") {
+            // Using the new API: https://jawad-tech.vercel.app/igdl
+            if (!response.data?.status || !response.data.result?.length) {
+                throw new Error("Failed to fetch Instagram media");
+            }
+            
+            const mediaData = response.data.result;
+
+            // Send all media items
+            for (const item of mediaData) {
+                const isVideo = item.contentType?.includes('video') || item.format === 'mp4';
+                
+                if (isVideo) {
+                    await client.sendMessage(from, {
+                        video: { url: item.url },
+                        caption: caption
+                    }, { quoted: message });
+                } else {
+                    await client.sendMessage(from, {
+                        image: { url: item.url },
+                        caption: caption
+                    }, { quoted: message });
+                }
+                
+                // Small delay between sends to avoid rate limiting
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+            return;
+        }
+
+        // Handle other APIs (YouTube, Facebook, Pinterest)
         if (!response.data?.status) {
             throw new Error("API returned error");
         }
@@ -298,27 +293,6 @@ async function handleApiDownload(client, from, url, platformType, caption, messa
                         video: { url: data.result.mp4 },
                         caption: caption
                     }, { quoted: message });
-                }
-                break;
-            case "instagram":
-                // Using the new API: api-aswin-sparky.koyeb.app/api/downloader/igdl
-                if (response.data?.data?.length > 0) {
-                    for (const item of response.data.data) {
-                        if (item.url) {
-                            const isVideo = item.type === 'video';
-                            if (isVideo) {
-                                await client.sendMessage(from, {
-                                    video: { url: item.url },
-                                    caption: caption
-                                }, { quoted: message });
-                            } else {
-                                await client.sendMessage(from, {
-                                    image: { url: item.url },
-                                    caption: caption
-                                }, { quoted: message });
-                            }
-                        }
-                    }
                 }
                 break;
             case "facebook":
