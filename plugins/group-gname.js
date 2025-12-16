@@ -3,24 +3,38 @@ const { cmd, commands } = require('../command')
 const { getBuffer, getGroupAdmins, getRandom, h2k, isUrl, Json, runtime, sleep, fetchJson} = require('../lib/functions')
 
 cmd({
-    pattern: "updategname",
-    alias: ["upgname", "gname"],
-    react: "📝",
-    desc: "Change the group name.",
-    category: "group",
-    filename: __filename
-},           
-async (conn, mek, m, { from, isGroup, isAdmins, isBotAdmins, args, q, reply }) => {
-    try {
-        if (!isGroup) return reply("❌ This command can only be used in groups.");
-        if (!isAdmins) return reply("❌ Only group admins can use this command.");
-        if (!isBotAdmins) return reply("❌ I need to be an admin to update the group name.");
-        if (!q) return reply("❌ Please provide a new group name.");
+  pattern: "updategname",
+  alias: ["gname", "setname", "groupname"],
+  desc: "Change the group name",
+  category: "group",
+  react: "📝",
+  filename: __filename
+}, async (conn, mek, m, {
+  from,
+  isCreator,
+  isBotAdmins,
+  isAdmins,
+  isGroup,
+  q,
+  reply
+}) => {
+  try {
+    if (!isGroup) return await reply("⚠️ This command only works in groups.");
+    if (!isBotAdmins) return await reply("❌ I must be admin to change group name.");
+    if (!isAdmins && !isCreator) return await reply("🔐 Only admins can use this command.");
+    
+    if (!q) return await reply("❌ Please provide a new group name.\nExample: `gname My New Group`");
 
-        await conn.groupUpdateSubject(from, q);
-        reply(`✅ Group name has been updated to: *${q}*`);
-    } catch (e) {
-        console.error("Error updating group name:", e);
-        reply("❌ Failed to update the group name. Please try again.");
+    // Limit group name length
+    if (q.length > 100) {
+      return await reply("⚠️ Group name is too long (max 100 characters).");
     }
+
+    await conn.groupUpdateSubject(from, q);
+    await reply(`✅ Group name changed to: *${q}*`);
+
+  } catch (err) {
+    console.error(err);
+    await reply("❌ Failed to update group name.");
+  }
 });
