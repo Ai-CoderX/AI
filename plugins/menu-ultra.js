@@ -84,20 +84,6 @@ const getCategorizedCommands = () => {
     return { categorized, totalCommands };
 };
 
-// Function to get image URL with fallback
-const getImageUrl = () => {
-    const primaryUrl = config.MENU_IMAGE_URL;
-    const fallbackUrl = 'https://i.ibb.co/ns3bgQyx/IMG-20251016-WA0020.jpg';
-    
-    // Check if primary URL exists and is not empty
-    if (primaryUrl && primaryUrl.trim() !== '') {
-        return primaryUrl;
-    }
-    
-    // Return fallback URL
-    return fallbackUrl;
-};
-
 cmd({
     pattern: "menu",
     alias: ["m", "help"],
@@ -127,12 +113,9 @@ ${menuOptions}*╰───────────────────⊷*
 
 > *ʀᴇᴘʟʏ ᴡɪᴛʜ ᴛʜᴇ ɴᴜᴍʙᴇʀ ᴛᴏ sᴇʟᴇᴄᴛ ᴍᴇɴᴜ (1-${availableCategories.length})*`;
 
-        // Get image URL with fallback
-        const imageUrl = getImageUrl();
-        
         // Send menu image with caption
         const sentMsg = await conn.sendMessage(from, {
-            image: { url: imageUrl },
+            image: { url: 'https://i.ibb.co/ns3bgQyx/IMG-20251016-WA0020.jpg' },
             caption: caption,
             contextInfo: commonContextInfo(sender)
         }, { quoted: mek });
@@ -182,9 +165,8 @@ ${menuOptions}*╰───────────────────⊷*
                     categoryMenu += `${categorySection}\n\n`;
                     categoryMenu += `> *ᴜsᴇ ${config.PREFIX}ᴍᴇɴᴜ ᴛᴏ sᴇᴇ ᴀʟʟ ᴍᴇɴᴜs ᴀɢᴀɪɴ*`;
 
-                    // Use fallback image URL for category menu as well
                     await conn.sendMessage(senderID, {
-                        image: { url: imageUrl },
+                        image: { url: 'https://i.ibb.co/ns3bgQyx/IMG-20251016-WA0020.jpg' },
                         caption: categoryMenu,
                         contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
                     }, { quoted: receivedMsg });
