@@ -4,7 +4,7 @@ const { getBuffer, getGroupAdmins, getRandom, h2k, isUrl, Json, runtime, sleep, 
 
 cmd({
   pattern: "revoke",
-  alias: ["resetlink", "newlink", "resetinvite"],
+  alias: ["resetlink", "newlink"],
   desc: "Reset group invite link",
   category: "group",
   react: "🔄",
@@ -18,20 +18,15 @@ cmd({
   reply
 }) => {
   try {
-    if (!isGroup) return reply("⚠️ This command only works in groups.");
-    if (!isBotAdmins) return reply("❌ I must be admin to revoke invite link.");
-    if (!isAdmins && !isCreator) return reply("🔐 Only group admins or owner can use this command.");
+    if (!isGroup) return await reply("⚠️ This command only works in groups.");
+    if (!isBotAdmins) return await reply("❌ I must be admin to reset link.");
+    if (!isAdmins && !isCreator) return await reply("🔐 Only admins can use this command.");
 
-    // Revoke the invite link
-    const newInviteCode = await conn.groupRevokeInvite(from);
-    
-    // Create the new invite link
-    const newLink = `https://chat.whatsapp.com/${newInviteCode}`;
-    
-    reply(`*✅ Group invite link has been reset!*\n\n*New Link:* ${newLink}`);
+    const newCode = await conn.groupRevokeInvite(from);
+    await reply(`*✅ Link Reset Successful!*\n\n🔗 https://chat.whatsapp.com/${newCode}`);
 
   } catch (err) {
     console.error(err);
-    reply("❌ Failed to revoke invite link. Something went wrong.");
+    await reply("❌ Failed to reset link.");
   }
 });
