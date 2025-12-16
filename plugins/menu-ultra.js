@@ -1,3 +1,4 @@
+// JawadTech
 const config = require('../config');
 const { cmd, commands } = require('../command');
 const { runtime } = require('../lib/functions');
@@ -121,7 +122,7 @@ ${menuOptions}*╰───────────────────⊷*
         }, { quoted: mek });
 
         // Send audio voice message
-        const audioPath = path.join(__dirname, '../assets/menux.m4a');
+        const audioPath = path.join(__dirname, '../lib/menux.m4a');
         if (fs.existsSync(audioPath)) {
             await conn.sendMessage(from, {
                 audio: { url: audioPath },
