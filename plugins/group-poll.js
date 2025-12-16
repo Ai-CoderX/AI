@@ -1,40 +1,53 @@
-//---------------------------------------------------------------------------
-//           KHAN-MD  
-//---------------------------------------------------------------------------
-//  ⚠️ DO NOT MODIFY THIS FILE ⚠️  
-//---------------------------------------------------------------------------
-const { cmd, commands } = require('../command');
-const config = require('../config');
-const prefix = config.PREFIX;
-const fs = require('fs');
-const { getBuffer, getGroupAdmins, getRandom, h2k, isUrl, Json, sleep, fetchJson } = require('../lib/functions2');
-const { writeFileSync } = require('fs');
-const path = require('path');
+const { cmd } = require("../command");
 
 cmd({
   pattern: "poll",
+  alias: ["vote", "survey"],
+  desc: "Create a poll with question and options",
   category: "group",
-  desc: "Create a poll with a question and options in the group.",
   filename: __filename,
-}, async (conn, mek, m, { from, isGroup, body, sender, groupMetadata, participants, prefix, pushname, reply }) => {
+}, async (conn, mek, m, {
+  from,
+  isCreator,
+  isAdmins,
+  isGroup,
+  q,
+  reply
+}) => {
   try {
-    let [question, optionsString] = body.split(";");
+    if (!isGroup) return await reply("⚠️ This command only works in groups.");
+    if (!isAdmins && !isCreator) return await reply("🔐 Only admins can create polls.");
     
-    if (!question || !optionsString) {
-      return reply(`Usage: ${prefix}poll question;option1,option2,option3...`);
+    if (!q) {
+      return await reply("❓ Usage: `poll Question;Option1,Option2,Option3`\nExample: `poll Best color?;Red,Blue,Green,Black`");
     }
 
-    let options = [];
-    for (let option of optionsString.split(",")) {
-      if (option && option.trim() !== "") {
-        options.push(option.trim());
-      }
+    const parts = q.split(";");
+    if (parts.length < 2) {
+      return await reply("⚠️ Please provide both question and options.\nFormat: Question;Option1,Option2,Option3");
     }
+
+    const question = parts[0].trim();
+    const optionsString = parts[1].trim();
+
+    if (!question || !optionsString) {
+      return await reply("⚠️ Question and options are required.");
+    }
+
+    // Parse options
+    const options = optionsString.split(",")
+      .map(opt => opt.trim())
+      .filter(opt => opt.length > 0);
 
     if (options.length < 2) {
-      return reply("*Please provide at least two options for the poll.*");
+      return await reply("❌ Please provide at least two options.");
     }
 
+    if (options.length > 12) {
+      return await reply("⚠️ Maximum 12 options allowed.");
+    }
+
+    // Create and send poll
     await conn.sendMessage(from, {
       poll: {
         name: question,
@@ -43,7 +56,9 @@ cmd({
         toAnnouncementGroup: true,
       }
     }, { quoted: mek });
-  } catch (e) {
-    return reply(`*An error occurred while processing your request.*\n\n_Error:_ ${e.message}`);
+
+  } catch (err) {
+    console.error(err);
+    await reply("❌ Failed to create poll.");
   }
 });
