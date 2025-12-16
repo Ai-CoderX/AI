@@ -3,20 +3,6 @@ const { cmd, commands } = require('../command');
 const { runtime } = require('../lib/functions');
 const fs = require('fs');
 const path = require('path');
-const fetch = require('node-fetch'); // Ensure node-fetch is installed in your project
-
-// Helper function to check if URL is accessible
-const getWorkingImageUrl = async (primaryUrl, fallbackUrl) => {
-    try {
-        const response = await fetch(primaryUrl, { method: 'HEAD', timeout: 10000 });
-        if (response.ok) {
-            return primaryUrl;
-        }
-    } catch (err) {
-        // Primary URL failed
-    }
-    return fallbackUrl;
-};
 
 // Helper function for small caps text
 const toSmallCaps = (text) => {
@@ -45,7 +31,7 @@ const formatCategory = (category, cmds) => {
         return `*┋ ⬡ ${toSmallCaps(commandName)}*`;
     }).join('\n');
     let footer = `\n╰───────────────────⊷`;
-    return `\( {title} \){body}${footer}`;
+    return `${title}${body}${footer}`;
 };
 
 // Format menu options with same font style as category
@@ -57,7 +43,7 @@ const formatMenuOptions = (categories) => {
         // Capitalize first letter of category and convert to small caps
         const displayName = toSmallCaps(cat.charAt(0).toUpperCase() + cat.slice(1));
         const menuText = toSmallCaps(' Menu'); // Add "Menu" in small caps
-        menuOptions += `*┋ ⬡ \( {optionNumber}. \){displayName}${menuText}*\n`;
+        menuOptions += `*┋ ⬡ ${optionNumber}. ${displayName}${menuText}*\n`;
         optionNumber++;
     });
     
@@ -98,6 +84,20 @@ const getCategorizedCommands = () => {
     return { categorized, totalCommands };
 };
 
+// Function to get image URL with fallback
+const getImageUrl = () => {
+    const primaryUrl = config.MENU_IMAGE_URL;
+    const fallbackUrl = 'https://i.ibb.co/ns3bgQyx/IMG-20251016-WA0020.jpg';
+    
+    // Check if primary URL exists and is not empty
+    if (primaryUrl && primaryUrl.trim() !== '') {
+        return primaryUrl;
+    }
+    
+    // Return fallback URL
+    return fallbackUrl;
+};
+
 cmd({
     pattern: "menu",
     alias: ["m", "help"],
@@ -114,13 +114,6 @@ async (conn, mek, m, { from, sender, pushname, reply }) => {
         const availableCategories = Object.keys(categorized);
         const menuOptions = formatMenuOptions(availableCategories);
 
-        // Define primary and fallback URLs
-        const primaryUrl = config.MENU_IMAGE_URL || 'https://i.ibb.co/ns3bgQyx/IMG-20251016-WA0020.jpg';
-        const fallbackUrl = 'https://i.ibb.co/ns3bgQyx/IMG-20251016-WA0020.jpg'; // Your second ibb link (fix if needed to full direct URL)
-
-        // Get working image URL
-        const menuImageUrl = await getWorkingImageUrl(primaryUrl, fallbackUrl);
-
         const caption = `*╭┈───〔 ${config.BOT_NAME} 〕┈───⊷*
 *├▢ 🇵🇸 Owner:* ${config.OWNER_NAME}
 *├▢ 🪄 Prefix:* ${config.PREFIX}
@@ -134,15 +127,18 @@ ${menuOptions}*╰───────────────────⊷*
 
 > *ʀᴇᴘʟʏ ᴡɪᴛʜ ᴛʜᴇ ɴᴜᴍʙᴇʀ ᴛᴏ sᴇʟᴇᴄᴛ ᴍᴇɴᴜ (1-${availableCategories.length})*`;
 
+        // Get image URL with fallback
+        const imageUrl = getImageUrl();
+        
         // Send menu image with caption
         const sentMsg = await conn.sendMessage(from, {
-            image: { url: menuImageUrl },
+            image: { url: imageUrl },
             caption: caption,
             contextInfo: commonContextInfo(sender)
         }, { quoted: mek });
 
         // Send audio voice message
-        const audioPath = path.join(__dirname, '../lib/menux.m4a');
+        const audioPath = path.join(__dirname, '../assets/menux.m4a');
         if (fs.existsSync(audioPath)) {
             await conn.sendMessage(from, {
                 audio: { url: audioPath },
@@ -186,11 +182,9 @@ ${menuOptions}*╰───────────────────⊷*
                     categoryMenu += `${categorySection}\n\n`;
                     categoryMenu += `> *ᴜsᴇ ${config.PREFIX}ᴍᴇɴᴜ ᴛᴏ sᴇᴇ ᴀʟʟ ᴍᴇɴᴜs ᴀɢᴀɪɴ*`;
 
-                    // Use the same working URL logic for category menu image
-                    const categoryImageUrl = await getWorkingImageUrl(primaryUrl, fallbackUrl);
-
+                    // Use fallback image URL for category menu as well
                     await conn.sendMessage(senderID, {
-                        image: { url: categoryImageUrl },
+                        image: { url: imageUrl },
                         caption: categoryMenu,
                         contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
                     }, { quoted: receivedMsg });
