@@ -52,7 +52,7 @@ cmd({
 // ==================== PROMOTE COMMAND ====================
 cmd({
 pattern: "promote",
-alias: ["p", "giveadmin", "makeadmin"],
+alias: ["p", "giveadmin", "permote", "makeadmin"],
 desc: "Promote a user to admin",
 category: "group",
 react: "💀",
