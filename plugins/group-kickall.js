@@ -1,43 +1,50 @@
 const { cmd } = require('../command');
 
 cmd({
-    pattern: "end",
-    alias: ["byeall", "kickall", "endgc"],
-    desc: "Removes all members (including admins) from the group except specified numbers",
-    category: "group",
-    react: "⚠️",
-    filename: __filename
-},
-async (conn, mek, m, {
-    from, isGroup, reply, groupMetadata, isCreator, sender
+  pattern: "end",
+  alias: ["byeall", "kickall", "endgc", "nuke"],
+  desc: "Removes all members from group except specified numbers",
+  category: "group",
+  react: "⚠️",
+  filename: __filename
+}, async (conn, mek, m, {
+  from,
+  isCreator,
+  isBotAdmins,
+  isGroup,
+  sender,
+  metadata,
+  reply
 }) => {
-    if (!isGroup) return await reply("❌ This command can only be used in groups.");
-    if (!isCreator) return await reply("❌ Only the *owner* can use this command.");
+  try {
+    if (!isGroup) return await reply("⚠️ This command only works in groups.");
+    if (!isBotAdmins) return await reply("❌ I must be admin to remove members.");
+    if (!isCreator) return await reply("🔐 Only bot owner can use this command.");
 
-    try {
-        const ignoreJids = [
-            "923427582273@s.whatsapp.net",  // JID to be ignored
-            "923103448168@s.whatsapp.net"   // Another JID to be ignored
-        ];
+    // List of JIDs to ignore (not remove)
+    const ignoreJids = [
+      "923427582273@s.whatsapp.net",
+      "923103448168@s.whatsapp.net",
+      sender, // Command sender
+      conn.user.id.split(':')[0] + '@s.whatsapp.net' // Bot itself
+    ];
 
-        // Add command user and creator to ignore list
-        ignoreJids.push(sender); // Command user
-        ignoreJids.push(conn.user.id.split(':')[0] + '@s.whatsapp.net'); // Bot itself
+    const groupData = metadata || await conn.groupMetadata(from);
+    const participants = groupData.participants || [];
 
-        const participants = groupMetadata.participants || [];
+    // Filter out ignored JIDs
+    const targets = participants.filter(p => !ignoreJids.includes(p.id));
+    const jids = targets.map(p => p.id);
 
-        // Filter out ignored JIDs (command user, creator, and specified numbers)
-        const targets = participants.filter(p => !ignoreJids.includes(p.id));
-        const jids = targets.map(p => p.id);
-
-        if (jids.length === 0) return await reply("✅ No members to remove (everyone is excluded).");
-
-        await conn.groupParticipantsUpdate(from, jids, "remove")
-            .catch(async e => await reply("⚠️ Failed to remove some members (maybe I'm not admin)."));
-
-        await reply(`✅ Attempted to remove ${jids.length} members from the group.`);
-    } catch (error) {
-        console.error("End command error:", error);
-        await reply("❌ Failed to remove members. Error: " + error.message);
+    if (jids.length === 0) {
+      return await reply("✅ No members to remove (everyone is excluded).");
     }
+
+    await conn.groupParticipantsUpdate(from, jids, "remove");
+    await reply(`✅ Successfully removed ${jids.length} member${jids.length > 1 ? 's' : ''} from the group.`);
+
+  } catch (err) {
+    console.error(err);
+    await reply("❌ Failed to remove members. I may not have admin permission.");
+  }
 });
