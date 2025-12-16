@@ -1,3 +1,5 @@
+// JawadTechXD 
+
 const { cmd } = require('../command');
 
 cmd({
