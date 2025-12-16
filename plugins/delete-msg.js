@@ -3,16 +3,17 @@ const { cmd } = require("../command");
 cmd(
     {
         pattern: "del",
+        alias: ["delete"],
         desc: "Delete messages (creator only)",
         category: "owner",
         react: "🗑️",
         filename: __filename,
         use: "<reply to message>",
     },
-    async (conn, mek, m, { args, q, reply, from, quoted, isGroup, isCreator, sender }) => {
+    async (conn, mek, m, { from, quoted, isGroup, isCreator, sender, isBotAdmins, isAdmins, reply, groupAdmins, participants }) => {
         try {
-            // Get the original message object
-            const mek = m.mek || m;
+            // React - processing
+            await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
             
             // Only creator can use this command
             if (!isCreator) {
@@ -22,27 +23,21 @@ cmd(
 
             // Check if it's a quoted message
             if (!quoted) {
-                await conn.sendMessage(from, { react: { text: '⚠️', key: m.key } });
+                await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
                 return reply("🍁 Please reply to a message to delete it.");
             }
-
-            // ⏳ React - processing
-            await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
 
             // Get the quoted message object
             const quotedMsg = m.quoted || quoted;
             
-            // Get the message key
-            const messageKey = {
+            // Create message key for deletion
+            const key = {
                 remoteJid: from,
                 fromMe: quotedMsg.key?.fromMe || false,
                 id: quotedMsg.key?.id,
-                participant: quotedMsg.key?.participant
+                participant: quotedMsg.key?.participant || quotedMsg.sender
             };
 
-            // Check if bot is admin in group (for group mode)
-            const isBotGroupAdmin = isGroup ? m.isBotAdmins : false;
-            
             // Check if the quoted message is from bot itself
             const isBotMessage = quotedMsg.key?.fromMe || false;
 
@@ -51,62 +46,45 @@ cmd(
                 // Case 1: Bot replied to its own message
                 if (isBotMessage) {
                     try {
-                        // Delete for everyone (bot's own message)
-                        await conn.sendMessage(from, {
-                            delete: {
-                                remoteJid: from,
-                                fromMe: true,
-                                id: quotedMsg.key.id,
-                                participant: quotedMsg.key.participant
-                            }
-                        });
-                        // ✅ React - success
+                        // Delete bot's own message for everyone
+                        key.fromMe = true;
+                        await conn.sendMessage(from, { delete: key });
                         await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
                     } catch (error) {
-                        await conn.sendMessage(from, {
-                            delete: {
-                                remoteJid: from,
-                                fromMe: true,
-                                id: quotedMsg.key.id
-                            }
-                        });
-                        // ✅ React - success (fallback)
+                        // Fallback if above fails
+                        await conn.sendMessage(from, { delete: key });
                         await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
                     }
                 }
                 // Case 2: Bot is admin and deleting others' messages
-                else if (isBotGroupAdmin) {
+                else if (isBotAdmins) {
                     try {
                         // Delete for everyone as admin
-                        await conn.sendMessage(from, {
-                            delete: {
-                                remoteJid: from,
-                                fromMe: false,
-                                id: quotedMsg.key.id,
-                                participant: quotedMsg.key.participant
-                            }
-                        });
-                        // ✅ React - success
+                        key.fromMe = false;
+                        await conn.sendMessage(from, { delete: key });
                         await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
                     } catch (error) {
-                        // Fallback: delete only for bot
-                        await conn.chatModify({
-                            delete: true,
-                            lastMessages: [{ key: quotedMsg.key, messageTimestamp: quotedMsg.messageTimestamp }]
-                        }, from);
-                        // ⚠️ React - partial success
-                        await conn.sendMessage(from, { react: { text: '⚠️', key: m.key } });
+                        // Fallback: Try alternative method
+                        try {
+                            await conn.sendMessage(from, { delete: key });
+                            await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
+                        } catch (err) {
+                            await conn.sendMessage(from, { react: { text: '⚠️', key: m.key } });
+                            reply("⚠️ Couldn't delete message. Bot might need admin rights.");
+                        }
                     }
                 }
                 // Case 3: Bot is not admin in group
                 else {
-                    // Delete only for bot
-                    await conn.chatModify({
-                        delete: true,
-                        lastMessages: [{ key: quotedMsg.key, messageTimestamp: quotedMsg.messageTimestamp }]
-                    }, from);
-                    // ✅ React - success
-                    await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
+                    // Can only delete bot's own messages when not admin
+                    if (isBotMessage) {
+                        key.fromMe = true;
+                        await conn.sendMessage(from, { delete: key });
+                        await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
+                    } else {
+                        await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+                        reply("❌ Bot is not admin. Can only delete bot's own messages.");
+                    }
                 }
             }
             // INBOX (PRIVATE CHAT) MODE
@@ -114,42 +92,35 @@ cmd(
                 // Case 1: Bot replied to its own message
                 if (isBotMessage) {
                     try {
-                        // Delete for everyone in inbox
-                        await conn.sendMessage(from, {
-                            delete: {
-                                remoteJid: from,
-                                fromMe: true,
-                                id: quotedMsg.key.id
-                            }
-                        });
-                        // ✅ React - success
+                        // Delete bot's own message
+                        key.fromMe = true;
+                        await conn.sendMessage(from, { delete: key });
                         await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
                     } catch (error) {
-                        // Fallback method
-                        await conn.chatModify({
-                            delete: true,
-                            lastMessages: [{ key: quotedMsg.key, messageTimestamp: quotedMsg.messageTimestamp }]
-                        }, from);
-                        // ✅ React - success
+                        // Fallback
+                        await conn.sendMessage(from, { delete: key });
                         await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
                     }
                 }
                 // Case 2: Bot deleting others' messages in inbox
                 else {
-                    // In inbox, can only delete for bot itself
-                    await conn.chatModify({
-                        delete: true,
-                        lastMessages: [{ key: quotedMsg.key, messageTimestamp: quotedMsg.messageTimestamp }]
-                    }, from);
-                    // ✅ React - success
-                    await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
+                    // In inbox, bot can try to delete others' messages
+                    // WhatsApp might not allow this, but we try
+                    try {
+                        key.fromMe = false;
+                        await conn.sendMessage(from, { delete: key });
+                        await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
+                    } catch (error) {
+                        await conn.sendMessage(from, { react: { text: '⚠️', key: m.key } });
+                        reply("⚠️ Couldn't delete message in private chat.");
+                    }
                 }
             }
 
         } catch (error) {
             console.error("❌ Error in .del command:", error);
-            // ❌ React - error
             await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+            reply(`❌ *Error:* ${error.message}`);
         }
     }
 );
