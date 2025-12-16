@@ -1,4 +1,3 @@
-// JawadTech
 const config = require('../config');
 const { cmd, commands } = require('../command');
 const { runtime } = require('../lib/functions');
@@ -116,7 +115,7 @@ ${menuOptions}*╰───────────────────⊷*
 
         // Send menu image with caption
         const sentMsg = await conn.sendMessage(from, {
-            image: { url: 'https://i.ibb.co/ns3bgQyx/IMG-20251016-WA0020.jpg' },
+            image: { url: config.MENU_IMAGE_URL || 'https://i.ibb.co/ns3bgQyx/IMG-20251016-WA0020.jpg' },
             caption: caption,
             contextInfo: commonContextInfo(sender)
         }, { quoted: mek });
@@ -167,7 +166,7 @@ ${menuOptions}*╰───────────────────⊷*
                     categoryMenu += `> *ᴜsᴇ ${config.PREFIX}ᴍᴇɴᴜ ᴛᴏ sᴇᴇ ᴀʟʟ ᴍᴇɴᴜs ᴀɢᴀɪɴ*`;
 
                     await conn.sendMessage(senderID, {
-                        image: { url: 'https://i.ibb.co/ns3bgQyx/IMG-20251016-WA0020.jpg' },
+                        image: { url: config.MENU_IMAGE_URL || 'https://ibb.co/wrzgnwN5' },
                         caption: categoryMenu,
                         contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
                     }, { quoted: receivedMsg });
