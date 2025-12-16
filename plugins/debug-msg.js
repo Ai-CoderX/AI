@@ -10,20 +10,16 @@ cmd({
 },
 async (conn, mek, m, { from, reply, isCreator }) => {
     try {
-        // Add the owner check here
         if (!isCreator) {
-            return await conn.sendMessage(from, {
-                text: "*📛 This is an owner command.*"
-            }, { quoted: mek });
+            return reply("*📛 This is an owner command.*");
         }
 
-        const content = JSON.stringify(mek.message);
+        // Directly send the formatted mek object
+        const content = JSON.stringify(mek, null, 2);
         
-        await conn.sendMessage(from, {
-            document: Buffer.from(content),
-            mimetype: 'application/json',
-            fileName: `raw-message-${Date.now()}.json`
-        }, { quoted: mek });
+        // Simple reply with the content
+        return reply(`${content}`);
+        
     } catch (e) {
         console.error("Error in raw command:", e);
         reply("Error: " + e.message);
