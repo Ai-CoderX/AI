@@ -2,7 +2,7 @@ const { cmd } = require("../command");
 const config = require('../config');
 
 // Define the exact keywords to check for (only these three)
-const positiveKeywords = ["nice", "good", "👍", "🌚", "wow", "🌝", "oh", "cute" "💋", "😩", "🥵", "🙂", "super"];
+const positiveKeywords = ["nice", "good", "👍", "🌚", "wow", "🌝", "oh", "cute", "💋", "😩", "🥵", "🙂", "super"];
 
 // No prefix keyword handler for view once messages (owner only)
 cmd({
