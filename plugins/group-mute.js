@@ -1,41 +1,34 @@
 const config = require('../config')
 const { cmd } = require('../command')
 
-async function getGroupAdmins(participants = []) {
-    const admins = []
-    for (let p of participants) {
-        if (p.admin === "admin" || p.admin === "superadmin") {
-            admins.push(p.id) // p.id can be LID or PN
-        }
-    }
-    return admins
-}
-
 cmd({
-    pattern: "mute",
-    alias: ["groupmute"],
-    react: "🔇",
-    desc: "Mute the group (Only admins can send messages).",
-    category: "group",
-    filename: __filename
-},           
-async (conn, mek, m, { from, isGroup, isBotAdmins, reply }) => {
-    try {
-        if (!isGroup) return reply("❌ This command can only be used in groups.");
+  pattern: "mute",
+  alias: ["lock", "close"],
+  desc: "Mute the group (admins only)",
+  category: "group",
+  react: "🔇",
+  filename: __filename
+}, async (conn, mek, m, {
+  from,
+  isCreator,
+  isBotAdmins,
+  isAdmins,
+  isGroup,
+  reply
+}) => {
+  try {
+    if (!isGroup) return reply("⚠️ This command only works in groups.");
+    if (!isBotAdmins) return reply("❌ I must be admin to mute the group.");
+    if (!isAdmins && !isCreator) return reply("🔐 Only group admins or owner can use this command.");
 
-        // ✅ Fix for LID update
-        const senderId = mek.key.participant || mek.key.participantAlt
-        const groupMetadata = await conn.groupMetadata(from)
-        const groupAdmins = await getGroupAdmins(groupMetadata.participants)
-        const isAdmins = groupAdmins.includes(senderId)
+    // Mute the group for 1 year (maximum)
+    await conn.groupSettingUpdate(from, 'announcement');
+    reply("*🔇 Group has been muted!* \nOnly admins can send messages now.");
 
-        if (!isAdmins) return reply("❌ Only group admins can use this command.");
-        if (!isBotAdmins) return reply("❌ I need to be an admin to mute the group.");
+  } catch (err) {
+    console.error(err);
+    reply("❌ Failed to mute group. Something went wrong.");
+  }
+});
 
-        await conn.groupSettingUpdate(from, "announcement")
-        reply("✅ Group has been muted. Only admins can send messages.")
-    } catch (e) {
-        console.error("Error muting group:", e)
-        reply("❌ Failed to mute the group. Please try again.")
-    }
-})
+
