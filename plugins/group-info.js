@@ -3,57 +3,59 @@ const { cmd } = require('../command')
 const { getBuffer, getGroupAdmins, getRandom, h2k, isUrl, Json, runtime, sleep } = require('../lib/functions')
 
 cmd({
-    pattern: "ginfo",
-    react: "🥏",
-    alias: ["groupinfo"],
-    desc: "Get group information.",
-    category: "group",
-    use: '.ginfo',
-    filename: __filename
-},
-async (conn, mek, m, {
-    from, quoted, isCmd, isGroup, sender, isBotAdmins,
-    isAdmins, isDev, reply, groupMetadata, participants
+  pattern: "ginfo",
+  alias: ["groupinfo"],
+  desc: "Get group information",
+  category: "group",
+  react: "🥏",
+  filename: __filename
+}, async (conn, mek, m, {
+  from,
+  isCreator,
+  isBotAdmins,
+  isAdmins,
+  isGroup,
+  reply,
+  metadata,
+  participants
 }) => {
+  try {
+    if (!isGroup) return await reply("⚠️ This command only works in groups.");
+    if (!isBotAdmins) return await reply("❌ I must be admin to fetch group info.");
+    if (!isAdmins && !isCreator) return await reply("🔐 Only admins can use this command.");
+
+    const groupData = metadata || await conn.groupMetadata(from);
+    
+    // Get group admins
+    const groupAdmins = participants?.filter(p => p.admin) || [];
+    
+    let text = `*「 Group Information 」*\n\n`;
+    text += `*Name:* ${groupData.subject}\n`;
+    text += `*ID:* ${groupData.id}\n`;
+    text += `*Participants:* ${groupData.size}\n`;
+    text += `*Created:* ${new Date(groupData.creation * 1000).toLocaleDateString()}\n`;
+    text += `*Description:* ${groupData.desc?.slice(0, 100) || 'No description'}${groupData.desc?.length > 100 ? '...' : ''}\n\n`;
+    text += `*Admins (${groupAdmins.length}):*\n`;
+    
+    groupAdmins.forEach((admin, i) => {
+      text += `${i+1}. @${admin.id.split('@')[0]}\n`;
+    });
+
+    // Try to get group picture
     try {
-        // Requirements
-        if (!isGroup) return reply(`❌ This command only works in group chats.`);
-        if (!isAdmins && !isDev) return reply(`⛔ Only *Group Admins* or *Bot Dev* can use this.`);
-        if (!isBotAdmins) return reply(`❌ I need *admin* rights to fetch group details.`);
-
-        const fallbackPpUrls = [
-            'https://i.ibb.co/KhYC4FY/1221bc0bdd2354b42b293317ff2adbcf-icon.png',
-            'https://i.ibb.co/KhYC4FY/1221bc0bdd2354b42b293317ff2adbcf-icon.png',
-        ];
-        let ppUrl;
-        try {
-            ppUrl = await conn.profilePictureUrl(from, 'image');
-        } catch {
-            ppUrl = fallbackPpUrls[Math.floor(Math.random() * fallbackPpUrls.length)];
-        }
-
-        const metadata = await conn.groupMetadata(from);
-        const groupAdmins = participants.filter(p => p.admin);
-        const listAdmin = groupAdmins.map((v, i) => `${i + 1}. @${v.id.split('@')[0]}`).join('\n');
-        const owner = metadata.owner || groupAdmins[0]?.id || "unknown";
-
-        const gdata = `*「 Group Information 」*\n
-*Group Name* : ${metadata.subject}
-*Group ID* : ${metadata.id}
-*Participants* : ${metadata.size}
-*Group Creator* : @${owner.split('@')[0]}
-*Description* : ${metadata.desc?.toString() || 'No description'}\n
-*Admins (${groupAdmins.length})*:\n${listAdmin}`
-
-        await conn.sendMessage(from, {
-            image: { url: ppUrl },
-            caption: gdata,
-            mentions: groupAdmins.map(v => v.id).concat([owner])
-        }, { quoted: mek });
-
-    } catch (e) {
-        console.error(e);
-        await conn.sendMessage(from, { react: { text: '❌', key: mek.key } });
-        reply(`❌ An error occurred:\n\n${e}`);
+      const ppUrl = await conn.profilePictureUrl(from, 'image');
+      await conn.sendMessage(from, {
+        image: { url: ppUrl },
+        caption: text,
+        mentions: groupAdmins.map(a => a.id)
+      }, { quoted: mek });
+    } catch {
+      // Send without image if profile picture fails
+      await reply(text, { mentions: groupAdmins.map(a => a.id) });
     }
+
+  } catch (err) {
+    console.error(err);
+    await reply("❌ Failed to fetch group information.");
+  }
 });
