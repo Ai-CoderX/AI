@@ -1,4 +1,888 @@
-// JawadTechXD 
+// Jawad Tech On Top 🔝 
+const { setPrefix } = require('../lib/prefix');
+const { cmd, commands } = require('../command');
+const config = require('../config');
+const prefix = config.PREFIX;
+const fs = require('fs');
+const { getBuffer, getGroupAdmins, getRandom, h2k, isUrl, Json, sleep, fetchJson } = require('../lib/functions');
+const { writeFileSync } = require('fs');
+const path = require('path');
+const os = require('os');
+const { exec } = require('child_process');
+const axios = require('axios');
+const FormData = require('form-data');
 
-const _0x230e23=_0x584c;function _0x5c1f(){const _0x541cd4=['🎙️\x20*Auto-recording\x20is\x20now\x20ENABLED\x20for\x20inbox\x20only*','typing','cemojis','Autoreact\x20feature\x20is\x20now\x20enabled.','startsWith','Autoview\x20of\x20statuses\x20is\x20now\x20enabled.','Set\x20the\x20bot\x27s\x20name','recording','Enable\x20or\x20disable\x20the\x20owner\x20react\x20feature','Owner\x20react\x20feature\x20is\x20now\x20enabled.','ENABLED\x20(inbox\x20only)','MODE','BOT_NAME','✅\x20Bot\x20mode\x20is\x20now\x20set\x20to\x20*','CUSTOM_REACT','🗑️\x20*Anti-delete\x20is\x20now\x20DISABLED*','🎙️\x20*Auto\x20Recording:*\x20','_example:\x20\x20.antibad\x20on_','🛣️\x20*Anti-delete\x20path\x20set\x20to\x20INBOX\x20only*\x0a_Deleted\x20messages\x20will\x20be\x20shown\x20in\x20the\x20same\x20inbox\x20where\x20they\x20were\x20deleted._','AUTO_RECORDING','📥\x20*Auto-downloader\x20is\x20now\x20ENABLED\x20for\x20owner\x20only*','anti-status','READ_MESSAGE','Example:\x20.autostatusview\x20on','Enable\x20or\x20disable\x20mention\x20reply\x20feature','ANTI_BOT','read-message','330RmCEUK','ownerreact','✅\x20Bot\x20name\x20updated\x20to:\x20*','append','ENABLED\x20(groups\x20only)','setreacts','ENABLED\x20(both)','botimg_','⚠️\x20*Anti-status-mention\x20feature\x20is\x20set\x20to\x20WARN\x20mode*\x0a\x0aUsers\x20will\x20be\x20warned\x20when\x20sending\x20status\x20mentions.','always-online','message','Enable/Disable\x20anti-delete\x20feature\x20to\x20show\x20deleted\x20messages','log','*Anti\x20bad\x20word\x20is\x20now\x20enabled.*','❌\x20Please\x20reply\x20to\x20an\x20image.','Status-reply\x20feature\x20is\x20now\x20disabled.','MENU_IMAGE_URL','presence','Enable\x20always\x20online\x20presence\x20for\x20the\x20bot','quoted','../lib/functions','setownername','prefix','mod','Configuration\x20reloaded\x20without\x20restart.','❌\x20Provide\x20an\x20owner\x20name.','Catbox\x20upload\x20failed:\x20','Enable\x20or\x20disable\x20welcome\x20messages\x20for\x20new\x20members','❌\x20Admin\x20event\x20notifications\x20are\x20now\x20disabled.','AUTO_DOWNLOADER','autodl','same','sreact','*✅\x20αɴтι-¢αℓℓ\x20нαѕ\x20вєєɴ\x20єɴαвℓє∂*','autosticker','Enable/disable\x20auto-downloader\x20feature','🗑️\x20*Anti-status-mention\x20feature\x20is\x20set\x20to\x20DELETE\x20mode*\x0a\x0aStatus\x20mentions\x20will\x20be\x20automatically\x20deleted.','anti-bot','false','private','12282IWShpY','autostatusreact','AUTO_REACT','AUTO_STATUS_REACT','ANTI_CALL','msg','fileupload','status-react','🟢\x20*Always\x20online\x20is\x20now\x20ENABLED*','http','inbox','mimetype','DISABLED','❌\x20Welcome\x20messages\x20are\x20now\x20disabled.','owner','antidelete','.jpg','❗\x20Only\x20the\x20bot\x20owner\x20can\x20use\x20this\x20command.','Example:\x20.admin-events\x20on','antidelpath','*Invalid\x20input!\x20Use\x20one\x20of\x20the\x20following\x20modes:*\x0a\x0a•\x20*on*\x20-\x20Enable\x20anti-link\x20(delete\x20links)\x0a•\x20*off*\x20-\x20Disable\x20anti-link\x0a•\x20*warn*\x20-\x20Warn\x20users\x20when\x20sending\x20links\x0a•\x20*delete*\x20-\x20Delete\x20links\x20automatically\x0a\x0a*Example:*\x20.antilink\x20warn','autostatusview','_example:\x20\x20.read-message\x20on_','semojis','7938642SHXjen','setwelcome','anti-status-mention','Autoreact\x20of\x20statuses\x20is\x20now\x20disabled.','Owner\x20react\x20feature\x20is\x20now\x20disabled.','🎙️\x20*Auto-recording\x20is\x20now\x20ENABLED\x20for\x20both\x20inbox\x20and\x20groups*','🗑️\x20*Anti-delete\x20is\x20now\x20ENABLED\x20for\x20both\x20inbox\x20and\x20groups*','📥\x20*Auto-downloader\x20is\x20now\x20ENABLED\x20for\x20both\x20inbox\x20and\x20groups*','ANTI_BOT\x20feature\x20is\x20now\x20enabled\x20in\x20this\x20group.','🛣️','status-reply','Enable\x20or\x20disable\x20read\x20message\x20feature','antibadword','1520712FEjKPy','fileToUpload','string','autoreply','9yyguWJ','data','5520420dMZtmf','.png','*⌨️\x20Auto-typing\x20Command*\x0a\x0a•\x20*on*\x20-\x20Enable\x20for\x20both\x0a•\x20*ib*\x20-\x20Enable\x20for\x20inbox\x20only\x0a•\x20*gc*\x20-\x20Enable\x20for\x20groups\x20only\x0a•\x20*off*\x20-\x20Disable\x0a\x0a*Example:*\x20.autotyping\x20on','online','Enable\x20or\x20disable\x20the\x20autoreact\x20feature','AUTO_REPLY','Change\x20the\x20bot\x27s\x20command\x20prefix.','mentionreply','join','7HqgZsL','download','botimage','antibot','warn','🗑️\x20*Anti-link\x20feature\x20is\x20set\x20to\x20DELETE\x20mode*\x0a\x0aLinks\x20will\x20be\x20automatically\x20deleted.','ANTI_BAD_WORD','_example:\x20\x20.autosticker\x20on_','https://','trim','🎙️\x20*Auto-recording\x20is\x20now\x20ENABLED\x20for\x20groups\x20only*','admin-events','includes','Mention\x20Reply\x20feature\x20is\x20now\x20enabled.','*An\x20error\x20occurred\x20while\x20processing\x20your\x20request.*\x0a\x0a_Error:_\x20','*📛\x20ᴏɴʟʏ\x20ᴛʜᴇ\x20ᴏᴡɴᴇʀ\x20ᴄᴀɴ\x20ᴜsᴇ\x20ᴛʜɪs\x20ᴄᴏᴍᴍᴀɴᴅ!*','writeFileSync','*✅\x20ᴘʀᴇғɪx\x20ᴜᴘᴅᴀᴛᴇᴅ\x20ᴛᴏ:\x20','❌\x20Error:\x20','MENTION_REPLY','✅\x20Bot\x20image\x20updated.\x0a\x0a*New\x20URL:*\x20','15yJwKkM','statusreply','Auto-reply\x20feature\x20is\x20now\x20disabled.','image','https://catbox.moe/user/api.php','✅\x20Custom\x20reaction\x20emojis\x20updated\x20to:\x0a','*📥\x20Auto-downloader\x20Command*\x0a\x0a•\x20*on*\x20-\x20Enable\x20for\x20both\x0a•\x20*ib*\x20-\x20Enable\x20for\x20inbox\x20only\x0a•\x20*gc*\x20-\x20Enable\x20for\x20groups\x20only\x0a•\x20*owner*\x20-\x20Enable\x20for\x20owner\x20only\x0a•\x20*off*\x20-\x20Disable\x0a\x0a*Example:*\x20.autodownloader\x20on','downloader','OWNER_REACT','status-view','unlinkSync','error','🎙️','❌\x20Invalid\x20mode.\x20Please\x20use\x20`.mode\x20private`\x20or\x20`.mode\x20public`.','antidel','auto-reply','⌨️\x20*Auto\x20Typing:*\x20','Set\x20custom\x20reaction\x20emojis\x20for\x20the\x20bot','*🫟σɴℓу\x20тнє\x20σωɴєʀ\x20¢αɴ\x20ᴜѕє\x20тнιѕ\x20¢σммαɴ∂!*','toLowerCase','antistatus','alwaysonline','⌨️\x20*Auto-typing\x20is\x20now\x20ENABLED\x20for\x20groups\x20only*','✅\x20Welcome\x20messages\x20are\x20now\x20enabled.','Enable\x20or\x20disable\x20anti-bot\x20feature\x20in\x20groups','📌\x20Current\x20mode:\x20*','Autoreact\x20of\x20statuses\x20is\x20now\x20enabled.','AUTO_STICKER','Check\x20the\x20current\x20bot\x20presence\x20status','ALWAYS_ONLINE','ownername','axios','jpeg','⚠️\x20*Anti-link\x20feature\x20is\x20set\x20to\x20WARN\x20mode*\x0a\x0aUsers\x20will\x20be\x20warned\x20when\x20sending\x20links.','340WwDeHk','AUTO_STATUS_REPLY','Enable\x20or\x20disable\x20anti-link\x20feature\x20in\x20groups\x0aModes:\x20on/off/warn/delete','delpath','Enable\x20or\x20disable\x20custom\x20reactions','ANTI_LINK','presencestatus','botname','form-data','🚫\x20*Anti-status-mention\x20feature\x20is\x20now\x20DISABLED*\x0a\x0aStatus\x20mentions\x20will\x20be\x20allowed.','PREFIX','*\x0a\x0aUsage:\x20.mode\x20private\x20OR\x20.mode\x20public','sview','⌨️\x20*Auto-typing\x20is\x20now\x20DISABLED*','setprefix','deletepath','env','stausemoji','autoread','tmpdir','public','adminevents','Configure\x20where\x20to\x20show\x20deleted\x20messages','Status-reply\x20feature\x20is\x20now\x20enabled.','off','setting','ANTI_DELETE_PATH','AUTO_STATUS_SEEN','autostatusreply','ANTI_DELETE','anti-link','*🔥\x20ᴇxᴀᴍᴘʟᴇ:\x20.ᴀᴜᴛᴏʀᴇᴀᴄᴛ\x20ᴏɴ*','antilink','owner-react','*🟢\x20Always\x20Online\x20Command*\x0a\x0a•\x20*on*\x20-\x20Enable\x0a•\x20*off*\x20-\x20Disable\x0a\x0a*Example:*\x20.alwaysonline\x20on','../lib/prefix','group','antibad','*🫟\x20ᴇxᴀᴍᴘʟᴇ:\x20.\x20ᴀᴜᴛᴏʀᴇᴘʟʏ\x20ᴏɴ*','🛣️\x20*Anti-delete\x20path\x20set\x20to\x20SAME\x20chat*\x0a_Deleted\x20messages\x20will\x20be\x20shown\x20in\x20the\x20same\x20chat\x20where\x20they\x20were\x20deleted._','Enable\x20auto-recording\x20presence\x20for\x20the\x20bot','ADMIN_ACTION','autoreact','379876VLReFn','Read\x20message\x20feature\x20is\x20now\x20enabled.','selfreact','CUSTOM_REACT_EMOJIS','📥\x20*Auto-downloader\x20is\x20now\x20DISABLED*','🚫\x20*Anti-status-mention\x20feature\x20is\x20now\x20ENABLED*\x0a\x0aStatus\x20mentions\x20will\x20be\x20automatically\x20deleted.','*🫟\x20ᴇxᴀᴍᴘʟᴇ:\x20\x20.autostatusreact\x20on*','botpic','now','Enable\x20or\x20disable\x20auto-reacting\x20to\x20statuses','OWNER_NAME','4570216QYtBER','delete','auto-sticker','mode','*❌\x20αɴтι-¢αℓℓ\x20нαѕ\x20вєєɴ\x20∂ιѕαвℓє∂*','AUTO_TYPING','autorecording','✅\x20Admin\x20event\x20notifications\x20are\x20now\x20enabled.','Auto-sticker\x20feature\x20is\x20now\x20enabled.','mention-reply','true','🟢\x20*Always\x20Online:*\x20','Auto-sticker\x20feature\x20is\x20now\x20disabled.','../config','statusreacts','Example:\x20.customreact\x20on','Enable\x20or\x20disable\x20auto-reply\x20feature','createReadStream','WELCOME','STATUS_REACT_EMOJIS','812492mPbHgy','*🔥\x20ᴇxᴀᴍᴘʟᴇ:\x20.ᴏᴡɴᴇʀʀᴇᴀᴄᴛ\x20ᴏɴ*','*📱\x20Bot\x20Presence\x20Status*\x0a\x0a','✅\x20Custom\x20reactions\x20are\x20now\x20enabled.','ANTI_STATUS_MENTION','post','⌨️\x20*Auto-typing\x20is\x20now\x20ENABLED\x20for\x20both\x20inbox\x20and\x20groups*','status-emojis'];_0x5c1f=function(){return _0x541cd4;};return _0x5c1f();}(function(_0x4a880f,_0x50c5ca){const _0x37bfa5=_0x584c,_0x223c6f=_0x4a880f();while(!![]){try{const _0x2ac63a=-parseInt(_0x37bfa5(0x14a))/0x1+-parseInt(_0x37bfa5(0x11f))/0x2*(parseInt(_0x37bfa5(0x1b4))/0x3)+parseInt(_0x37bfa5(0x169))/0x4*(parseInt(_0x37bfa5(0xfd))/0x5)+-parseInt(_0x37bfa5(0xcc))/0x6*(parseInt(_0x37bfa5(0xe8))/0x7)+-parseInt(_0x37bfa5(0x155))/0x8*(parseInt(_0x37bfa5(0xdd))/0x9)+-parseInt(_0x37bfa5(0xdf))/0xa+parseInt(_0x37bfa5(0x18c))/0xb*(parseInt(_0x37bfa5(0xd9))/0xc);if(_0x2ac63a===_0x50c5ca)break;else _0x223c6f['push'](_0x223c6f['shift']());}catch(_0x382346){_0x223c6f['push'](_0x223c6f['shift']());}}}(_0x5c1f,0xd9023));const {setPrefix}=require(_0x230e23(0x142)),{cmd,commands}=require('../command'),config=require(_0x230e23(0x162)),prefix=config[_0x230e23(0x129)],fs=require('fs'),{getBuffer,getGroupAdmins,getRandom,h2k,isUrl,Json,sleep,fetchJson}=require(_0x230e23(0x1a0)),{writeFileSync}=require('fs'),path=require('path'),os=require('os'),{exec}=require('child_process'),axios=require(_0x230e23(0x11c)),FormData=require(_0x230e23(0x127));function _0x584c(_0x3f2d57,_0x106b23){_0x3f2d57=_0x3f2d57-0xbb;const _0x5c1fd3=_0x5c1f();let _0x584ce5=_0x5c1fd3[_0x3f2d57];return _0x584ce5;}async function reloadConfig(){const _0x58ebd4=_0x230e23;console[_0x58ebd4(0x198)](_0x58ebd4(0x1a4));}cmd({'pattern':'setbotimage','alias':['botdp',_0x230e23(0x151),_0x230e23(0xea)],'desc':'Set\x20the\x20bot\x27s\x20image\x20URL','category':_0x230e23(0xc2),'react':'✅','filename':__filename},async(_0x3f5fce,_0x5c4d5d,_0x428a52,{args:_0x379d2e,isCreator:_0x220da4,reply:_0x402240})=>{const _0x108593=_0x230e23;try{if(!_0x220da4)return _0x402240('❗\x20Only\x20the\x20bot\x20owner\x20can\x20use\x20this\x20command.');let _0x5c98bd=_0x379d2e[0x0];if(!_0x5c98bd&&_0x428a52['quoted']){const _0x1a4d28=_0x428a52[_0x108593(0x19f)],_0x32b170=(_0x1a4d28[_0x108593(0x1b9)]||_0x1a4d28)[_0x108593(0xbf)]||'';if(!_0x32b170[_0x108593(0x175)](_0x108593(0x100)))return _0x402240(_0x108593(0x19a));const _0x207cc4=await _0x1a4d28[_0x108593(0xe9)](),_0x9d34eb=_0x32b170[_0x108593(0xf4)](_0x108593(0x11d))?_0x108593(0xc4):_0x108593(0xe0),_0xfd0b7d=path[_0x108593(0xe7)](os[_0x108593(0x132)](),_0x108593(0x193)+Date[_0x108593(0x152)]()+_0x9d34eb);fs[_0x108593(0xf8)](_0xfd0b7d,_0x207cc4);const _0x5307f7=new FormData();_0x5307f7[_0x108593(0x18f)](_0x108593(0xda),fs[_0x108593(0x166)](_0xfd0b7d),_0x108593(0xea)+_0x9d34eb),_0x5307f7[_0x108593(0x18f)]('reqtype',_0x108593(0x1ba));const _0x5e6730=await axios[_0x108593(0x16e)](_0x108593(0x101),_0x5307f7,{'headers':_0x5307f7['getHeaders']()});fs[_0x108593(0x107)](_0xfd0b7d);if(typeof _0x5e6730[_0x108593(0xde)]!==_0x108593(0xdb)||!_0x5e6730['data'][_0x108593(0x175)](_0x108593(0xf0)))throw new Error(_0x108593(0x1a6)+_0x5e6730[_0x108593(0xde)]);_0x5c98bd=_0x5e6730['data'];}if(!_0x5c98bd||!_0x5c98bd['startsWith'](_0x108593(0xbd)))return _0x402240('❌\x20Provide\x20a\x20valid\x20image\x20URL\x20or\x20reply\x20to\x20an\x20image.');config['MENU_IMAGE_URL']=_0x5c98bd,process['env'][_0x108593(0x19c)]=_0x5c98bd,await _0x402240(_0x108593(0xfc)+_0x5c98bd);}catch(_0x41735d){console[_0x108593(0x108)](_0x41735d),_0x402240(_0x108593(0xfa)+(_0x41735d[_0x108593(0x196)]||_0x41735d));}}),cmd({'pattern':'setbotname','alias':[_0x230e23(0x126)],'desc':_0x230e23(0x177),'category':_0x230e23(0xc2),'react':'✅','filename':__filename},async(_0x50c3cc,_0x31ea33,_0x33ff4a,{args:_0x3ce237,isCreator:_0x9a40a8,reply:_0x355e7b})=>{const _0x338421=_0x230e23;if(!_0x9a40a8)return _0x355e7b(_0x338421(0xc5));const _0x4e4fd2=_0x3ce237[_0x338421(0xe7)]('\x20')['trim']();if(!_0x4e4fd2)return _0x355e7b('❌\x20Provide\x20a\x20bot\x20name.');config['BOT_NAME']=_0x4e4fd2,process[_0x338421(0x12f)][_0x338421(0x17d)]=_0x4e4fd2,await _0x355e7b(_0x338421(0x18e)+_0x4e4fd2+'*');}),cmd({'pattern':_0x230e23(0x1a1),'alias':[_0x230e23(0x11b)],'desc':'Set\x20the\x20owner\x27s\x20name','category':_0x230e23(0xc2),'react':'✅','filename':__filename},async(_0x42aca3,_0x3cd651,_0x49e571,{args:_0x39d6af,isCreator:_0x3a6c8a,reply:_0x2d9b84})=>{const _0x57c659=_0x230e23;if(!_0x3a6c8a)return _0x2d9b84(_0x57c659(0xc5));const _0x1d6e9d=_0x39d6af[_0x57c659(0xe7)]('\x20')['trim']();if(!_0x1d6e9d)return _0x2d9b84(_0x57c659(0x1a5));config[_0x57c659(0x154)]=_0x1d6e9d,process[_0x57c659(0x12f)][_0x57c659(0x154)]=_0x1d6e9d,await _0x2d9b84('✅\x20Owner\x20name\x20updated\x20to:\x20*'+_0x1d6e9d+'*');}),cmd({'pattern':'welcome','alias':[_0x230e23(0xcd)],'react':'✅','desc':_0x230e23(0x1a7),'category':_0x230e23(0x138),'filename':__filename},async(_0x36a4a7,_0x1078ac,_0x194fe9,{from:_0x23119e,args:_0x2cad72,isCreator:_0x3948d0,reply:_0x27140d})=>{const _0x70b28b=_0x230e23;if(!_0x3948d0)return _0x27140d(_0x70b28b(0xf7));const _0x1c776e=_0x2cad72[0x0]?.[_0x70b28b(0x110)]();if(_0x1c776e==='on')return config[_0x70b28b(0x167)]=_0x70b28b(0x15f),process[_0x70b28b(0x12f)][_0x70b28b(0x167)]=_0x70b28b(0x15f),_0x27140d(_0x70b28b(0x114));else return _0x1c776e==='off'?(config[_0x70b28b(0x167)]='false',process[_0x70b28b(0x12f)][_0x70b28b(0x167)]=_0x70b28b(0x1b2),_0x27140d(_0x70b28b(0xc1))):_0x27140d('Example:\x20.welcome\x20on');}),cmd({'pattern':_0x230e23(0xc3),'alias':['ad','anti-delete',_0x230e23(0x10b)],'react':'🗑️','desc':_0x230e23(0x197),'category':'setting','filename':__filename},async(_0x3374c6,_0x334a2f,_0x5c9fa0,{from:_0xf0e8c4,args:_0x3b9ca3,isCreator:_0x50b05a,reply:_0x23d5fa})=>{const _0x31036d=_0x230e23;if(!_0x50b05a)return _0x23d5fa(_0x31036d(0xf7));const _0x20cda6=_0x3b9ca3[0x0]?.[_0x31036d(0x110)]();if(_0x20cda6==='on')return config[_0x31036d(0x13c)]=_0x31036d(0x15f),process[_0x31036d(0x12f)][_0x31036d(0x13c)]='true',_0x23d5fa(_0x31036d(0xd2));else return _0x20cda6==='off'?(config[_0x31036d(0x13c)]=_0x31036d(0x1b2),process['env'][_0x31036d(0x13c)]=_0x31036d(0x1b2),_0x23d5fa(_0x31036d(0x180))):_0x23d5fa('*🗑️\x20Anti-delete\x20Command*\x0a\x0a•\x20*on*\x20-\x20Enable\x20for\x20both\x20inbox\x20and\x20groups\x0a•\x20*off*\x20-\x20Disable\x20completely\x0a\x0a*Example:*\x20.antidelete\x20on');}),cmd({'pattern':_0x230e23(0x1aa),'alias':[_0x230e23(0x104),'auto-downloader'],'react':'📥','desc':_0x230e23(0x1af),'category':_0x230e23(0x138),'filename':__filename},async(_0x1afaae,_0x183f4d,_0x279f30,{from:_0x1564dd,args:_0x132087,isCreator:_0x527f93,reply:_0x277785})=>{const _0x2f4161=_0x230e23;if(!_0x527f93)return _0x277785('*📛\x20ᴏɴʟʏ\x20ᴛʜᴇ\x20ᴏᴡɴᴇʀ\x20ᴄᴀɴ\x20ᴜsᴇ\x20ᴛʜɪs\x20ᴄᴏᴍᴍᴀɴᴅ!*');const _0x235e48=_0x132087[0x0]?.[_0x2f4161(0x110)]();if(_0x235e48==='on')return config[_0x2f4161(0x1a9)]=_0x2f4161(0x15f),process['env'][_0x2f4161(0x1a9)]='true',_0x277785(_0x2f4161(0xd3));else{if(_0x235e48==='ib')return config[_0x2f4161(0x1a9)]=_0x2f4161(0xbe),process[_0x2f4161(0x12f)][_0x2f4161(0x1a9)]=_0x2f4161(0xbe),_0x277785('📥\x20*Auto-downloader\x20is\x20now\x20ENABLED\x20for\x20inbox\x20only*');else{if(_0x235e48==='gc')return config[_0x2f4161(0x1a9)]='group',process['env'][_0x2f4161(0x1a9)]=_0x2f4161(0x143),_0x277785('📥\x20*Auto-downloader\x20is\x20now\x20ENABLED\x20for\x20groups\x20only*');else{if(_0x235e48==='owner')return config['AUTO_DOWNLOADER']=_0x2f4161(0xc2),process[_0x2f4161(0x12f)][_0x2f4161(0x1a9)]=_0x2f4161(0xc2),_0x277785(_0x2f4161(0x185));else return _0x235e48===_0x2f4161(0x137)?(config[_0x2f4161(0x1a9)]=_0x2f4161(0x1b2),process[_0x2f4161(0x12f)][_0x2f4161(0x1a9)]=_0x2f4161(0x1b2),_0x277785(_0x2f4161(0x14e))):_0x277785(_0x2f4161(0x103));}}}}),cmd({'pattern':_0x230e23(0x158),'alias':['setmode',_0x230e23(0x1a3)],'react':'✅','desc':'Set\x20bot\x20mode\x20to\x20private\x20or\x20public.','category':_0x230e23(0x138),'filename':__filename},async(_0x4a5121,_0x271839,_0x575d94,{args:_0x45d1a5,isCreator:_0x2319ff,reply:_0x16822b})=>{const _0x60db71=_0x230e23;if(!_0x2319ff)return _0x16822b('*📛\x20Only\x20the\x20owner\x20can\x20use\x20this\x20command!*');const _0x2edcb7=config['MODE']||process[_0x60db71(0x12f)]['MODE']||_0x60db71(0x133);if(!_0x45d1a5[0x0])return _0x16822b(_0x60db71(0x116)+_0x2edcb7+_0x60db71(0x12a));const _0x26d821=_0x45d1a5[0x0]['toLowerCase']();if([_0x60db71(0x1b3),_0x60db71(0x133)][_0x60db71(0xf4)](_0x26d821))config[_0x60db71(0x17c)]=_0x26d821,process[_0x60db71(0x12f)]['MODE']=_0x26d821,await _0x16822b(_0x60db71(0x17e)+_0x26d821['toUpperCase']()+'*.'),await reloadConfig();else return _0x16822b(_0x60db71(0x10a));}),cmd({'pattern':'anti-call','react':'🫟','alias':['anticall'],'desc':'Enable\x20or\x20disable\x20anti-call\x20feature','category':_0x230e23(0xc2),'filename':__filename},async(_0xd6e992,_0x35f676,_0x15e92d,{from:_0x61faa0,args:_0x14a710,isCreator:_0xef7798,reply:_0x4e22f7})=>{const _0x4c9685=_0x230e23;if(!_0xef7798)return _0x4e22f7(_0x4c9685(0x10f));const _0x576bdf=_0x14a710[0x0]?.['toLowerCase']();if(_0x576bdf==='on')return config[_0x4c9685(0x1b8)]=_0x4c9685(0x15f),process['env'][_0x4c9685(0x1b8)]=_0x4c9685(0x15f),_0x4e22f7(_0x4c9685(0x1ad));else return _0x576bdf===_0x4c9685(0x137)?(config[_0x4c9685(0x1b8)]='false',process['env'][_0x4c9685(0x1b8)]=_0x4c9685(0x1b2),_0x4e22f7(_0x4c9685(0x159))):_0x4e22f7('*🏷️\x20єχαмρℓє:\x20αɴтι-¢αℓℓ\x20σɴ/σff*');}),cmd({'pattern':_0x230e23(0x111),'react':'🚫','alias':[_0x230e23(0x186),_0x230e23(0xce)],'desc':'Enable\x20or\x20disable\x20anti-status-mention\x20feature\x20in\x20groups\x0aModes:\x20on/off/warn/delete','category':_0x230e23(0x143),'filename':__filename},async(_0x3bbfde,_0x89c537,_0x2c97ed,{from:_0xe95b33,l:_0x3eb6ed,quoted:_0x38fbbd,body:_0x4191aa,isCmd:_0x5dfea2,command:_0x3e7934,args:_0x2024bc,q:_0x43bbb0,isGroup:_0x2c4c43,sender:_0x4fa7ec,senderNumber:_0x5e047,botNumber2:_0x509356,botNumber:_0x1d25b9,pushname:_0x413fd0,isMe:_0x1f3006,isCreator:_0x17adc2,groupMetadata:_0x2af1d4,groupName:_0x3fd9d2,participants:_0x208d61,groupAdmins:_0x23e38b,isBotAdmins:_0x3eaa24,isAdmins:_0x4cd33e,reply:_0x150eb2})=>{const _0x23210c=_0x230e23;try{if(!_0x17adc2)return _0x150eb2(_0x23210c(0xf7));if(_0x2024bc[0x0]==='on')config[_0x23210c(0x16d)]=_0x23210c(0x15f),process[_0x23210c(0x12f)][_0x23210c(0x16d)]=_0x23210c(0x15f),await _0x150eb2(_0x23210c(0x14f));else{if(_0x2024bc[0x0]===_0x23210c(0x137))config['ANTI_STATUS_MENTION']=_0x23210c(0x1b2),process['env']['ANTI_STATUS_MENTION']='false',await _0x150eb2(_0x23210c(0x128));else{if(_0x2024bc[0x0]===_0x23210c(0xec))config['ANTI_STATUS_MENTION']=_0x23210c(0xec),process[_0x23210c(0x12f)][_0x23210c(0x16d)]='warn',await _0x150eb2(_0x23210c(0x194));else _0x2024bc[0x0]===_0x23210c(0x156)?(config[_0x23210c(0x16d)]=_0x23210c(0x156),process[_0x23210c(0x12f)]['ANTI_STATUS_MENTION']='delete',await _0x150eb2(_0x23210c(0x1b0))):await _0x150eb2('*Invalid\x20input!\x20Use\x20one\x20of\x20the\x20following\x20modes:*\x0a\x0a•\x20*on*\x20-\x20Enable\x20anti-status-mention\x20(delete\x20mentions)\x0a•\x20*off*\x20-\x20Disable\x20anti-status-mention\x0a•\x20*warn*\x20-\x20Warn\x20users\x20when\x20sending\x20status\x20mentions\x0a•\x20*delete*\x20-\x20Delete\x20status\x20mentions\x20automatically\x0a\x0a*Example:*\x20.antistatus\x20warn');}}}catch(_0x16b64b){return _0x150eb2(_0x23210c(0xf6)+_0x16b64b[_0x23210c(0x196)]);}}),cmd({'pattern':_0x230e23(0x1b5),'alias':[_0x230e23(0xbb),'statusreact',_0x230e23(0x1ac)],'react':'🫟','desc':_0x230e23(0x153),'category':_0x230e23(0x138),'filename':__filename},async(_0xd8b87b,_0x360b05,_0x1e5602,{from:_0x57e9c9,args:_0x407fb6,isCreator:_0x483797,reply:_0x11d766})=>{const _0x1e76f1=_0x230e23;if(!_0x483797)return _0x11d766(_0x1e76f1(0xf7));const _0x4c66e0=_0x407fb6[0x0]?.[_0x1e76f1(0x110)]();if(_0x4c66e0==='on')return config[_0x1e76f1(0x1b7)]='true',process[_0x1e76f1(0x12f)]['AUTO_STATUS_REACT']='true',_0x11d766(_0x1e76f1(0x117));else return _0x4c66e0==='off'?(config['AUTO_STATUS_REACT']=_0x1e76f1(0x1b2),process[_0x1e76f1(0x12f)]['AUTO_STATUS_REACT']=_0x1e76f1(0x1b2),_0x11d766(_0x1e76f1(0xcf))):_0x11d766(_0x1e76f1(0x150));}),cmd({'pattern':_0x230e23(0xc9),'alias':[_0x230e23(0x106),_0x230e23(0x12b),'statusview'],'desc':'Enable\x20or\x20disable\x20auto-viewing\x20of\x20statuses','category':_0x230e23(0x138),'filename':__filename},async(_0x4592e5,_0x4e14d5,_0x382528,{from:_0x4007c6,args:_0x41003c,isCreator:_0x1333f7,reply:_0x5c6e0a})=>{const _0x276dff=_0x230e23;if(!_0x1333f7)return _0x5c6e0a(_0x276dff(0xf7));const _0x3ce98c=_0x41003c[0x0]?.[_0x276dff(0x110)]();if(_0x3ce98c==='on')return config[_0x276dff(0x13a)]=_0x276dff(0x15f),process[_0x276dff(0x12f)]['AUTO_STATUS_SEEN']=_0x276dff(0x15f),_0x5c6e0a(_0x276dff(0x176));else return _0x3ce98c===_0x276dff(0x137)?(config[_0x276dff(0x13a)]=_0x276dff(0x1b2),process[_0x276dff(0x12f)][_0x276dff(0x13a)]='false',_0x5c6e0a('Autoview\x20of\x20statuses\x20is\x20now\x20disabled.')):_0x5c6e0a(_0x276dff(0x188));}),cmd({'pattern':_0x230e23(0x18b),'alias':[_0x230e23(0x131)],'desc':_0x230e23(0xd7),'category':_0x230e23(0x138),'filename':__filename},async(_0x5c2a34,_0x8964e8,_0x290a2e,{from:_0x1a7b64,args:_0x342ccf,isCreator:_0xd67244,reply:_0x3b61ee})=>{const _0x299679=_0x230e23;if(!_0xd67244)return _0x3b61ee('*📛\x20ᴏɴʟʏ\x20ᴛʜᴇ\x20ᴏᴡɴᴇʀ\x20ᴄᴀɴ\x20ᴜsᴇ\x20ᴛʜɪs\x20ᴄᴏᴍᴍᴀɴᴅ!*');const _0x1f09f5=_0x342ccf[0x0]?.['toLowerCase']();if(_0x1f09f5==='on')return config['READ_MESSAGE']=_0x299679(0x15f),process[_0x299679(0x12f)]['READ_MESSAGE']=_0x299679(0x15f),_0x3b61ee(_0x299679(0x14b));else return _0x1f09f5===_0x299679(0x137)?(config[_0x299679(0x187)]=_0x299679(0x1b2),process[_0x299679(0x12f)][_0x299679(0x187)]=_0x299679(0x1b2),_0x3b61ee('Read\x20message\x20feature\x20is\x20now\x20disabled.')):_0x3b61ee(_0x299679(0xca));}),cmd({'pattern':_0x230e23(0x144),'alias':['anti-bad',_0x230e23(0xd8)],'react':'🫟','desc':'Enable\x20or\x20disable\x20anti-bad\x20word\x20feature','category':_0x230e23(0x138),'filename':__filename},async(_0x1c82ab,_0x5b1325,_0x4d7e8c,{from:_0x45209b,args:_0x46e1f8,isCreator:_0x41c4af,reply:_0x41855f})=>{const _0x508a08=_0x230e23;if(!_0x41c4af)return _0x41855f(_0x508a08(0xf7));const _0x2a1af1=_0x46e1f8[0x0]?.[_0x508a08(0x110)]();if(_0x2a1af1==='on')return config[_0x508a08(0xee)]=_0x508a08(0x15f),process[_0x508a08(0x12f)][_0x508a08(0xee)]=_0x508a08(0x15f),_0x41855f(_0x508a08(0x199));else return _0x2a1af1==='off'?(config['ANTI_BAD_WORD']=_0x508a08(0x1b2),process[_0x508a08(0x12f)]['ANTI_BAD_WORD']=_0x508a08(0x1b2),_0x41855f('*Anti\x20bad\x20word\x20feature\x20is\x20now\x20disabled*')):_0x41855f(_0x508a08(0x182));}),cmd({'pattern':_0x230e23(0x1ae),'alias':[_0x230e23(0x157)],'react':'🫟','desc':'Enable\x20or\x20disable\x20auto-sticker\x20feature','category':'setting','filename':__filename},async(_0x46969c,_0x28d471,_0x12c681,{from:_0x40c828,args:_0x461532,isCreator:_0x1bfb84,reply:_0x4b3dfd})=>{const _0x813e94=_0x230e23;if(!_0x1bfb84)return _0x4b3dfd(_0x813e94(0xf7));const _0x518dd9=_0x461532[0x0]?.[_0x813e94(0x110)]();if(_0x518dd9==='on')return config[_0x813e94(0x118)]=_0x813e94(0x15f),process[_0x813e94(0x12f)][_0x813e94(0x118)]=_0x813e94(0x15f),_0x4b3dfd(_0x813e94(0x15d));else return _0x518dd9==='off'?(config[_0x813e94(0x118)]=_0x813e94(0x1b2),process[_0x813e94(0x12f)][_0x813e94(0x118)]='false',_0x4b3dfd(_0x813e94(0x161))):_0x4b3dfd(_0x813e94(0xef));}),cmd({'pattern':_0x230e23(0xdc),'alias':[_0x230e23(0x10c)],'react':'🫟','desc':_0x230e23(0x165),'category':'setting','filename':__filename},async(_0x3c4372,_0x1251a0,_0x588e7c,{from:_0x54aca0,args:_0x1af05f,isCreator:_0x15fba8,reply:_0x48aa05})=>{const _0x30ebc8=_0x230e23;if(!_0x15fba8)return _0x48aa05(_0x30ebc8(0xf7));const _0x235120=_0x1af05f[0x0]?.[_0x30ebc8(0x110)]();if(_0x235120==='on')return config[_0x30ebc8(0xe4)]=_0x30ebc8(0x15f),process[_0x30ebc8(0x12f)][_0x30ebc8(0xe4)]=_0x30ebc8(0x15f),_0x48aa05('*Auto-reply\x20is\x20now\x20enabled.*');else return _0x235120===_0x30ebc8(0x137)?(config[_0x30ebc8(0xe4)]=_0x30ebc8(0x1b2),process[_0x30ebc8(0x12f)][_0x30ebc8(0xe4)]=_0x30ebc8(0x1b2),_0x48aa05(_0x30ebc8(0xff))):_0x48aa05(_0x30ebc8(0x145));}),cmd({'pattern':_0x230e23(0x149),'alias':['auto-react'],'react':'🫟','desc':_0x230e23(0xe3),'category':'setting','filename':__filename},async(_0x4a6cb4,_0x148373,_0x337b61,{from:_0xce1fcf,args:_0x29aca7,isCreator:_0x197dca,reply:_0x125db3})=>{const _0x6e1305=_0x230e23;if(!_0x197dca)return _0x125db3(_0x6e1305(0xf7));const _0x4a964a=_0x29aca7[0x0]?.[_0x6e1305(0x110)]();if(_0x4a964a==='on')config[_0x6e1305(0x1b6)]=_0x6e1305(0x15f),process[_0x6e1305(0x12f)][_0x6e1305(0x1b6)]=_0x6e1305(0x15f),await _0x125db3(_0x6e1305(0x174));else _0x4a964a===_0x6e1305(0x137)?(config[_0x6e1305(0x1b6)]=_0x6e1305(0x1b2),process[_0x6e1305(0x12f)][_0x6e1305(0x1b6)]=_0x6e1305(0x1b2),await _0x125db3('Autoreact\x20feature\x20is\x20now\x20disabled.')):await _0x125db3(_0x6e1305(0x13e));}),cmd({'pattern':_0x230e23(0x13b),'react':'🫟','alias':[_0x230e23(0xfe),_0x230e23(0xd6)],'desc':'Enable\x20or\x20disable\x20status-reply\x20feature','category':_0x230e23(0x138),'filename':__filename},async(_0xaed1ac,_0x490d5c,_0xe750ca,{from:_0xdd6d39,args:_0x5c4197,isCreator:_0x3b7ab1,reply:_0x560385})=>{const _0x2b8881=_0x230e23;if(!_0x3b7ab1)return _0x560385(_0x2b8881(0xf7));const _0x42cd8c=_0x5c4197[0x0]?.['toLowerCase']();if(_0x42cd8c==='on')return config['AUTO_STATUS_REPLY']=_0x2b8881(0x15f),process[_0x2b8881(0x12f)][_0x2b8881(0x120)]='true',_0x560385(_0x2b8881(0x136));else return _0x42cd8c===_0x2b8881(0x137)?(config[_0x2b8881(0x120)]='false',process['env'][_0x2b8881(0x120)]=_0x2b8881(0x1b2),_0x560385(_0x2b8881(0x19b))):_0x560385('*🫟\x20ᴇxᴀᴍᴘʟᴇ:\x20\x20.sᴛᴀᴛᴜsʀᴇᴘʟʏ\x20ᴏɴ*');}),cmd({'pattern':_0x230e23(0xeb),'react':'🫟','alias':[_0x230e23(0x1b1)],'desc':_0x230e23(0x115),'category':_0x230e23(0x143),'react':'🚫','filename':__filename},async(_0x43ee07,_0x53e4e8,_0x55f909,{from:_0x2cf812,l:_0xed9027,quoted:_0x115f54,body:_0x321ebd,isCmd:_0x458306,command:_0x5a84a,args:_0x4c7fe5,q:_0xa81b4c,isGroup:_0x468f43,sender:_0x279a4d,senderNumber:_0x400e40,botNumber2:_0x5ef6fd,botNumber:_0x53f2bd,pushname:_0x58f5ee,isMe:_0x4d667f,isCreator:_0x1b5860,groupMetadata:_0xe407c1,groupName:_0x5d70f9,participants:_0x1be812,groupAdmins:_0x3d9116,isBotAdmins:_0x535f98,isAdmins:_0x530bd7,reply:_0x57791f})=>{const _0x1dbb56=_0x230e23;try{if(!_0x1b5860)return _0x57791f(_0x1dbb56(0xf7));if(_0x4c7fe5[0x0]==='on')config['ANTI_BOT']=_0x1dbb56(0x15f),process[_0x1dbb56(0x12f)]['ANTI_BOT']=_0x1dbb56(0x15f),await _0x57791f(_0x1dbb56(0xd4));else _0x4c7fe5[0x0]===_0x1dbb56(0x137)?(config['ANTI_BOT']='false',process[_0x1dbb56(0x12f)][_0x1dbb56(0x18a)]=_0x1dbb56(0x1b2),await _0x57791f('ANTI_BOT\x20feature\x20is\x20now\x20disabled\x20in\x20this\x20group.')):await _0x57791f('*Invalid\x20input!\x20Use\x20either\x20\x27on\x27\x20or\x20\x27off\x27.\x20Example:\x20.antibot\x20on*');}catch(_0x3eea76){return _0x57791f(_0x1dbb56(0xf6)+_0x3eea76['message']);}}),cmd({'pattern':_0x230e23(0x13f),'react':'🫟','alias':[_0x230e23(0x13d)],'desc':_0x230e23(0x121),'category':_0x230e23(0x143),'react':'🚫','filename':__filename},async(_0x5bb039,_0x2fb953,_0x21186b,{from:_0x40db93,l:_0x56052a,quoted:_0x48019f,body:_0x3130df,isCmd:_0x397818,command:_0x54ce51,args:_0x383138,q:_0x38843e,isGroup:_0x4ad807,sender:_0x2c0b53,senderNumber:_0x2e888e,botNumber2:_0x44f66c,botNumber:_0x397996,pushname:_0xeaef39,isMe:_0x5d54ec,isCreator:_0x4ac47f,groupMetadata:_0x4e7bf8,groupName:_0x4cc621,participants:_0x83a615,groupAdmins:_0x23ead3,isBotAdmins:_0x33cb01,isAdmins:_0x2d1734,reply:_0x575402})=>{const _0x199ca1=_0x230e23;try{if(!_0x4ac47f)return _0x575402(_0x199ca1(0xf7));if(_0x383138[0x0]==='on')config[_0x199ca1(0x124)]=_0x199ca1(0x15f),process['env'][_0x199ca1(0x124)]=_0x199ca1(0x15f),await _0x575402('🔗\x20*Anti-link\x20feature\x20is\x20now\x20ENABLED*\x0a\x0aLinks\x20will\x20be\x20automatically\x20deleted.');else{if(_0x383138[0x0]===_0x199ca1(0x137))config[_0x199ca1(0x124)]='false',process[_0x199ca1(0x12f)][_0x199ca1(0x124)]=_0x199ca1(0x1b2),await _0x575402('🔗\x20*Anti-link\x20feature\x20is\x20now\x20DISABLED*\x0a\x0aLinks\x20will\x20be\x20allowed.');else{if(_0x383138[0x0]===_0x199ca1(0xec))config[_0x199ca1(0x124)]=_0x199ca1(0xec),process[_0x199ca1(0x12f)][_0x199ca1(0x124)]=_0x199ca1(0xec),await _0x575402(_0x199ca1(0x11e));else _0x383138[0x0]===_0x199ca1(0x156)?(config[_0x199ca1(0x124)]='delete',process['env'][_0x199ca1(0x124)]='delete',await _0x575402(_0x199ca1(0xed))):await _0x575402(_0x199ca1(0xc8));}}}catch(_0x48b680){return _0x575402(_0x199ca1(0xf6)+_0x48b680[_0x199ca1(0x196)]);}}),cmd({'pattern':_0x230e23(0x15e),'alias':[_0x230e23(0xe6),'mee'],'desc':_0x230e23(0x189),'category':_0x230e23(0x138),'filename':__filename},async(_0x487e80,_0x3b0496,_0x563c5c,{from:_0x190a04,args:_0x21895d,isCreator:_0x27298e,reply:_0x23efd6})=>{const _0x13e1ea=_0x230e23;if(!_0x27298e)return _0x23efd6('*📛\x20ᴏɴʟʏ\x20ᴛʜᴇ\x20ᴏᴡɴᴇʀ\x20ᴄᴀɴ\x20ᴜsᴇ\x20ᴛʜɪs\x20ᴄᴏᴍᴍᴀɴᴅ!*');const _0x49d211=_0x21895d[0x0]?.[_0x13e1ea(0x110)]();if(_0x49d211==='on')return config[_0x13e1ea(0xfb)]=_0x13e1ea(0x15f),process[_0x13e1ea(0x12f)][_0x13e1ea(0xfb)]=_0x13e1ea(0x15f),_0x23efd6(_0x13e1ea(0xf5));else return _0x49d211===_0x13e1ea(0x137)?(config['MENTION_REPLY']=_0x13e1ea(0x1b2),process[_0x13e1ea(0x12f)]['MENTION_REPLY']='false',_0x23efd6('Mention\x20Reply\x20feature\x20is\x20now\x20disabled.')):_0x23efd6('_example:\x20\x20.mee\x20on_');}),cmd({'pattern':_0x230e23(0xf3),'alias':[_0x230e23(0x134),'adminaction'],'desc':'Enable\x20or\x20disable\x20admin\x20event\x20notifications','category':_0x230e23(0x138),'filename':__filename},async(_0x3a480f,_0x4ae182,_0x3eea59,{from:_0x17dbf2,args:_0x30c316,isCreator:_0x608652,reply:_0x3c02b2})=>{const _0x5d71cf=_0x230e23;if(!_0x608652)return _0x3c02b2(_0x5d71cf(0xf7));const _0x5b0a53=_0x30c316[0x0]?.['toLowerCase']();if(_0x5b0a53==='on')return config[_0x5d71cf(0x148)]=_0x5d71cf(0x15f),process[_0x5d71cf(0x12f)][_0x5d71cf(0x148)]='true',_0x3c02b2(_0x5d71cf(0x15c));else return _0x5b0a53===_0x5d71cf(0x137)?(config['ADMIN_ACTION']=_0x5d71cf(0x1b2),process['env'][_0x5d71cf(0x148)]='false',_0x3c02b2(_0x5d71cf(0x1a8))):_0x3c02b2(_0x5d71cf(0xc6));}),cmd({'pattern':_0x230e23(0x18d),'alias':[_0x230e23(0x140),_0x230e23(0x14c),'self-react'],'react':'👑','desc':_0x230e23(0x179),'category':'setting','filename':__filename},async(_0x156c34,_0x169fb5,_0x544f1f,{from:_0x52c34b,args:_0x1f85e9,isCreator:_0x4e25d3,reply:_0x47a926})=>{const _0x59bbc1=_0x230e23;if(!_0x4e25d3)return _0x47a926(_0x59bbc1(0xf7));const _0x3ebd33=_0x1f85e9[0x0]?.['toLowerCase']();if(_0x3ebd33==='on')config[_0x59bbc1(0x105)]=_0x59bbc1(0x15f),process[_0x59bbc1(0x12f)][_0x59bbc1(0x105)]=_0x59bbc1(0x15f),await _0x47a926(_0x59bbc1(0x17a));else _0x3ebd33==='off'?(config[_0x59bbc1(0x105)]=_0x59bbc1(0x1b2),process['env']['OWNER_REACT']=_0x59bbc1(0x1b2),await _0x47a926(_0x59bbc1(0xd0))):await _0x47a926(_0x59bbc1(0x16a));}),cmd({'pattern':'autotyping','alias':['auto-typing',_0x230e23(0x172)],'react':'⌨️','desc':'Enable\x20auto-typing\x20presence\x20for\x20the\x20bot','category':_0x230e23(0x138),'filename':__filename},async(_0x1823d4,_0x3bfa11,_0x3c5416,{from:_0xab6ac3,args:_0x6810ed,isCreator:_0x335c2a,reply:_0x3b947a})=>{const _0x5eb1a9=_0x230e23;if(!_0x335c2a)return _0x3b947a(_0x5eb1a9(0xf7));const _0x57d629=_0x6810ed[0x0]?.['toLowerCase']();if(_0x57d629==='on')return config[_0x5eb1a9(0x15a)]=_0x5eb1a9(0x15f),process['env'][_0x5eb1a9(0x15a)]=_0x5eb1a9(0x15f),_0x3b947a(_0x5eb1a9(0x16f));else{if(_0x57d629==='ib')return config['AUTO_TYPING']='ib',process[_0x5eb1a9(0x12f)][_0x5eb1a9(0x15a)]='ib',_0x3b947a('⌨️\x20*Auto-typing\x20is\x20now\x20ENABLED\x20for\x20inbox\x20only*');else{if(_0x57d629==='gc')return config[_0x5eb1a9(0x15a)]=_0x5eb1a9(0x143),process[_0x5eb1a9(0x12f)][_0x5eb1a9(0x15a)]='group',_0x3b947a(_0x5eb1a9(0x113));else return _0x57d629==='off'?(config[_0x5eb1a9(0x15a)]='false',process['env'][_0x5eb1a9(0x15a)]='false',_0x3b947a(_0x5eb1a9(0x12c))):_0x3b947a(_0x5eb1a9(0xe1));}}}),cmd({'pattern':_0x230e23(0x112),'alias':[_0x230e23(0xe2),_0x230e23(0x195)],'react':'🟢','desc':_0x230e23(0x19e),'category':_0x230e23(0x138),'filename':__filename},async(_0x4153c8,_0x574309,_0x116606,{from:_0x4ebd1d,args:_0x2e4fe3,isCreator:_0x14fe05,reply:_0x4de80f})=>{const _0x377824=_0x230e23;if(!_0x14fe05)return _0x4de80f(_0x377824(0xf7));const _0x3fd9cb=_0x2e4fe3[0x0]?.[_0x377824(0x110)]();if(_0x3fd9cb==='on')return config[_0x377824(0x11a)]='true',process['env'][_0x377824(0x11a)]=_0x377824(0x15f),_0x4de80f(_0x377824(0xbc));else return _0x3fd9cb===_0x377824(0x137)?(config[_0x377824(0x11a)]='false',process['env'][_0x377824(0x11a)]=_0x377824(0x1b2),_0x4de80f('🟢\x20*Always\x20online\x20is\x20now\x20DISABLED*')):_0x4de80f(_0x377824(0x141));}),cmd({'pattern':_0x230e23(0x15b),'alias':[_0x230e23(0x178),'auto-recording'],'react':_0x230e23(0x109),'desc':_0x230e23(0x147),'category':_0x230e23(0x138),'filename':__filename},async(_0x52e0c3,_0x2c34b5,_0x93f3ca,{from:_0x86cc94,args:_0x4a7e25,isCreator:_0x2f61c6,reply:_0x163d10})=>{const _0x243005=_0x230e23;if(!_0x2f61c6)return _0x163d10(_0x243005(0xf7));const _0x263516=_0x4a7e25[0x0]?.[_0x243005(0x110)]();if(_0x263516==='on')return config['AUTO_RECORDING']=_0x243005(0x15f),process[_0x243005(0x12f)]['AUTO_RECORDING']=_0x243005(0x15f),_0x163d10(_0x243005(0xd1));else{if(_0x263516==='ib')return config['AUTO_RECORDING']='ib',process[_0x243005(0x12f)][_0x243005(0x184)]='ib',_0x163d10(_0x243005(0x171));else{if(_0x263516==='gc')return config[_0x243005(0x184)]='group',process['env'][_0x243005(0x184)]=_0x243005(0x143),_0x163d10(_0x243005(0xf2));else return _0x263516===_0x243005(0x137)?(config[_0x243005(0x184)]=_0x243005(0x1b2),process[_0x243005(0x12f)][_0x243005(0x184)]=_0x243005(0x1b2),_0x163d10('🎙️\x20*Auto-recording\x20is\x20now\x20DISABLED*')):_0x163d10('*🎙️\x20Auto-recording\x20Command*\x0a\x0a•\x20*on*\x20-\x20Enable\x20for\x20both\x0a•\x20*ib*\x20-\x20Enable\x20for\x20inbox\x20only\x0a•\x20*gc*\x20-\x20Enable\x20for\x20groups\x20only\x0a•\x20*off*\x20-\x20Disable\x0a\x0a*Example:*\x20.autorecording\x20on');}}}),cmd({'pattern':_0x230e23(0xc7),'alias':[_0x230e23(0x122),'anti-delete-path',_0x230e23(0x12e)],'react':_0x230e23(0xd5),'desc':_0x230e23(0x135),'category':_0x230e23(0x138),'filename':__filename},async(_0x267f18,_0x1dcc0e,_0x48a030,{from:_0x5db3d8,args:_0x279f13,isCreator:_0x4385e1,reply:_0x25460e})=>{const _0x4bd501=_0x230e23;if(!_0x4385e1)return _0x25460e(_0x4bd501(0xf7));const _0x214977=_0x279f13[0x0]?.[_0x4bd501(0x110)]();if(_0x214977==='ib')return config['ANTI_DELETE_PATH']=_0x4bd501(0xbe),process[_0x4bd501(0x12f)][_0x4bd501(0x139)]=_0x4bd501(0xbe),_0x25460e(_0x4bd501(0x183));else return _0x214977===_0x4bd501(0x1ab)?(config[_0x4bd501(0x139)]=_0x4bd501(0x1ab),process[_0x4bd501(0x12f)][_0x4bd501(0x139)]='same',_0x25460e(_0x4bd501(0x146))):_0x25460e('*🛣️\x20Anti-delete\x20Path\x20Command*\x0a\x0a•\x20*ib*\x20-\x20Show\x20deleted\x20messages\x20in\x20inbox\x20only\x0a•\x20*same*\x20-\x20Show\x20deleted\x20messages\x20in\x20same\x20chat\x0a\x0a*Example:*\x20.antidelpath\x20ib');}),cmd({'pattern':_0x230e23(0x19d),'alias':[_0x230e23(0x125),'status'],'react':'📱','desc':_0x230e23(0x119),'category':'setting','filename':__filename},async(_0x3c6c1a,_0x15aed4,_0x23de74,{from:_0x5bf997,args:_0x1b005f,isCreator:_0x28463f,reply:_0x35af07})=>{const _0x2ead0e=_0x230e23;if(!_0x28463f)return _0x35af07(_0x2ead0e(0xf7));let _0x2550fa=_0x2ead0e(0x16b);const _0x1b083b=config['ALWAYS_ONLINE']||process[_0x2ead0e(0x12f)][_0x2ead0e(0x11a)]||_0x2ead0e(0x1b2);_0x2550fa+=_0x2ead0e(0x160)+(_0x1b083b===_0x2ead0e(0x15f)?'ENABLED':_0x2ead0e(0xc0))+'\x0a';const _0x34a682=config[_0x2ead0e(0x15a)]||process['env'][_0x2ead0e(0x15a)]||_0x2ead0e(0x1b2);let _0x5359c8=_0x2ead0e(0xc0);if(_0x34a682===_0x2ead0e(0x15f))_0x5359c8=_0x2ead0e(0x192);else{if(_0x34a682==='ib')_0x5359c8=_0x2ead0e(0x17b);else{if(_0x34a682===_0x2ead0e(0x143))_0x5359c8=_0x2ead0e(0x190);}}_0x2550fa+=_0x2ead0e(0x10d)+_0x5359c8+'\x0a';const _0x54ea06=config[_0x2ead0e(0x184)]||process['env'][_0x2ead0e(0x184)]||_0x2ead0e(0x1b2);let _0x726d71=_0x2ead0e(0xc0);if(_0x54ea06==='true')_0x726d71='ENABLED\x20(both)';else{if(_0x54ea06==='ib')_0x726d71='ENABLED\x20(inbox\x20only)';else{if(_0x54ea06===_0x2ead0e(0x143))_0x726d71=_0x2ead0e(0x190);}}return _0x2550fa+=_0x2ead0e(0x181)+_0x726d71+'\x0a\x0a',_0x2550fa+='*Available\x20Commands:*\x0a•\x20.autotyping\x20on/ib/gc/off\x0a•\x20.alwaysonline\x20on/off\x0a•\x20.autorecording\x20on/ib/gc/off\x0a•\x20.presence',_0x35af07(_0x2550fa);}),cmd({'pattern':'customreact','alias':['creact','reactc'],'react':'😎','desc':_0x230e23(0x123),'category':'setting','filename':__filename},async(_0x16d359,_0x3adaac,_0x5aab57,{from:_0x100168,args:_0x1771fa,isCreator:_0xffa749,reply:_0x4e92ab})=>{const _0x5325f8=_0x230e23;if(!_0xffa749)return _0x4e92ab('*📛\x20ᴏɴʟʏ\x20ᴛʜᴇ\x20ᴏᴡɴᴇʀ\x20ᴄᴀɴ\x20ᴜsᴇ\x20ᴛʜɪs\x20ᴄᴏᴍᴍᴀɴᴅ!*');const _0x3e4ce7=_0x1771fa[0x0]?.[_0x5325f8(0x110)]();if(_0x3e4ce7==='on')return config[_0x5325f8(0x17f)]=_0x5325f8(0x15f),process[_0x5325f8(0x12f)][_0x5325f8(0x17f)]=_0x5325f8(0x15f),_0x4e92ab(_0x5325f8(0x16c));else return _0x3e4ce7===_0x5325f8(0x137)?(config['CUSTOM_REACT']=_0x5325f8(0x1b2),process[_0x5325f8(0x12f)][_0x5325f8(0x17f)]='false',_0x4e92ab('❌\x20Custom\x20reactions\x20are\x20now\x20disabled.')):_0x4e92ab(_0x5325f8(0x164));}),cmd({'pattern':_0x230e23(0x163),'alias':[_0x230e23(0x170),_0x230e23(0xcb),_0x230e23(0x130)],'desc':_0x230e23(0x10e),'category':_0x230e23(0xc2),'react':'🌈','filename':__filename},async(_0x4327a4,_0x590fbc,_0x1815ce,{args:_0x2b55b8,isCreator:_0x3976ff,reply:_0x57957a})=>{const _0x5e7292=_0x230e23;if(!_0x3976ff)return _0x57957a('❗\x20Only\x20the\x20bot\x20owner\x20can\x20use\x20this\x20command.');const _0x23c8bd=_0x2b55b8[_0x5e7292(0xe7)]('\x20')['trim']();if(!_0x23c8bd)return _0x57957a('❌\x20Please\x20provide\x20a\x20comma-separated\x20list\x20of\x20emojis.\x0a\x0aExample:\x0a.statuaemojis\x20💖,💗,💘,💕');config[_0x5e7292(0x168)]=_0x23c8bd,process['env'][_0x5e7292(0x168)]=_0x23c8bd,await _0x57957a('✅\x20Custom\x20Status\x20reaction\x20emojis\x20updated\x20to:\x0a'+_0x23c8bd);}),cmd({'pattern':_0x230e23(0x191),'alias':['customemojis','emojis',_0x230e23(0x173)],'desc':_0x230e23(0x10e),'category':'owner','react':'🌈','filename':__filename},async(_0x31d10a,_0x135cfc,_0x236e0a,{args:_0x23d999,isCreator:_0x3e9318,reply:_0x29832e})=>{const _0x57d3ca=_0x230e23;if(!_0x3e9318)return _0x29832e(_0x57d3ca(0xc5));const _0x52f7d6=_0x23d999[_0x57d3ca(0xe7)]('\x20')[_0x57d3ca(0xf1)]();if(!_0x52f7d6)return _0x29832e('❌\x20Please\x20provide\x20a\x20comma-separated\x20list\x20of\x20emojis.\x0a\x0aExample:\x0a.setreactemoji\x20💖,💗,💘,💕');config[_0x57d3ca(0x14d)]=_0x52f7d6,process['env']['CUSTOM_REACT_EMOJIS']=_0x52f7d6,await _0x29832e(_0x57d3ca(0x102)+_0x52f7d6);}),cmd({'pattern':_0x230e23(0x12d),'alias':[_0x230e23(0x1a2)],'react':'🪄','desc':_0x230e23(0xe5),'category':_0x230e23(0x138),'filename':__filename},async(_0x1b13b9,_0x2f9f7a,_0x586205,{args:_0x1f0f86,isCreator:_0x48c3b9,reply:_0x43b527})=>{const _0x3cd7fe=_0x230e23;if(!_0x48c3b9)return _0x43b527(_0x3cd7fe(0xf7));const _0x2b2ffa=_0x1f0f86[0x0];if(!_0x2b2ffa)return _0x43b527('*❌\x20ᴘʀᴏᴠɪᴅᴇ\x20ɴᴇᴡ\x20ᴘʀᴇғɪx.\x20ᴇxᴀᴍᴘʟᴇ:\x20.sᴇᴛᴘʀᴇғɪx\x20!*');return setPrefix(_0x2b2ffa),config['PREFIX']=_0x2b2ffa,process[_0x3cd7fe(0x12f)][_0x3cd7fe(0x129)]=_0x2b2ffa,await reloadConfig(),_0x43b527(_0x3cd7fe(0xf9)+_0x2b2ffa+'*');});
+// Placeholder for soft reload function (implement based on your bot's needs)
+async function reloadConfig() {
+  // Reinitialize command listeners, event handlers, or other components if needed
+  // Example: Reload command parser with new prefix or reapply config changes
+  console.log("Configuration reloaded without restart.");
+}
 
+// SET BOT IMAGE
+cmd({
+  pattern: "setbotimage",
+  alias: ["botdp", "botpic", "botimage"],
+  desc: "Set the bot's image URL",
+  category: "setting",
+  react: "✅",
+  filename: __filename
+}, async (conn, mek, m, { args, isCreator, reply }) => {
+  try {
+    if (!isCreator) return reply("❗ Only the bot owner can use this command.");
+
+    let imageUrl = args[0];
+
+    // Upload image if replying to one
+    if (!imageUrl && m.quoted) {
+      const quotedMsg = m.quoted;
+      const mimeType = (quotedMsg.msg || quotedMsg).mimetype || '';
+      if (!mimeType.startsWith("image")) return reply("❌ Please reply to an image.");
+
+      const mediaBuffer = await quotedMsg.download();
+      const extension = mimeType.includes("jpeg") ? ".jpg" : ".png";
+      const tempFilePath = path.join(os.tmpdir(), `botimg_${Date.now()}${extension}`);
+      fs.writeFileSync(tempFilePath, mediaBuffer);
+
+      const form = new FormData();
+      form.append("fileToUpload", fs.createReadStream(tempFilePath), `botimage${extension}`);
+      form.append("reqtype", "fileupload");
+
+      const response = await axios.post("https://catbox.moe/user/api.php", form, {
+        headers: form.getHeaders()
+      });
+
+      fs.unlinkSync(tempFilePath);
+
+      if (typeof response.data !== 'string' || !response.data.startsWith('https://')) {
+        throw new Error(`Catbox upload failed: ${response.data}`);
+      }
+
+      imageUrl = response.data;
+    }
+
+    if (!imageUrl || !imageUrl.startsWith("http")) {
+      return reply("❌ Provide a valid image URL or reply to an image.");
+    }
+
+    // Update config
+    config.MENU_IMAGE_URL = imageUrl;
+    process.env.MENU_IMAGE_URL = imageUrl;
+
+    await reply(`✅ Bot image updated.\n\n*New URL:* ${imageUrl}`);
+  } catch (err) {
+    console.error(err);
+    reply(`❌ Error: ${err.message || err}`);
+  }
+});
+
+// SET BOT NAME
+cmd({
+  pattern: "setbotname",
+  alias: ["botname"],
+  desc: "Set the bot's name",
+  category: "setting",
+  react: "✅",
+  filename: __filename
+}, async (conn, mek, m, { args, isCreator, reply }) => {
+  if (!isCreator) return reply("❗ Only the bot owner can use this command.");
+  const newName = args.join(" ").trim();
+  if (!newName) return reply("❌ Provide a bot name.");
+
+  // Update config
+  config.BOT_NAME = newName;
+  process.env.BOT_NAME = newName;
+
+  await reply(`✅ Bot name updated to: *${newName}*`);
+});
+
+// SET OWNER NAME
+cmd({
+  pattern: "setownername",
+  alias: ["ownername"],
+  desc: "Set the owner's name",
+  category: "setting",
+  react: "✅",
+  filename: __filename
+}, async (conn, mek, m, { args, isCreator, reply }) => {
+  if (!isCreator) return reply("❗ Only the bot owner can use this command.");
+  const name = args.join(" ").trim();
+  if (!name) return reply("❌ Provide an owner name.");
+
+  // Update config
+  config.OWNER_NAME = name;
+  process.env.OWNER_NAME = name;
+
+  await reply(`✅ Owner name updated to: *${name}*`);
+});
+
+// WELCOME
+cmd({
+  pattern: "welcome",
+  alias: ["setwelcome"],
+  react: "✅",
+  desc: "Enable or disable welcome messages for new members",
+  category: "setting",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+  const status = args[0]?.toLowerCase();
+  if (status === "on") {
+    config.WELCOME = "true";
+    process.env.WELCOME = "true";
+    return reply("✅ Welcome messages are now enabled.");
+  } else if (status === "off") {
+    config.WELCOME = "false";
+    process.env.WELCOME = "false";
+    return reply("❌ Welcome messages are now disabled.");
+  } else {
+    return reply(`Example: .welcome on`);
+  }
+});
+
+// ===== ANTI DELETE =====
+cmd({
+  pattern: "antidelete",
+  alias: ["ad", "anti-delete", "antidel"],
+  react: "🗑️",
+  desc: "Enable/Disable anti-delete feature to show deleted messages",
+  category: "setting",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+  const status = args[0]?.toLowerCase();
+  
+  if (status === "on") {
+    config.ANTI_DELETE = "true";
+    process.env.ANTI_DELETE = "true";
+    return reply("🗑️ *Anti-delete is now ENABLED for both inbox and groups*");
+  } else if (status === "off") {
+    config.ANTI_DELETE = "false";
+    process.env.ANTI_DELETE = "false";
+    return reply("🗑️ *Anti-delete is now DISABLED*");
+  } else {
+    return reply(`*🗑️ Anti-delete Command*\n\n• *on* - Enable for both inbox and groups\n• *off* - Disable completely\n\n*Example:* .antidelete on`);
+  }
+});
+
+cmd({
+    pattern: "autodl",
+    alias: ["downloader", "auto-downloader"],
+    react: "📥",
+    desc: "Enable/disable auto-downloader feature",
+    category: "setting",
+    filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+    if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+    const status = args[0]?.toLowerCase();
+    
+    if (status === "on") {
+        config.AUTO_DOWNLOADER = "true";
+        process.env.AUTO_DOWNLOADER = "true";
+        return reply("📥 *Auto-downloader is now ENABLED for both inbox and groups*");
+    } else if (status === "ib") {
+        config.AUTO_DOWNLOADER = "inbox";
+        process.env.AUTO_DOWNLOADER = "inbox";
+        return reply("📥 *Auto-downloader is now ENABLED for inbox only*");
+    } else if (status === "gc") {
+        config.AUTO_DOWNLOADER = "group";
+        process.env.AUTO_DOWNLOADER = "group";
+        return reply("📥 *Auto-downloader is now ENABLED for groups only*");
+    } else if (status === "owner") {
+        config.AUTO_DOWNLOADER = "owner";
+        process.env.AUTO_DOWNLOADER = "owner";
+        return reply("📥 *Auto-downloader is now ENABLED for owner only*");
+    } else if (status === "off") {
+        config.AUTO_DOWNLOADER = "false";
+        process.env.AUTO_DOWNLOADER = "false";
+        return reply("📥 *Auto-downloader is now DISABLED*");
+    } else {
+        return reply(`*📥 Auto-downloader Command*\n\n• *on* - Enable for both\n• *ib* - Enable for inbox only\n• *gc* - Enable for groups only\n• *owner* - Enable for owner only\n• *off* - Disable\n\n*Example:* .autodownloader on`);
+    }
+});
+
+// MODE
+cmd({
+  pattern: "mode",
+  alias: ["setmode", "mod"],
+  react: "✅",
+  desc: "Set bot mode to private or public.",
+  category: "setting",
+  filename: __filename
+}, async (conn, mek, m, { args, isCreator, reply }) => {
+  if (!isCreator) return reply("*📛 Only the owner can use this command!*");
+
+  const currentMode = config.MODE || process.env.MODE || "public";
+
+  if (!args[0]) {
+    return reply(`📌 Current mode: *${currentMode}*\n\nUsage: .mode private OR .mode public`);
+  }
+
+  const modeArg = args[0].toLowerCase();
+
+  if (["private", "public"].includes(modeArg)) {
+    config.MODE = modeArg;
+    process.env.MODE = modeArg;
+    await reply(`✅ Bot mode is now set to *${modeArg.toUpperCase()}*.`);
+    await reloadConfig(); // Soft reload for command listeners if needed
+  } else {
+    return reply("❌ Invalid mode. Please use `.mode private` or `.mode public`.");
+  }
+});
+
+// ANTI-CALL
+cmd({
+  pattern: "anti-call",
+  react: "🫟",
+  alias: ["anticall"],
+  desc: "Enable or disable anti-call feature",
+  category: "setting",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  if (!isCreator) return reply("*🫟σɴℓу тнє σωɴєʀ ¢αɴ ᴜѕє тнιѕ ¢σммαɴ∂!*");
+
+  const status = args[0]?.toLowerCase();
+  if (status === "on") {
+    config.ANTI_CALL = "true";
+    process.env.ANTI_CALL = "true";
+    return reply("*✅ αɴтι-¢αℓℓ нαѕ вєєɴ єɴαвℓє∂*");
+  } else if (status === "off") {
+    config.ANTI_CALL = "false";
+    process.env.ANTI_CALL = "false";
+    return reply("*❌ αɴтι-¢αℓℓ нαѕ вєєɴ ∂ιѕαвℓє∂*");
+  } else {
+    return reply(`*🏷️ єχαмρℓє: αɴтι-¢αℓℓ σɴ/σff*`);
+  }
+});
+
+
+
+
+// ANTI-STATUS-MENTION
+cmd({
+  pattern: "antistatus",
+  react: "🚫",
+  alias: ["anti-status", "anti-status-mention"],
+  desc: "Enable or disable anti-status-mention feature in groups\nModes: on/off/warn/delete",
+  category: "group",
+  filename: __filename
+}, async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isCreator, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply }) => {
+  try {
+    if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+    if (args[0] === "on") {
+      config.ANTI_STATUS_MENTION = "true";
+      process.env.ANTI_STATUS_MENTION = "true";
+      await reply("🚫 *Anti-status-mention feature is now ENABLED*\n\nStatus mentions will be automatically deleted.");
+    } else if (args[0] === "off") {
+      config.ANTI_STATUS_MENTION = "false";
+      process.env.ANTI_STATUS_MENTION = "false";
+      await reply("🚫 *Anti-status-mention feature is now DISABLED*\n\nStatus mentions will be allowed.");
+    } else if (args[0] === "warn") {
+      config.ANTI_STATUS_MENTION = "warn";
+      process.env.ANTI_STATUS_MENTION = "warn";
+      await reply("⚠️ *Anti-status-mention feature is set to WARN mode*\n\nUsers will be warned when sending status mentions.");
+    } else if (args[0] === "delete") {
+      config.ANTI_STATUS_MENTION = "delete";
+      process.env.ANTI_STATUS_MENTION = "delete";
+      await reply("🗑️ *Anti-status-mention feature is set to DELETE mode*\n\nStatus mentions will be automatically deleted.");
+    } else {
+      await reply(`*Invalid input! Use one of the following modes:*\n\n• *on* - Enable anti-status-mention (delete mentions)\n• *off* - Disable anti-status-mention\n• *warn* - Warn users when sending status mentions\n• *delete* - Delete status mentions automatically\n\n*Example:* .antistatus warn`);
+    }
+  } catch (error) {
+    return reply(`*An error occurred while processing your request.*\n\n_Error:_ ${error.message}`);
+  }
+});
+
+// AUTO STATUS REACT
+cmd({
+  pattern: "autostatusreact",
+  alias: ["status-react", "statusreact", "sreact"],
+  react: "🫟",
+  desc: "Enable or disable auto-reacting to statuses",
+  category: "setting",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+  const status = args[0]?.toLowerCase();
+  if (status === "on") {
+    config.AUTO_STATUS_REACT = "true";
+    process.env.AUTO_STATUS_REACT = "true";
+    return reply("Autoreact of statuses is now enabled.");
+  } else if (status === "off") {
+    config.AUTO_STATUS_REACT = "false";
+    process.env.AUTO_STATUS_REACT = "false";
+    return reply("Autoreact of statuses is now disabled.");
+  } else {
+    return reply(`*🫟 ᴇxᴀᴍᴘʟᴇ:  .autostatusreact on*`);
+  }
+});
+
+// AUTO STATUS VIEW
+cmd({
+  pattern: "autostatusview",
+  alias: ["status-view", "sview", "statusview"],
+  desc: "Enable or disable auto-viewing of statuses",
+  category: "setting",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+  const status = args[0]?.toLowerCase();
+  if (status === "on") {
+    config.AUTO_STATUS_SEEN = "true";
+    process.env.AUTO_STATUS_SEEN = "true";
+    return reply("Autoview of statuses is now enabled.");
+  } else if (status === "off") {
+    config.AUTO_STATUS_SEEN = "false";
+    process.env.AUTO_STATUS_SEEN = "false";
+    return reply("Autoview of statuses is now disabled.");
+  } else {
+    return reply(`Example: .autostatusview on`);
+  }
+});
+
+// READ MESSAGE
+cmd({
+  pattern: "read-message",
+  alias: ["autoread"],
+  desc: "Enable or disable read message feature",
+  category: "setting",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+  const status = args[0]?.toLowerCase();
+  if (status === "on") {
+    config.READ_MESSAGE = "true";
+    process.env.READ_MESSAGE = "true";
+    return reply("Read message feature is now enabled.");
+  } else if (status === "off") {
+    config.READ_MESSAGE = "false";
+    process.env.READ_MESSAGE = "false";
+    return reply("Read message feature is now disabled.");
+  } else {
+    return reply(`_example:  .read-message on_`);
+  }
+});
+
+// ANTI-BAD
+cmd({
+  pattern: "antibad",
+  alias: ["anti-bad", "antibadword"],
+  react: "🫟",
+  desc: "Enable or disable anti-bad word feature",
+  category: "setting",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+  const status = args[0]?.toLowerCase();
+  if (status === "on") {
+    config.ANTI_BAD_WORD = "true";
+    process.env.ANTI_BAD_WORD = "true";
+    return reply("*Anti bad word is now enabled.*");
+  } else if (status === "off") {
+    config.ANTI_BAD_WORD = "false";
+    process.env.ANTI_BAD_WORD = "false";
+    return reply("*Anti bad word feature is now disabled*");
+  } else {
+    return reply(`_example:  .antibad on_`);
+  }
+});
+
+// AUTO-STICKER
+cmd({
+  pattern: "autosticker",
+  alias: ["auto-sticker"],
+  react: "🫟",
+  desc: "Enable or disable auto-sticker feature",
+  category: "setting",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+  const status = args[0]?.toLowerCase();
+  if (status === "on") {
+    config.AUTO_STICKER = "true";
+    process.env.AUTO_STICKER = "true";
+    return reply("Auto-sticker feature is now enabled.");
+  } else if (status === "off") {
+    config.AUTO_STICKER = "false";
+    process.env.AUTO_STICKER = "false";
+    return reply("Auto-sticker feature is now disabled.");
+  } else {
+    return reply(`_example:  .autosticker on_`);
+  }
+});
+
+// AUTO-REPLY
+cmd({
+  pattern: "autoreply",
+  alias: ["auto-reply"],
+  react: "🫟",
+  desc: "Enable or disable auto-reply feature",
+  category: "setting",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+  const status = args[0]?.toLowerCase();
+  if (status === "on") {
+    config.AUTO_REPLY = "true";
+    process.env.AUTO_REPLY = "true";
+    return reply("*Auto-reply is now enabled.*");
+  } else if (status === "off") {
+    config.AUTO_REPLY = "false";
+    process.env.AUTO_REPLY = "false";
+    return reply("Auto-reply feature is now disabled.");
+  } else {
+    return reply(`*🫟 ᴇxᴀᴍᴘʟᴇ: . ᴀᴜᴛᴏʀᴇᴘʟʏ ᴏɴ*`);
+  }
+});
+
+// AUTO-REACT
+cmd({
+  pattern: "autoreact",
+  alias: ["auto-react"],
+  react: "🫟",
+  desc: "Enable or disable the autoreact feature",
+  category: "setting",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+  const status = args[0]?.toLowerCase();
+  if (status === "on") {
+    config.AUTO_REACT = "true";
+    process.env.AUTO_REACT = "true";
+    await reply("Autoreact feature is now enabled.");
+  } else if (status === "off") {
+    config.AUTO_REACT = "false";
+    process.env.AUTO_REACT = "false";
+    await reply("Autoreact feature is now disabled.");
+  } else {
+    await reply(`*🔥 ᴇxᴀᴍᴘʟᴇ: .ᴀᴜᴛᴏʀᴇᴀᴄᴛ ᴏɴ*`);
+  }
+});
+
+// AUTO STATUS REPLY
+cmd({
+  pattern: "autostatusreply",
+  react: "🫟",
+  alias: ["statusreply", "status-reply"],
+  desc: "Enable or disable status-reply feature",
+  category: "setting",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+  const status = args[0]?.toLowerCase();
+  if (status === "on") {
+    config.AUTO_STATUS_REPLY = "true";
+    process.env.AUTO_STATUS_REPLY = "true";
+    return reply("Status-reply feature is now enabled.");
+  } else if (status === "off") {
+    config.AUTO_STATUS_REPLY = "false";
+    process.env.AUTO_STATUS_REPLY = "false";
+    return reply("Status-reply feature is now disabled.");
+  } else {
+    return reply(`*🫟 ᴇxᴀᴍᴘʟᴇ:  .sᴛᴀᴛᴜsʀᴇᴘʟʏ ᴏɴ*`);
+  }
+});
+
+// ANTI-BOT
+cmd({
+  pattern: "antibot",
+  react: "🫟",
+  alias: ["anti-bot"],
+  desc: "Enable or disable anti-bot feature in groups",
+  category: "group",
+  react: "🚫",
+  filename: __filename
+}, async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isCreator, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply }) => {
+  try {
+    if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+    if (args[0] === "on") {
+      config.ANTI_BOT = "true";
+      process.env.ANTI_BOT = "true";
+      await reply("ANTI_BOT feature is now enabled in this group.");
+    } else if (args[0] === "off") {
+      config.ANTI_BOT = "false";
+      process.env.ANTI_BOT = "false";
+      await reply("ANTI_BOT feature is now disabled in this group.");
+    } else {
+      await reply(`*Invalid input! Use either 'on' or 'off'. Example: .antibot on*`);
+    }
+  } catch (error) {
+    return reply(`*An error occurred while processing your request.*\n\n_Error:_ ${error.message}`);
+  }
+});
+
+// ANTI-LINK
+cmd({
+  pattern: "antilink",
+  react: "🫟",
+  alias: ["anti-link"],
+  desc: "Enable or disable anti-link feature in groups\nModes: on/off/warn/delete",
+  category: "group",
+  react: "🚫",
+  filename: __filename
+}, async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isCreator, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply }) => {
+  try {
+    if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+    if (args[0] === "on") {
+      config.ANTI_LINK = "true";
+      process.env.ANTI_LINK = "true";
+      await reply("🔗 *Anti-link feature is now ENABLED*\n\nLinks will be automatically deleted.");
+    } else if (args[0] === "off") {
+      config.ANTI_LINK = "false";
+      process.env.ANTI_LINK = "false";
+      await reply("🔗 *Anti-link feature is now DISABLED*\n\nLinks will be allowed.");
+    } else if (args[0] === "warn") {
+      config.ANTI_LINK = "warn";
+      process.env.ANTI_LINK = "warn";
+      await reply("⚠️ *Anti-link feature is set to WARN mode*\n\nUsers will be warned when sending links.");
+    } else if (args[0] === "delete") {
+      config.ANTI_LINK = "delete";
+      process.env.ANTI_LINK = "delete";
+      await reply("🗑️ *Anti-link feature is set to DELETE mode*\n\nLinks will be automatically deleted.");
+    } else {
+      await reply(`*Invalid input! Use one of the following modes:*\n\n• *on* - Enable anti-link (delete links)\n• *off* - Disable anti-link\n• *warn* - Warn users when sending links\n• *delete* - Delete links automatically\n\n*Example:* .antilink warn`);
+    }
+  } catch (error) {
+    return reply(`*An error occurred while processing your request.*\n\n_Error:_ ${error.message}`);
+  }
+});
+
+// MENTION REPLY
+cmd({
+  pattern: "mention-reply",
+  alias: ["mentionreply", "mee"],
+  desc: "Enable or disable mention reply feature",
+  category: "setting",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+  const status = args[0]?.toLowerCase();
+  if (status === "on") {
+    config.MENTION_REPLY = "true";
+    process.env.MENTION_REPLY = "true";
+    return reply("Mention Reply feature is now enabled.");
+  } else if (status === "off") {
+    config.MENTION_REPLY = "false";
+    process.env.MENTION_REPLY = "false";
+    return reply("Mention Reply feature is now disabled.");
+  } else {
+    return reply(`_example:  .mee on_`);
+  }
+});
+
+// ADMIN EVENTS
+cmd({
+  pattern: "admin-events",
+  alias: ["adminevents", "adminaction"],
+  desc: "Enable or disable admin event notifications",
+  category: "setting",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+  const status = args[0]?.toLowerCase();
+  if (status === "on") {
+    config.ADMIN_ACTION = "true";
+    process.env.ADMIN_ACTION = "true";
+    return reply("✅ Admin event notifications are now enabled.");
+  } else if (status === "off") {
+    config.ADMIN_ACTION = "false";
+    process.env.ADMIN_ACTION = "false";
+    return reply("❌ Admin event notifications are now disabled.");
+  } else {
+    return reply(`Example: .admin-events on`);
+  }
+});
+
+// OWNER REACT
+cmd({
+  pattern: "ownerreact",
+  alias: ["owner-react", "selfreact", "self-react"],
+  react: "👑",
+  desc: "Enable or disable the owner react feature",
+  category: "setting",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+  const status = args[0]?.toLowerCase();
+  if (status === "on") {
+    config.OWNER_REACT = "true";
+    process.env.OWNER_REACT = "true";
+    await reply("Owner react feature is now enabled.");
+  } else if (status === "off") {
+    config.OWNER_REACT = "false";
+    process.env.OWNER_REACT = "false";
+    await reply("Owner react feature is now disabled.");
+  } else {
+    await reply(`*🔥 ᴇxᴀᴍᴘʟᴇ: .ᴏᴡɴᴇʀʀᴇᴀᴄᴛ ᴏɴ*`);
+  }
+});
+
+
+// ===== AUTO-TYPING =====
+cmd({
+  pattern: "autotyping",
+  alias: ["auto-typing", "typing"],
+  react: "⌨️",
+  desc: "Enable auto-typing presence for the bot",
+  category: "setting",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+  const status = args[0]?.toLowerCase();
+  
+  if (status === "on") {
+    config.AUTO_TYPING = "true";
+    process.env.AUTO_TYPING = "true";
+    return reply("⌨️ *Auto-typing is now ENABLED for both inbox and groups*");
+  } else if (status === "ib") {
+    config.AUTO_TYPING = "ib";
+    process.env.AUTO_TYPING = "ib";
+    return reply("⌨️ *Auto-typing is now ENABLED for inbox only*");
+  } else if (status === "gc") {
+    config.AUTO_TYPING = "group";
+    process.env.AUTO_TYPING = "group";
+    return reply("⌨️ *Auto-typing is now ENABLED for groups only*");
+  } else if (status === "off") {
+    config.AUTO_TYPING = "false";
+    process.env.AUTO_TYPING = "false";
+    return reply("⌨️ *Auto-typing is now DISABLED*");
+  } else {
+    return reply(`*⌨️ Auto-typing Command*\n\n• *on* - Enable for both\n• *ib* - Enable for inbox only\n• *gc* - Enable for groups only\n• *off* - Disable\n\n*Example:* .autotyping on`);
+  }
+});
+
+// ===== ALWAYS ONLINE =====
+cmd({
+  pattern: "alwaysonline",
+  alias: ["online", "always-online"],
+  react: "🟢",
+  desc: "Enable always online presence for the bot",
+  category: "setting",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+  const status = args[0]?.toLowerCase();
+  
+  if (status === "on") {
+    config.ALWAYS_ONLINE = "true";
+    process.env.ALWAYS_ONLINE = "true";
+    return reply("🟢 *Always online is now ENABLED*");
+  } else if (status === "off") {
+    config.ALWAYS_ONLINE = "false";
+    process.env.ALWAYS_ONLINE = "false";
+    return reply("🟢 *Always online is now DISABLED*");
+  } else {
+    return reply(`*🟢 Always Online Command*\n\n• *on* - Enable\n• *off* - Disable\n\n*Example:* .alwaysonline on`);
+  }
+});
+
+// ===== AUTO RECORDING =====
+cmd({
+  pattern: "autorecording",
+  alias: ["recording", "auto-recording"],
+  react: "🎙️",
+  desc: "Enable auto-recording presence for the bot",
+  category: "setting",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+  const status = args[0]?.toLowerCase();
+  
+  if (status === "on") {
+    config.AUTO_RECORDING = "true";
+    process.env.AUTO_RECORDING = "true";
+    return reply("🎙️ *Auto-recording is now ENABLED for both inbox and groups*");
+  } else if (status === "ib") {
+    config.AUTO_RECORDING = "ib";
+    process.env.AUTO_RECORDING = "ib";
+    return reply("🎙️ *Auto-recording is now ENABLED for inbox only*");
+  } else if (status === "gc") {
+    config.AUTO_RECORDING = "group";
+    process.env.AUTO_RECORDING = "group";
+    return reply("🎙️ *Auto-recording is now ENABLED for groups only*");
+  } else if (status === "off") {
+    config.AUTO_RECORDING = "false";
+    process.env.AUTO_RECORDING = "false";
+    return reply("🎙️ *Auto-recording is now DISABLED*");
+  } else {
+    return reply(`*🎙️ Auto-recording Command*\n\n• *on* - Enable for both\n• *ib* - Enable for inbox only\n• *gc* - Enable for groups only\n• *off* - Disable\n\n*Example:* .autorecording on`);
+  }
+});
+
+// ===== ANTI DELETE PATH =====
+cmd({
+  pattern: "antidelpath",
+  alias: ["delpath", "anti-delete-path", "deletepath"],
+  react: "🛣️",
+  desc: "Configure where to show deleted messages",
+  category: "setting",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+  const option = args[0]?.toLowerCase();
+  
+  if (option === "ib") {
+    config.ANTI_DELETE_PATH = "inbox";
+    process.env.ANTI_DELETE_PATH = "inbox";
+    return reply("🛣️ *Anti-delete path set to INBOX only*\n_Deleted messages will be shown in the same inbox where they were deleted._");
+  } else if (option === "same") {
+    config.ANTI_DELETE_PATH = "same";
+    process.env.ANTI_DELETE_PATH = "same";
+    return reply("🛣️ *Anti-delete path set to SAME chat*\n_Deleted messages will be shown in the same chat where they were deleted._");
+  } else {
+    return reply(`*🛣️ Anti-delete Path Command*\n\n• *ib* - Show deleted messages in inbox only\n• *same* - Show deleted messages in same chat\n\n*Example:* .antidelpath ib`);
+  }
+});
+
+// ===== PRESENCE STATUS =====
+cmd({
+  pattern: "presence",
+  alias: ["presencestatus", "status"],
+  react: "📱",
+  desc: "Check the current bot presence status",
+  category: "setting",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+  
+  let statusText = "*📱 Bot Presence Status*\n\n";
+  
+  // Always Online
+  const alwaysOnline = config.ALWAYS_ONLINE || process.env.ALWAYS_ONLINE || "false";
+  statusText += `🟢 *Always Online:* ${alwaysOnline === "true" ? "ENABLED" : "DISABLED"}\n`;
+  
+  // Auto Typing
+  const autoTyping = config.AUTO_TYPING || process.env.AUTO_TYPING || "false";
+  let typingStatus = "DISABLED";
+  if (autoTyping === "true") typingStatus = "ENABLED (both)";
+  else if (autoTyping === "ib") typingStatus = "ENABLED (inbox only)";
+  else if (autoTyping === "group") typingStatus = "ENABLED (groups only)";
+  statusText += `⌨️ *Auto Typing:* ${typingStatus}\n`;
+  
+  // Auto Recording
+  const autoRecording = config.AUTO_RECORDING || process.env.AUTO_RECORDING || "false";
+  let recordingStatus = "DISABLED";
+  if (autoRecording === "true") recordingStatus = "ENABLED (both)";
+  else if (autoRecording === "ib") recordingStatus = "ENABLED (inbox only)";
+  else if (autoRecording === "group") recordingStatus = "ENABLED (groups only)";
+  statusText += `🎙️ *Auto Recording:* ${recordingStatus}\n\n`;
+  
+  statusText += `*Available Commands:*\n• .autotyping on/ib/gc/off\n• .alwaysonline on/off\n• .autorecording on/ib/gc/off\n• .presence`;
+  
+  return reply(statusText);
+});
+
+
+// CUSTOM REACT
+cmd({
+  pattern: "customreact",
+  alias: ["creact", "reactc"],
+  react: "😎",
+  desc: "Enable or disable custom reactions",
+  category: "setting",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+  const status = args[0]?.toLowerCase();
+  if (status === "on") {
+    config.CUSTOM_REACT = "true";
+    process.env.CUSTOM_REACT = "true";
+    return reply("✅ Custom reactions are now enabled.");
+  } else if (status === "off") {
+    config.CUSTOM_REACT = "false";
+    process.env.CUSTOM_REACT = "false";
+    return reply("❌ Custom reactions are now disabled.");
+  } else {
+    return reply(`Example: .customreact on`);
+  }
+});
+
+// status react emojis
+
+cmd({
+  pattern: "statusreacts",
+  alias: ["status-emojis", "semojis", "stausemoji"],
+  desc: "Set custom reaction emojis for the bot",
+  category: "setting",
+  react: "🌈",
+  filename: __filename
+}, async (conn, mek, m, { args, isCreator, reply }) => {
+  if (!isCreator) return reply("❗ Only the bot owner can use this command.");
+
+  const emojiList = args.join(" ").trim();
+  if (!emojiList) return reply("❌ Please provide a comma-separated list of emojis.\n\nExample:\n.statuaemojis 💖,💗,💘,💕");
+
+  // Update config
+  config.STATUS_REACT_EMOJIS = emojiList;
+  process.env.STATUS_REACT_EMOJIS = emojiList;
+
+  await reply(`✅ Custom Status reaction emojis updated to:\n${emojiList}`);
+});
+
+
+// SET CUSTOM REACTION EMOJIS
+cmd({
+  pattern: "setreacts",
+  alias: ["customemojis", "emojis", "cemojis"],
+  desc: "Set custom reaction emojis for the bot",
+  category: "setting",
+  react: "🌈",
+  filename: __filename
+}, async (conn, mek, m, { args, isCreator, reply }) => {
+  if (!isCreator) return reply("❗ Only the bot owner can use this command.");
+
+  const emojiList = args.join(" ").trim();
+  if (!emojiList) return reply("❌ Please provide a comma-separated list of emojis.\n\nExample:\n.setreactemoji 💖,💗,💘,💕");
+
+  // Update config
+  config.CUSTOM_REACT_EMOJIS = emojiList;
+  process.env.CUSTOM_REACT_EMOJIS = emojiList;
+
+  await reply(`✅ Custom reaction emojis updated to:\n${emojiList}`);
+});
+
+// SET PREFIX
+cmd({
+  pattern: "setprefix",
+  alias: ["prefix"],
+  react: "🪄",
+  desc: "Change the bot's command prefix.",
+  category: "setting",
+  filename: __filename
+}, async (conn, mek, m, { args, isCreator, reply }) => {
+  if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+  const newPrefix = args[0];
+  if (!newPrefix) return reply("*❌ ᴘʀᴏᴠɪᴅᴇ ɴᴇᴡ ᴘʀᴇғɪx. ᴇxᴀᴍᴘʟᴇ: .sᴇᴛᴘʀᴇғɪx !*");
+
+  setPrefix(newPrefix);
+  config.PREFIX = newPrefix;
+  process.env.PREFIX = newPrefix;
+  await reloadConfig(); // Soft reload for command listeners
+
+  return reply(`*✅ ᴘʀᴇғɪx ᴜᴘᴅᴀᴛᴇᴅ ᴛᴏ: ${newPrefix}*`);
+});
+
+// Jawad The King
