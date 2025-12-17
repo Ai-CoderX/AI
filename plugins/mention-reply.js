@@ -1,78 +1,57 @@
-const config = require('../config');
 const { cmd } = require('../command');
+const config = require('../config');
 
 cmd({
-  on: "body"
-}, async (conn, m, { isGroup }) => {
+  'on': "body"
+}, async (conn, m, store, { isGroup, botNumber2 }) => {
   try {
-    if (config.MENTION_REPLY !== 'true' || !isGroup) return;
-
+    const mek = m.mek || m;
+    
+    // Ignore bot's own messages
+    if (mek.key?.fromMe) return;
+    
+    // Check conditions
+    if (config.MENTION_REPLY !== 'true' || !isGroup || !botNumber2) return;
+    
+    // Check if botNumber2 is mentioned
     const mentioned = m.mentionedJid || [];
-    const botNumber = conn.user.id.split(":")[0] + '@s.whatsapp.net';
-    if (!mentioned.includes(botNumber)) return;
-
+    if (!mentioned.includes(botNumber2)) return;
+    
+    // Random audio clips
     const voiceClips = [
-      "https://cdn.ironman.my.id/i/7p5plg.mp4",
-      "https://cdn.ironman.my.id/i/l4dyvg.mp4",
-      "https://cdn.ironman.my.id/i/4z93dg.mp4",
-      "https://cdn.ironman.my.id/i/m9gwk0.mp4",
-      "https://cdn.ironman.my.id/i/gr1jjc.mp4",
-      "https://cdn.ironman.my.id/i/lbr8of.mp4",
-      "https://cdn.ironman.my.id/i/0z95mz.mp4",
-      "https://cdn.ironman.my.id/i/rldpwy.mp4",
-      "https://cdn.ironman.my.id/i/lz2z87.mp4",
-      "https://cdn.ironman.my.id/i/gg5jct.mp4"
+      'https://files.catbox.moe/xv42ur.mp3',
+      'https://files.catbox.moe/fac856.mp3'
+      // Add more URLs here
     ];
-
+    
+    // Random thumbnail images
+    const thumbnailImages = [
+      'https://files.catbox.moe/zw53ly.jpg',
+      'https://files.catbox.moe/wkje7f.jpg',
+      'https://files.catbox.moe/9f0vjf.jpg'
+    ];
+    
+    // Select random audio and thumbnail
     const randomClip = voiceClips[Math.floor(Math.random() * voiceClips.length)];
-
+    const randomThumbnail = thumbnailImages[Math.floor(Math.random() * thumbnailImages.length)];
+    
+    // Send audio reply
     await conn.sendMessage(m.chat, {
       audio: { url: randomClip },
-      mimetype: 'audio/mp4',
-      ptt: true,
-      waveform: [99, 0, 99, 0, 99],
+      mimetype: "audio/mpeg",
+      ptt: false,
       contextInfo: {
-        forwardingScore: 999,
-        isForwarded: true
+        externalAdReply: {
+          title: "Mention Reply",
+          body: "Bot mentioned!",
+          thumbnailUrl: randomThumbnail,
+          mediaType: 1, // 1 = Image
+          renderLargerThumbnail: false
+        }
       }
     }, { quoted: m });
 
   } catch (e) {
-    console.error(e);
+    console.error('Error in mention reply:', e);
   }
-});
-
-cmd({
-    pattern: "me",
-    alias: ["mention", "broken", "x", "xd"],
-    desc: "Send a random voice clip",
-    category: "fun",
-    react: "⚡",
-    filename: __filename
-}, async (conn, m) => {
-    try {
-        const voiceClips = [
-            "https://cdn.ironman.my.id/i/7p5plg.mp4",
-            "https://cdn.ironman.my.id/i/l4dyvg.mp4",
-            "https://cdn.ironman.my.id/i/4z93dg.mp4",
-            "https://cdn.ironman.my.id/i/m9gwk0.mp4",
-            "https://cdn.ironman.my.id/i/gr1jjc.mp4",
-            "https://cdn.ironman.my.id/i/lbr8of.mp4",
-            "https://cdn.ironman.my.id/i/0z95mz.mp4",
-            "https://cdn.ironman.my.id/i/rldpwy.mp4",
-            "https://cdn.ironman.my.id/i/lz2z87.mp4",
-            "https://cdn.ironman.my.id/i/gg5jct.mp4"
-        ];
-
-        const randomClip = voiceClips[Math.floor(Math.random() * voiceClips.length)];
-
-        await conn.sendMessage(m.chat, {
-            audio: { url: randomClip },
-            mimetype: 'audio/mp4',
-            ptt: true
-        }, { quoted: m });
-    } catch (e) {
-        console.error(e);
-        await conn.sendMessage(m.chat, { text: "❌ Failed to send random clip." }, { quoted: m });
-    }
 });
