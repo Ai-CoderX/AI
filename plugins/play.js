@@ -52,7 +52,7 @@ cmd({
 cmd({
     pattern: "play2",
     desc: "Download YouTube audio using JawadTech API.",
-    category: "downloader",
+    category: "download",
     react: "🎶",
     filename: __filename
 }, async (conn, mek, m, { from, q, reply }) => {
