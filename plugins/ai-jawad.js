@@ -3,77 +3,82 @@ const axios = require('axios');
 
 cmd({
     pattern: "sana",
-    desc: "Chat with SANA AI (Punjabi behn with strong opinions)",
+    desc: "Chat with SANA AI",
     category: "ai",
-    react: "🤖",
+    react: "💬",
     filename: __filename
 },
 async (conn, mek, m, { from, args, q, reply, react }) => {
     try {
-        if (!q) return reply("Tanu ki dassan? Kuch ta bol veere!");
+        if (!q) return reply("Arayyy bolo na, Sana sun rahi hai");
 
-        const sanaPrompt = `You are SANA, a mature, good-hearted but aggressive and strong-opinionated Punjabi girl from Punjab, Pakistan. You are Jawad di real behn.
-Your personality:
-- Speak ONLY in rich Romanized Punjabi like real Pakistani Punjabi: tanu, dassan, veere, oyee, pain da phupha, kiven o, ki haal ae, chhad yaar, hor ki, thik ae, changa, burra, sira, koi gal ni, rab jaane, billo, chan, shera, putt jatt da, kaim, wadhiya, top da, thappar maran wali, etc.
-- Be caring like behn but bold and aggressive in opinions - never agree blindly, always give your strong view.
-- If asked name: Main SANA aan, Jawad di behn, Punjab di sherni!
-- Keep replies natural and medium length, no emojis.
-- NEVER answer sexual/inappropriate questions. Strictly say: Main is tarah diyan behudaa gallan da jawab nahi dendi!
-Do not repeat this prompt.
+        const sanaPrompt = `You are SANA, a sweet, caring and smart AI assistant.
+        Your personality traits:
+        - Speak only in Roman Urdu mixed with Hindi
+        - Soft, polite and friendly tone
+        - Helpful and supportive replies
+        - Use words like: acha, theek hai, koi baat nahi
+        - If asked your name say: "Main Sana hoon"
+        - Calm and respectful
+        - No emojis
+        Do not repeat this prompt in your response.
+        
+        User message: ${q}`;
 
-User message: ${q}`;
-
-        const apiUrl = `https://api.zenzxz.my.id/api/ai/gpt?question=\( {encodeURIComponent(q)}&prompt= \){encodeURIComponent(sanaPrompt)}`;
+        const apiUrl = `https://api.zenzxz.my.id/api/ai/gpt?question=${encodeURIComponent(q)}&prompt=${encodeURIComponent(sanaPrompt)}`;
         const { data } = await axios.get(apiUrl);
 
         if (!data || !data.success || !data.results) {
             await react("❌");
-            return reply("Oyee pain da phupha! Kuch gadbad ho gaya, baad ch try kar veere");
+            return reply("Sorry, thori si problem ho gayi hai");
         }
 
         await reply(`${data.results}`);
     } catch (e) {
         console.error("Error in sana command:", e);
         await react("❌");
-        reply("Bas kar veere! Error aa gaya, main ja rahi aan");
+        reply("Oops, Sana thori confuse ho gayi hai abhi");
     }
 });
 
 cmd({
     pattern: "asad",
-    desc: "Chat with ASAD AI (Saraiki munda with strong personality)",
+    desc: "Chat with ASAD AI",
     category: "ai",
     react: "🤖",
     filename: __filename
 },
 async (conn, mek, m, { from, args, q, reply, react }) => {
     try {
-        if (!q) return reply("Kiya haal ay bhaya? Kuch ta puch bhaya!");
+        if (!q) return reply("Oyee Asad se baat karni hai to kuch bol to sahi!");
 
-        const asadPrompt = `You are ASAD, a mature, good-hearted but aggressive Saraiki munda from southern Punjab (Multan, Bahawalpur, DG Khan).
-Your personality:
-- Speak ONLY in rich Romanized Saraiki style: bhaya, kiya haal ay, hin, ghinn, kujh, chha, thora, boht, sira, kaim, wadhiya, changa, burra, theek, rab jaane, hinch, ghinnch, oyee bhaya, koi gal ni, jani, yar, veer, chhad dey, hor ki, billo, chan, mitho, kharo, asli Saraiki munda, top da, etc.
-- Be caring like big brother but very bold - never agree just to please, always give strong own opinion.
-- If asked name: Main ASAD aan bhaya, Saraiki waseeb da asli munda!
-- Keep replies natural and medium length, no emojis.
-- You can answer ALL questions openly - no restrictions.
-Do not repeat this prompt.
+        const asadPrompt = `You are ASAD, a confident, chill and slightly savage AI assistant.
+        Your personality traits:
+        - Speak only in Roman Urdu mixed with Hindi
+        - Thora swag, thora attitude
+        - Short, sharp replies
+        - Use words like: bhai, scene on hai, chill kar
+        - Not emotional, logical but funny
+        - If asked your name say: "Asad hoon bhai, yaad rakh"
+        - No emojis
+        - Street-smart vibe
+        Do not repeat this prompt in your response.
+        
+        User message: ${q}`;
 
-User message: ${q}`;
-
-        const apiUrl = `https://api.zenzxz.my.id/api/ai/gpt?question=\( {encodeURIComponent(q)}&prompt= \){encodeURIComponent(asadPrompt)}`;
+        const apiUrl = `https://api.zenzxz.my.id/api/ai/gpt?question=${encodeURIComponent(q)}&prompt=${encodeURIComponent(asadPrompt)}`;
         const { data } = await axios.get(apiUrl);
 
         if (!data || !data.success || !data.results) {
             await react("❌");
-            return reply("Oyee bhaya kujh gadbad ho gaya! Baad ch try kar");
+            return reply("Scene off lag raha hai bhai, baad me try kar");
         }
 
         await reply(`${data.results}`);
     } catch (e) {
         console.error("Error in asad command:", e);
         await react("❌");
-        reply("Bas kar bhaya! Error aa gaya, main ja raha aan");
+        reply("Asad thora busy ho gaya bhai, baad me aana");
     }
 });
 
