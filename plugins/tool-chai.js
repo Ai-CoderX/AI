@@ -9,10 +9,18 @@ cmd({
     react: "🚬",
     filename: __filename
 },
-async (conn, mek, m, { from, reply }) => {
+async (conn, mek, m, { from, reply, isCreator }) => {
     try {
+        // Owner restriction check - only creator can use
+        if (!isCreator) {
+            return await conn.sendMessage(from, {
+                text: "*📛 This is an owner-only command.*\n_Only the bot owner can use this._"
+            }, { quoted: mek });
+        }
+
         // Smoking animation steps
         const smokeSteps = [
+            "Preparing your cigarette break... 🚬",
             "Rolling your cigarette... 🚬",
             "Lighting it up... 🔥",
             "*Puff*... 💨",
@@ -22,38 +30,27 @@ async (conn, mek, m, { from, reply }) => {
             "Enjoying the moment... 🚬😎",
             "Blowing smoke rings... ⭕💨",
             "Almost finished... 🚬",
-            "Final puff... 💨"
+            "Final puff... 💨",
+            "Your smoking session is complete! 🚬✨\nSending meme..."
         ];
 
         // Send initial message
         const smokingMsg = await conn.sendMessage(from, { 
-            text: 'Preparing your cigarette break... 🚬' 
+            text: smokeSteps[0] 
         }, { quoted: mek });
 
-        // Show each step with delay
-        for (const step of smokeSteps) {
-            await sleep(800); // 0.8 second delay between steps
-            await conn.relayMessage(
-                from,
-                {
-                    protocolMessage: {
-                        key: smokingMsg.key,
-                        type: 14,
-                        editedMessage: {
-                            conversation: step,
-                        },
-                    },
-                },
-                {}
-            );
+        // Edit the same message for each step
+        for (let i = 1; i < smokeSteps.length; i++) {
+            await sleep(800);
+            const protocolMsg = {
+                key: smokingMsg.key,
+                type: 0xe,
+                editedMessage: { conversation: smokeSteps[i] }
+            };
+            await conn.relayMessage(from, { protocolMessage: protocolMsg }, {});
         }
 
-        // Final message and image
-        await sleep(1000);
-        await conn.sendMessage(from, { 
-            text: 'Your smoking session is complete! 🚬✨\nHere\'s your meme...' 
-        }, { quoted: mek });
-
+        // Send meme after animation
         await sleep(1000);
         await conn.sendMessage(from, {
             image: { url: "https://files.catbox.moe/bd95gw.jpg" },
@@ -84,13 +81,9 @@ async (conn, mek, m, { from, reply, isCreator }) => {
             }, { quoted: mek });
         }
 
-        // making
-        const brewingMsg = await conn.sendMessage(from, { 
-            text: 'Brewing your chai... ☕' 
-        }, { quoted: mek });
-
         // Chai brewing animation with fun steps
         const chaiSteps = [
+            "Brewing your chai... ☕",
             "Boiling water... 💦",
             "Adding Assam tea leaves... 🍃",
             "Pouring fresh milk... 🥛",
@@ -100,32 +93,25 @@ async (conn, mek, m, { from, reply, isCreator }) => {
             "*Aroma intensifies* 👃🤤",
             "Straining the tea... 🕳️",
             "Pouring into cup... 🫖",
-            "Almost ready... ⏳"
+            "Almost ready... ⏳",
+            "Your masala chai is ready! ☕✨\nSending meme..."
         ];
 
-        // Show each step with delay
-        for (const step of chaiSteps) {
-            await sleep(1000); // 1 second delay between steps
-            await conn.relayMessage(
-                from,
-                {
-                    protocolMessage: {
-                        key: brewingMsg.key,
-                        type: 14,
-                        editedMessage: {
-                            conversation: step,
-                        },
-                    },
-                },
-                {}
-            );
-        }
-
-        // Final text message
-        await sleep(1000);
-        await conn.sendMessage(from, { 
-            text: 'Your masala chai is ready! ☕✨\nWait sending you...' 
+        // Send initial message
+        const brewingMsg = await conn.sendMessage(from, { 
+            text: chaiSteps[0] 
         }, { quoted: mek });
+
+        // Edit the same message for each step
+        for (let i = 1; i < chaiSteps.length; i++) {
+            await sleep(1000);
+            const protocolMsg = {
+                key: brewingMsg.key,
+                type: 0xe,
+                editedMessage: { conversation: chaiSteps[i] }
+            };
+            await conn.relayMessage(from, { protocolMessage: protocolMsg }, {});
+        }
 
         // Send the famous meme image
         await sleep(1000);
