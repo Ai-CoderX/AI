@@ -10,7 +10,7 @@ cmd({
     filename: __filename
 }, async (conn, mek, m, { from, q, reply }) => {
     try {
-        if (!q) return await reply("🎧 *Usage:*\n- .spotify song_name\n- .spotify spotify_url\n\nExample:\n.spotify Sparks Coldplay\n.spotify https://open.spotify.com/track/...");
+        if (!q) return await reply("🎧 *Please Give url or tital*");
 
         // Check if input is a URL or query
         const isUrl = q.includes('open.spotify.com');
@@ -59,7 +59,7 @@ cmd({
             return await reply("❌ Could not retrieve audio URL. Please try a different song.");
         }
 
-        // Send audio file with externalAdReply (includes thumbnail and caption)
+        // Send audio file with externalAdReply
         await conn.sendMessage(from, {
             audio: { url: audioUrl },
             mimetype: "audio/mpeg",
@@ -67,11 +67,11 @@ cmd({
             contextInfo: {
                 externalAdReply: {
                     title: title || "Spotify Song",
-                    body: artist || "Downloaded via Spotify",
-                    thumbnailUrl: cover || 'https://i.scdn.co/image/ab6761610000e5eb5a00969a4698c3132a15fbb0',
-                    mediaType: 2,
-                    mediaUrl: q.includes('open.spotify.com') ? q : '',
-                    sourceUrl: q.includes('open.spotify.com') ? q : '',
+                    body: `Artist: ${artist || 'Unknown'} | Duration: ${duration || 'Unknown'}`,
+                    thumbnailUrl: cover, // Only use cover from API
+                    mediaType: 1,
+                    mediaUrl: '',
+                    sourceUrl: '',
                     renderLargerThumbnail: true
                 }
             }
