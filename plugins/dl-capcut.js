@@ -11,7 +11,7 @@ cmd({
   try {
     if (!q) {
       return await reply(
-        "🎬 *Please provide a CapCut template link!*\n\nExample:\n*.capcut https://www.capcut.com/tv2/ZSUSEwbge/*"
+        "🎬 *Please provide a CapCut template link*"
       );
     }
 
