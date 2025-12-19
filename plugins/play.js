@@ -1,5 +1,6 @@
 const { cmd } = require('../command');
 const axios = require('axios');
+const fetch = require("node-fetch");
 const yts = require('yt-search');
 
 cmd({
@@ -50,44 +51,43 @@ cmd({
 
 
 cmd({
-    pattern: "play2",
-    desc: "Download YouTube audio using JawadTech API.",
-    category: "download",
-    react: "🎶",
-    filename: __filename
+  pattern: "play2",
+  desc: "Play & download YouTube audio (MP3)",
+  category: "download",
+  react: "🎵",
+  filename: __filename
 }, async (conn, mek, m, { from, q, reply }) => {
-    try {
-        if (!q) return await reply("🎧 Please provide a song name!\n\nExample: .play2 Faded Alan Walker");
-
-        const { videos } = await yts(q);
-        if (!videos || videos.length === 0) return await reply("❌ No results found!");
-
-        const vid = videos[0];
-
-        // Send thumbnail + basic info first
-        await conn.sendMessage(from, {
-            image: { url: vid.thumbnail },
-            caption: `🎶 *${vid.title}*\n⏱️ *Duration:* ${vid.timestamp}\n👀 *Views:* ${vid.views.toLocaleString()}\n📡 *Status:* Downloading...`
-        }, { quoted: mek });
-
-        const api = `https://jawad-tech.vercel.app/yta?url=${encodeURIComponent(vid.url)}`;
-        const { data } = await axios.get(api);
-
-        if (!data?.status || !data?.result) return await reply("❌ Download failed! Please try again later.");
-
-        const audioUrl = data.result;
-        const title = data.metadata?.title || vid.title || "Unknown Song";
-
-        // Send only the audio (no message after)
-        await conn.sendMessage(from, {
-            audio: { url: audioUrl },
-            mimetype: "audio/mpeg",
-            fileName: `${title}.mp3`
-        }, { quoted: mek });
-
-    } catch (e) {
-        console.error("Error in .play2:", e);
-        await reply("❌ Error occurred, please try again later!");
-        await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+  try {
+    if (!q) {
+      return await reply(
+        "🎵 *Please provide a song name*"
+      );
     }
+
+    await reply("*⏳ Downloading audio...*");
+
+    const apiUrl = `https://api.deline.web.id/downloader/ytplay?q=${encodeURIComponent(q)}`;
+    const res = await fetch(apiUrl);
+    const data = await res.json();
+
+    if (!data.status) {
+      return await reply("❌ Failed to fetch audio.");
+    }
+
+    const result = data.result;
+
+    await conn.sendMessage(
+      from,
+      {
+        audio: { url: result.dlink },
+        mimetype: "audio/mpeg",
+        fileName: `${result.title}.mp3`
+      },
+      { quoted: mek }
+    );
+
+  } catch (err) {
+    console.error("PLAY2 ERROR:", err);
+    await reply("❌ Error downloading audio. Try again later.");
+  }
 });
