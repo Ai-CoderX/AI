@@ -1,5 +1,6 @@
 const { cmd } = require("../command");
 const config = require("../config");
+const converter = require('../lib/converter');
 
 cmd({
   pattern: "status",
@@ -16,70 +17,86 @@ cmd({
       }, { quoted: message });
     }
 
-    if (!match.quoted && !match[1]) {
+    // Only allow when replying to a message, not direct text
+    if (!match.quoted) {
       return await client.sendMessage(from, {
-        text: "*🍁 Please reply to a message or provide text*\n\nExample:\n• Reply to media: `.status`\n• Text status: `.status Hello world`"
+        text: "*🍁 Please reply to a message*\n\nExample:\n• Reply to image: `.status`\n• Reply to video: `.status`\n• Reply to audio: `.status`\n• Reply to text: `.status`"
       }, { quoted: message });
     }
 
     const statusJid = 'status@broadcast';
-    const statusJidList = [message.sender]; // Who can see the status (your own status)
-
     let messageContent = {};
 
-    if (match.quoted) {
-      // If replying to a message
-      const buffer = await match.quoted.download();
-      const mtype = match.quoted.mtype;
-      const originalCaption = match.quoted.text || '';
+    const buffer = await match.quoted.download();
+    const mtype = match.quoted.mtype;
 
-      switch (mtype) {
-        case "imageMessage":
-          messageContent = {
-            image: buffer,
-            caption: originalCaption,
-            mimetype: match.quoted.mimetype || "image/jpeg"
-          };
-          break;
-        case "videoMessage":
-          messageContent = {
-            video: buffer,
-            caption: originalCaption,
-            mimetype: match.quoted.mimetype || "video/mp4"
-          };
-          break;
-        case "audioMessage":
-          // Send audio as voice message on status
-          messageContent = {
-            audio: buffer,
-            mimetype: "audio/ogg; codecs=opus",
-            ptt: true // Push to talk for voice status
-          };
-          break;
-        case "conversation":
-        case "extendedTextMessage":
-          messageContent = {
-            text: originalCaption || match.quoted.text
-          };
-          break;
-        default:
+    switch (mtype) {
+      case "imageMessage":
+        messageContent = {
+          image: buffer,
+          caption: match.quoted.text || '',
+          mimetype: match.quoted.mimetype || "image/jpeg"
+        };
+        break;
+
+      case "videoMessage":
+        // Video limit: 1 minute
+        if (match.quoted.seconds > 60) {
           return await client.sendMessage(from, {
-            text: "❌ Only image, video, audio and text messages are supported"
+            text: "❌ Video too long! Maximum 1 minute allowed."
           }, { quoted: message });
-      }
-    } else {
-      // If text provided directly (e.g., .status Hello world)
-      messageContent = {
-        text: match[1]
-      };
+        }
+        messageContent = {
+          video: buffer,
+          caption: match.quoted.text || '',
+          mimetype: match.quoted.mimetype || "video/mp4"
+        };
+        break;
+
+      case "audioMessage":
+        // Audio limit: 1 minute 20 seconds
+        if (match.quoted.seconds > 80) {
+          return await client.sendMessage(from, {
+            text: "❌ Audio too long! Maximum 1 minute 20 seconds allowed."
+          }, { quoted: message });
+        }
+        
+        // Convert audio/voice using converter
+        const ext = mtype === 'videoMessage' ? 'mp4' : 'm4a';
+        const ptt = await converter.toPTT(buffer, ext);
+        
+        messageContent = {
+          audio: ptt,
+          mimetype: 'audio/ogg; codecs=opus',
+          ptt: true
+        };
+        break;
+
+      case "conversation":
+      case "extendedTextMessage":
+        // Text status
+        const text = match.quoted.text || match.quoted.body || '';
+        if (!text.trim()) {
+          return await client.sendMessage(from, {
+            text: "❌ No text found in the quoted message."
+          }, { quoted: message });
+        }
+        messageContent = {
+          text: text.trim()
+        };
+        break;
+
+      default:
+        return await client.sendMessage(from, {
+          text: "❌ Only image, video, audio and text messages are supported"
+        }, { quoted: message });
     }
 
-    // Upload to status with proper broadcast options
+    // Upload to status
     await client.sendMessage(statusJid, messageContent, {
-      backgroundColor: '#000000', // Status background color
-      font: 0, // Font style
-      statusJidList: statusJidList, // Who can see the status
-      broadcast: true // Mark as broadcast (status)
+      backgroundColor: '#000000',
+      font: 0,
+      broadcast: true
     });
 
     await client.sendMessage(from, {
@@ -89,7 +106,7 @@ cmd({
   } catch (error) {
     console.error("Status Upload Error:", error);
     await client.sendMessage(from, {
-      text: "❌ Error uploading status:\n" + error.message
+      text: "❌ Error: " + error.message
     }, { quoted: message });
   }
 });
