@@ -20,7 +20,7 @@ cmd({
     const mimeType = (quotedMsg.msg || quotedMsg).mimetype || '';
     
     if (!mimeType) {
-      throw "Please reply to an image, video, or audio file";
+      throw "Please reply to an image, video, audio, or other supported file";
     }
 
     // Download the media
@@ -32,8 +32,16 @@ cmd({
     let extension = '';
     if (mimeType.includes('image/jpeg')) extension = '.jpg';
     else if (mimeType.includes('image/png')) extension = '.png';
+    else if (mimeType.includes('image/webp')) extension = '.webp';
     else if (mimeType.includes('video')) extension = '.mp4';
-    else if (mimeType.includes('audio')) extension = '.mp3';
+    else if (mimeType.includes('audio/mpeg')) extension = '.mp3';
+    else if (mimeType.includes('audio/mp4') || mimeType.includes('audio/x-m4a')) extension = '.m4a';
+    else if (mimeType.includes('application/zip') || mimeType.includes('application/x-zip-compressed')) extension = '.zip';
+    else if (mimeType.includes('application/javascript') || mimeType.includes('text/javascript')) extension = '.js';
+    else if (mimeType.includes('audio/')) extension = '.audio';
+    else if (mimeType.includes('image/')) extension = '.image';
+    else if (mimeType.includes('text/')) extension = '.txt';
+    else extension = '.file';
     
     const fileName = `file${extension}`;
 
@@ -59,6 +67,8 @@ cmd({
     if (mimeType.includes('image')) mediaType = 'Image';
     else if (mimeType.includes('video')) mediaType = 'Video';
     else if (mimeType.includes('audio')) mediaType = 'Audio';
+    else if (mimeType.includes('application/zip')) mediaType = 'ZIP Archive';
+    else if (mimeType.includes('application/javascript') || mimeType.includes('text/javascript')) mediaType = 'JavaScript';
 
     // Send response
     await reply(
