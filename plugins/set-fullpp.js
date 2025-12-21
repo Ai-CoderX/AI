@@ -1,5 +1,5 @@
 // jawi
-// jawi
+
 const { cmd } = require("../command");
 const { Jimp } = require("jimp"); // For v1.6.0+
 
