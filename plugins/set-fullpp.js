@@ -1,3 +1,4 @@
+// jawi
 const { cmd } = require("../command");
 const { Jimp } = require("jimp"); // ← Critical: Destructure for v1.6.0
 
