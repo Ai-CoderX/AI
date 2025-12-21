@@ -13,10 +13,8 @@ async (conn, mek, m, { from, q, reply }) => {
     try {
         if (!q) return reply("❌ *Please provide an app name!*");
 
-        // ⏳ React - processing
         await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
 
-        // Fetch data from API using node-fetch
         const response = await fetch(`https://delirius-apiofc.vercel.app/download/apk?query=${encodeURIComponent(q)}`);
         const data = await response.json();
 
@@ -27,51 +25,54 @@ async (conn, mek, m, { from, q, reply }) => {
 
         const app = data.data;
         
-        // Extract size in MB from sizeByte and check limit
+        // Check size limit (150MB)
         const sizeInMB = app.sizeByte / (1024 * 1024);
-        
         if (sizeInMB > 150) {
             await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
             return reply("❌ *App size is too large to download*");
         }
-        
-        // Format the caption
+
+        // Create caption
         const caption = `📱 *${app.name}*\n\n` +
-                       `🆔 *Package:* ${app.id}\n` +
-                       `⭐ *Rating:* ${app.stats.rating.average} ⭐\n` +
-                       `👨‍💻 *Developer:* ${app.developer}\n` +
-                       `💾 *Size:* ${app.size}\n` +
-                       `📅 *Last Update:* ${app.publish}\n\n` +
+                       `🆔 Package: ${app.id}\n` +
+                       `⭐ Rating: ${app.stats.rating.average} ⭐\n` +
+                       `👨‍💻 Developer: ${app.developer}\n` +
+                       `💾 Size: ${app.size}\n` +
+                       `📅 Last Update: ${app.publish}\n\n` +
                        `*Powered By JawadTech*`;
 
-        // Send APK as document with thumbnail and caption in one message
+        // Your GitHub repository link
+        const githubRepo = "https://github.com/JawadYT36/KHAN-MD";
+
+        // Send document with thumbnail and info
         await conn.sendMessage(from, {
-            document: { url: app.download },
+            document: { 
+                url: app.download 
+            },
+            fileName: `${app.name.replace(/\s+/g, '_')}.apk`,
             mimetype: "application/vnd.android.package-archive",
-            fileName: `${app.name.replace(/[^\w\s]/gi, '_')}.apk`,
             caption: caption,
+            thumbnail: app.image,
             contextInfo: {
                 externalAdReply: {
                     title: app.name,
                     body: "KHAN MD APK DOWNLOADER 🚀",
-                    mediaType: 1, // 1 = Image
+                    mediaType: 1,
                     thumbnailUrl: app.image,
                     renderLargerThumbnail: true,
-                    sourceUrl: app.download,
-                    mediaUrl: app.download,
-                    showAdAttribution: false
+                    sourceUrl: githubRepo, // Your repo link
+                    mediaUrl: githubRepo   // Your repo link
                 },
                 isForwarded: true,
                 forwardingScore: 999
             }
         }, { quoted: mek });
 
-        // ✅ React - success
         await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
 
     } catch (error) {
-        console.error("APK Download Error:", error);
+        console.error("Error:", error);
         await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-        reply("❌ *An error occurred while fetching the APK.*");
+        reply("❌ *Error fetching APK. Please try again.*");
     }
 });
