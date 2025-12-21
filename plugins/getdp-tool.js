@@ -1,3 +1,4 @@
+// Jawad TechX
 const { cmd } = require("../command");
 const { lidToPhone, cleanPN } = require("../lib/fixlid"); // Adjust path if needed
 
