@@ -87,7 +87,7 @@ async (conn, mek, m, { from, isCreator, reply, sender, args }) => {
             // Send the profile picture with caption
             await conn.sendMessage(from, { 
                 image: { url: ppUrl }, 
-                caption: `> *Profile Pic Downloaded Successfully ✅`
+                caption: `> *Profile Pic Downloaded Successfully* ✅`
             });
 
             // Success reaction
