@@ -6,16 +6,15 @@ cmd({
     pattern: "getpp",
     alias: ["profile", "getdp"],
     react: "🚀",
-    desc: "Sends the profile picture of a user by phone number, mention, or reply (owner only)",
-    category: "owner",
+    desc: "Sends the profile picture of a user by phone number, mention, or reply (now available to everyone)",
+    category: "other", // Changed from "owner" to make it accessible
     use: ".getpp <phone number> OR reply to a message OR mention someone",
     filename: __filename
 },
-async (conn, mek, m, { from, isCreator, reply, sender, args }) => {
+async (conn, mek, m, { from, reply, sender, args }) => {
     try {
-        if (!isCreator) {
-            return reply("📛 Only the owner can use this command.");
-        }
+        // REMOVED: if (!isCreator) restriction
+        // Now anyone can use this command ✅
 
         let targetJid = null;
 
@@ -77,7 +76,7 @@ async (conn, mek, m, { from, isCreator, reply, sender, args }) => {
             
             // Try to get contact name
             try {
-                const contact = await conn.getContact?.(targetJid) || // Some Baileys versions may not have getContact
+                const contact = await conn.getContact?.(targetJid) || 
                                { notify: targetJid.split("@")[0], name: targetJid.split("@")[0] };
                 userName = contact.notify || contact.vname || contact.name || targetJid.split("@")[0];
             } catch (contactError) {
@@ -87,7 +86,7 @@ async (conn, mek, m, { from, isCreator, reply, sender, args }) => {
             // Send the profile picture with caption
             await conn.sendMessage(from, { 
                 image: { url: ppUrl }, 
-                caption: `> *Profile Pic Downloaded Successfully* ✅`
+                caption: `> *Profile Pic Downloaded Successfully* ✅\n*User:* ${userName}`
             });
 
             // Success reaction
