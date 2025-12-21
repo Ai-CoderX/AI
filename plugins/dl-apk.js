@@ -4,7 +4,7 @@ const fetch = require('node-fetch');
 cmd({
     pattern: "apk",
     alias: ["app"],
-    react: "📲",
+    react: "🚀",
     desc: "📥 Download APK directly",
     category: "download",
     filename: __filename
@@ -39,7 +39,7 @@ async (conn, mek, m, { from, q, reply }) => {
                        `👨‍💻 Developer: ${app.developer}\n` +
                        `💾 Size: ${app.size}\n` +
                        `📅 Last Update: ${app.publish}\n\n` +
-                       `*Powered By JawadTech*`;
+                       `> *Powered By JawadTech*`;
 
         // Your GitHub repository link
         const githubRepo = "https://github.com/JawadYT36/KHAN-MD";
