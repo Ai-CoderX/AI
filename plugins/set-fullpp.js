@@ -1,4 +1,6 @@
 const { cmd } = require("../command");
+// CORRECT IMPORT FOR JIMP 1.6.0 - Use destructuring
+const { Jimp } = require("jimp");
 
 cmd({
   pattern: "fixpp",
@@ -13,52 +15,43 @@ cmd({
     const botJid = client.user?.id || (client.user.id.split(":")[0] + "@s.whatsapp.net");
     if (message.sender !== botJid && !isCreator) {
       return await client.sendMessage(from, {
-        text: "*📛 Owner only*"
+        text: "*📛 This command can only be used by the bot or its owner.*"
       }, { quoted: message });
     }
 
     if (!message.quoted?.mtype?.includes("image")) {
       return await client.sendMessage(from, { 
-        text: "*⚠️ Reply to an image*" 
+        text: "*⚠️ Please reply to an image to set as profile picture*" 
       }, { quoted: message });
     }
 
     await client.sendMessage(from, { 
-      text: "*🔄 Starting fixpp...*" 
+      text: "*⏳ Processing image, please wait...*" 
     }, { quoted: message });
 
     // Download image
     const imageBuffer = await message.quoted.download();
-    await client.sendMessage(from, { 
-      text: `*📥 Downloaded: ${imageBuffer.length} bytes*` 
-    }, { quoted: message });
-
-    // IMPORTANT: Try different import methods
-    // Method 1: Direct import (most common for v1.6.0)
-    const Jimp = (await import('jimp')).default || require('jimp');
     
-    // Process image - simplified
+    // Process image - Use Jimp.read with destructured Jimp
     const image = await Jimp.read(imageBuffer);
     
     // Just resize to square (skip blur/composite for now)
     image.resize(640, Jimp.AUTO);
     
-    // For Jimp 1.6.0, sometimes getBufferAsync needs to be called differently
+    // Get buffer
     const finalImage = await image.getBufferAsync(Jimp.MIME_JPEG);
     
-    await client.sendMessage(from, { 
-      text: `*✅ Ready: ${finalImage.length} bytes*` 
-    }, { quoted: message });
-
     // Update profile
     await client.updateProfilePicture(botJid, finalImage);
+    
     await client.sendMessage(from, { 
-      text: "*✅ Profile picture updated!*" 
+      text: "*✅ Bot's profile picture updated successfully!*" 
     }, { quoted: message });
 
   } catch (error) {
+    console.error("fixpp Error:", error);
     await client.sendMessage(from, {
-      text: `*❌ Fixpp error:*\n${error.message}\n\nTry: \`npm install jimp@latest\``
+      text: `*❌ Error updating profile picture:*\n${error.message}\n\nTry: \`npm install jimp@latest\``
     }, { quoted: message });
   }
 });
