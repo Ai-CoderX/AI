@@ -1,7 +1,5 @@
-// JAWAD 
-
 const { cmd } = require("../command");
-const Jimp = require("jimp");
+const { Jimp } = require("jimp"); // ← Critical: Destructure for v1.6.0
 
 cmd({
   pattern: "fullpp",
@@ -12,61 +10,63 @@ cmd({
   filename: __filename
 }, async (client, message, match, { from, isCreator }) => {
   try {
-    // Authorization (bot or owner only)
+    // Authorization: Bot itself or owner only
     const botNumber = client.decodeJid ? client.decodeJid(client.user.id) : client.user.id;
     const isBot = message.sender === botNumber;
-    
+
     if (!isBot && !isCreator) {
       return await client.sendMessage(from, {
         text: "*❌ This command can only be used by the bot itself or owner.*"
       }, { quoted: message });
     }
 
-    // Check if quoted message is an image
-    if (!match.quoted || !match.quoted.mtype || !match.quoted.mtype.includes("image")) {
+    // Must reply to an image
+    if (!message.quoted || !message.quoted.mtype || !message.quoted.mtype.includes("image")) {
       return await client.sendMessage(from, {
         text: "*⚠️ Please reply to an image to set as profile picture.*"
       }, { quoted: message });
     }
 
-    // React with loading ⏳
+    // Loading reaction
     await client.sendMessage(from, { 
-      react: { text: '⏳', key: message.key } 
+      react: { text: "⏳", key: message.key } 
     });
 
     try {
-      // Download the image (no need for retry mechanism like in example)
-      const media = await match.quoted.download();
+      // Download replied image
+      const media = await message.quoted.download();
       if (!media) throw new Error("Failed to download image");
 
-      // Process image with Jimp
-      const image = await Jimp.read(media);
-      if (!image) throw new Error("Invalid image format");
+      // Read with Jimp
+      let image = await Jimp.read(media);
 
-      // Make square if needed (exact same logic as example)
+      // Make square (center the original image on transparent background)
       const size = Math.max(image.bitmap.width, image.bitmap.height);
       if (image.bitmap.width !== image.bitmap.height) {
-        const squareImage = new Jimp(size, size, 0x000000FF);
-        squareImage.composite(image, 
-          (size - image.bitmap.width) / 2, 
-          (size - image.bitmap.height) / 2
-        );
-        image.clone(squareImage);
+        const squareImage = new Jimp(size, size, 0x00000000); // Transparent
+        const x = (size - image.bitmap.width) / 2;
+        const y = (size - image.bitmap.height) / 2;
+        squareImage.composite(image, x, y);
+        image = squareImage;
       }
 
-      // Resize to WhatsApp requirements
+      // Resize to optimal WhatsApp PP size
       image.resize(640, 640);
+
+      // Quality tweak (optional – WhatsApp recompresses anyway, but helps)
+      image.quality(90);
+
+      // Get JPEG buffer
       const buffer = await image.getBufferAsync(Jimp.MIME_JPEG);
 
-      // Update profile picture
+      // Update bot's profile picture
       await client.updateProfilePicture(botNumber, buffer);
-      
-      // React with success ✅
+
+      // Success reaction & message
       await client.sendMessage(from, { 
-        react: { text: '✅', key: message.key } 
+        react: { text: "✅", key: message.key } 
       });
 
-      // Success message
       return await client.sendMessage(from, {
         text: "*✅ Profile Picture Updated successfully!*",
         contextInfo: {
@@ -77,28 +77,26 @@ cmd({
       }, { quoted: message });
 
     } catch (error) {
-      // React with error ❌
       await client.sendMessage(from, { 
-        react: { text: '❌', key: message.key } 
+        react: { text: "❌", key: message.key } 
       });
-      
+
       return await client.sendMessage(from, {
-        text: `*❌ Error:* ${error.message}`
+        text: `*❌ Error processing image:* ${error.message || error}`
       }, { quoted: message });
     }
 
   } catch (error) {
-    console.error("fullpp Error:", error);
-    
-    // Try to send error reaction if message.key still exists
+    console.error("fullpp Command Error:", error);
+
     try {
       await client.sendMessage(from, { 
-        react: { text: '❌', key: message.key } 
+        react: { text: "❌", key: message.key } 
       });
     } catch (e) {}
-    
+
     await client.sendMessage(from, {
-      text: `*🔥 Unexpected error:*\n${error.message}`
+      text: `*🔥 Unexpected error:*\n${error.message || error}`
     }, { quoted: message });
   }
 });
