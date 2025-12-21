@@ -1,3 +1,4 @@
+// Jawad Tech
 const { cmd } = require("../command");
 
 cmd({
