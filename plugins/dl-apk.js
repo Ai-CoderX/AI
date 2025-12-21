@@ -4,7 +4,7 @@ const fetch = require('node-fetch');
 cmd({
     pattern: "apk",
     alias: ["app"],
-    react: "📲",
+    react: "🚀",
     desc: "📥 Download APK directly",
     category: "download",
     filename: __filename
