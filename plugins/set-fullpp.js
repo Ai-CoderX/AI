@@ -1,6 +1,6 @@
 // jawi
 const { cmd } = require("../command");
-const { Jimp } = require("jimp"); // ← Critical: Destructure for v1.6.0
+const { Jimp } = require("jimp"); // ← For v1.6.0+
 
 cmd({
   pattern: "fullpp",
@@ -38,8 +38,8 @@ cmd({
       const media = await message.quoted.download();
       if (!media) throw new Error("Failed to download image");
 
-      // Read with Jimp
-      let image = await Jimp.read(media);
+      // Read with Jimp – FIX for v1.x: wrap buffer in { data: ... }
+      let image = await Jimp.read({ data: media });
 
       // Make square (center the original image on transparent background)
       const size = Math.max(image.bitmap.width, image.bitmap.height);
