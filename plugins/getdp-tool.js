@@ -80,7 +80,7 @@ async (conn, mek, m, { from, isCreator, reply, sender }) => {
             // Send the profile picture
             await conn.sendMessage(from, { 
                 image: { url: ppUrl }, 
-                caption: `📸 Profile Picture\n👤 User: ${userName}\n📞 Number: ${targetJid.split("@")[0]}`
+                caption: `> Profile Pic Downloaded Successfully`
             });
 
             // Send reaction
