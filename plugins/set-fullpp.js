@@ -1,5 +1,6 @@
 const { cmd } = require("../command");
-const Jimp = require("jimp");
+// Updated import for Jimp 1.6.0
+const { Jimp } = require("jimp");
 
 cmd({
   pattern: "fullpp",
@@ -31,12 +32,15 @@ cmd({
     }, { quoted: message });
 
     const imageBuffer = await message.quoted.download();
+    // Using Jimp.read with the buffer
     const image = await Jimp.read(imageBuffer);
 
-    // Image processing pipeline
+    // Image processing pipeline remains the same
     const blurredBg = image.clone().cover(640, 640).blur(10);
     const centeredImage = image.clone().contain(640, 640);
     blurredBg.composite(centeredImage, 0, 0);
+    
+    // Updated method to get buffer in Jimp 1.6.0
     const finalImage = await blurredBg.getBufferAsync(Jimp.MIME_JPEG);
 
     // Update profile picture
