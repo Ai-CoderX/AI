@@ -1,3 +1,5 @@
+// JAWAD 
+
 const { cmd } = require("../command");
 const Jimp = require("jimp");
 
