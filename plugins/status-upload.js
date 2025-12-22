@@ -1,3 +1,4 @@
+ // ok
 const { cmd } = require("../command");
 const config = require("../config");
 
