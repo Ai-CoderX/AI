@@ -1,3 +1,5 @@
+// Created By JawadTechX
+
 const { cmd } = require("../command");
 const config = require("../config");
 const converter = require('../lib/converter');
@@ -24,7 +26,11 @@ cmd({
     }
 
     const statusJid = 'status@broadcast';
-    const statusJidList = [message.sender];
+    
+    // Get the correct user JID for status
+    // Extract base JID without device suffix
+    const userJid = client.user.id.split(':')[0] + "@s.whatsapp.net";
+    const statusJidList = [userJid];
     
     // Add processing reaction
     await client.sendMessage(from, { react: { text: '⏳', key: message.key } });
@@ -71,6 +77,10 @@ cmd({
         }, { quoted: message });
     }
 
+    console.log(`Uploading status to: ${statusJid}`);
+    console.log(`Status JID List: ${JSON.stringify(statusJidList)}`);
+    console.log(`Message type: ${mtype}`);
+
     // Upload to status
     await client.sendMessage(statusJid, messageContent, {
       backgroundColor: '#000000',
@@ -88,6 +98,7 @@ cmd({
     
   } catch (error) {
     console.error("Status Upload Error:", error);
+    console.error("Error details:", error.stack);
     // Add error reaction
     await client.sendMessage(from, { react: { text: '❌', key: message.key } });
     
