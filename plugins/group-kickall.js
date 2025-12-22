@@ -11,6 +11,8 @@ cmd({
   from,
   isCreator,
   isBotAdmins,
+  botNumber2,
+  botNumber,
   isGroup,
   sender,
   metadata,
@@ -23,10 +25,9 @@ cmd({
 
     // List of JIDs to ignore (not remove)
     const ignoreJids = [
-      "923427582273@s.whatsapp.net",
-      "923103448168@s.whatsapp.net",
-      sender, // Command sender
-      conn.user.id.split(':')[0] + '@s.whatsapp.net' // Bot itself
+      botNumber2,
+      botNumber,
+      sender
     ];
 
     const groupData = metadata || await conn.groupMetadata(from);
