@@ -1,3 +1,4 @@
+// JawadTechXD 
 const { cmd } = require("../command");
 const fetch = require('node-fetch');
 const converter = require('../lib/converter'); // Add converter
