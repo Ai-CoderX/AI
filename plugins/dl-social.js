@@ -1,5 +1,6 @@
-const { cmd } = require("../command"); 
+const { cmd } = require("../command");
 const fetch = require('node-fetch');
+const converter = require('../lib/converter'); // Add converter
 
 cmd({
     pattern: "ttmp3",
@@ -18,6 +19,7 @@ cmd({
 
         await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
 
+        // Fetch TikTok video
         const apiUrl = `https://delirius-apiofc.vercel.app/download/tiktok?url=${encodeURIComponent(url)}`;
         const response = await fetch(apiUrl);
         const data = await response.json();
@@ -29,8 +31,18 @@ cmd({
 
         const videoUrl = data.data.meta.media.find(v => v.type === "video").org;
         
+        // Download video as buffer
+        await conn.sendMessage(from, { react: { text: '⬇️', key: m.key } });
+        const videoResponse = await fetch(videoUrl);
+        const videoBuffer = await videoResponse.buffer();
+        
+        // Convert video to MP3 using converter
+        await conn.sendMessage(from, { react: { text: '🔧', key: m.key } });
+        const audioBuffer = await converter.toAudio(videoBuffer, 'mp4');
+        
+        // Send converted audio
         await conn.sendMessage(from, {
-            audio: { url: videoUrl },
+            audio: audioBuffer,
             mimetype: 'audio/mpeg',
             ptt: false
         }, { quoted: mek });
@@ -40,7 +52,7 @@ cmd({
     } catch (error) {
         console.error('TTMP3 Error:', error);
         await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-        reply("❌ Audio extraction failed.");
+        reply("❌ Audio extraction failed. Error: " + error.message);
     }
 });
 
@@ -61,6 +73,7 @@ cmd({
 
         await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
 
+        // Fetch Instagram video
         const apiUrl = `https://api-aswin-sparky.koyeb.app/api/downloader/igdl?url=${encodeURIComponent(url)}`;
         const response = await fetch(apiUrl);
         const data = await response.json();
@@ -76,8 +89,18 @@ cmd({
             return reply("No video found.");
         }
 
+        // Download video as buffer
+        await conn.sendMessage(from, { react: { text: '⬇️', key: m.key } });
+        const videoResponse = await fetch(videoItem.url);
+        const videoBuffer = await videoResponse.buffer();
+        
+        // Convert video to MP3 using converter
+        await conn.sendMessage(from, { react: { text: '🔧', key: m.key } });
+        const audioBuffer = await converter.toAudio(videoBuffer, 'mp4');
+        
+        // Send converted audio
         await conn.sendMessage(from, {
-            audio: { url: videoItem.url },
+            audio: audioBuffer,
             mimetype: 'audio/mpeg',
             ptt: false
         }, { quoted: mek });
@@ -87,6 +110,6 @@ cmd({
     } catch (error) {
         console.error('IGMP3 Error:', error);
         await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-        reply("❌ Audio extraction failed.");
+        reply("❌ Audio extraction failed. Error: " + error.message);
     }
 });
