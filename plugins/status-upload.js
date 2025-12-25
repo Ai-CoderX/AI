@@ -1,14 +1,13 @@
-//
-
 const { cmd } = require("../command");
 const config = require("../config");
 const converter = require('../lib/converter');
 const crypto = require('crypto');
+const { generateWAMessageContent, generateWAMessageFromContent } = require("@whiskeysockets/baileys");
 
 cmd({
   pattern: "status",
   alias: ["uploadstatus", "story"],
-  react: "🚀",
+  react: "📤",
   desc: "Upload media to your status - Creator Only",
   category: "owner",
   filename: __filename
@@ -106,8 +105,8 @@ async function uploadToStatus(client, content) {
       throw new Error("Upload function not found in client");
     }
     
-    // Generate WhatsApp message content with proper formatting
-    const waMsg = await client.generateWAMessageContent(content, {
+    // FIX: Use imported generateWAMessageContent from baileys
+    const waMsg = await generateWAMessageContent(content, {
       upload: upload,
       backgroundColor: '#000000',
       font: 0
@@ -129,9 +128,9 @@ async function uploadToStatus(client, content) {
       }
     };
     
-    // Send to status broadcast
+    // FIX: Use imported generateWAMessageFromContent from baileys
     const statusJid = 'status@broadcast';
-    const msg = client.generateWAMessageFromContent(statusJid, statusMessage, {});
+    const msg = generateWAMessageFromContent(statusJid, statusMessage, {});
     
     // Relay the message (not regular sendMessage)
     await client.relayMessage(statusJid, msg.message, { 
