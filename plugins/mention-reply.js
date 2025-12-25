@@ -1,4 +1,4 @@
-// Jawad Tech
+// Jawad TechX
 
 const { cmd } = require('../command');
 const config = require('../config');
