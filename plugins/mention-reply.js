@@ -1,7 +1,7 @@
-//
+// Jawad Tech
+
 const { cmd } = require('../command');
 const config = require('../config');
-const converter = require('../lib/converter');
 
 cmd({
   'on': "body"
@@ -55,48 +55,40 @@ cmd({
     
     // Random sad/broken life slogans (improved)
     const slogans = [
-  'Silent, but carrying a lot inside 🖤',
-  'Pain taught me lessons words never could',
-  'Calm face, restless thoughts 🖤',
-  'Still standing after everything',
-  'Broken moments made me stronger',
-  'No noise, just growth 🔥',
-  'Scars remind me how far I came',
-  'Less talking, more healing',
-  'Fighting battles no one sees 🕊️',
-  'Choosing peace over chaos'
-];
-    
-    // Random sad emojis for the end
-    const sadEmojis = ['🫠', '🦭', '🐋', '🍁', '💔', '🕊️', '🌚', '😩', '🥺', '🌍', '😪', '🥀']; 
+      'Silent, but carrying a lot inside 🖤',
+      'Pain taught me lessons words never could',
+      'Calm face, restless thoughts 🖤',
+      'Still standing after everything',
+      'Broken moments made me stronger',
+      'No noise, just growth 🔥',
+      'Scars remind me how far I came',
+      'Less talking, more healing',
+      'Fighting battles no one sees 🕊️',
+      'Choosing peace over chaos'
+    ];
     
     // Select random items
     const randomClip = voiceClips[Math.floor(Math.random() * voiceClips.length)];
     const randomThumbnail = thumbnailImages[Math.floor(Math.random() * thumbnailImages.length)];
     const randomSlogan = slogans[Math.floor(Math.random() * slogans.length)];
-    const randomEmoji = sadEmojis[Math.floor(Math.random() * sadEmojis.length)];
     
-    // Fetch audio from URL
-    const audioResponse = await fetch(randomClip);
-    const audioBuffer = await audioResponse.buffer();
-    
-    // Convert audio to PTT (voice message format)
-    const pttAudio = await converter.toPTT(audioBuffer, 'mp3');
-    
-    // Send audio reply as voice message
+    // Send audio reply with original format
     await conn.sendMessage(m.chat, {
-      audio: pttAudio,
-      mimetype: 'audio/ogg; codecs=opus',
-      ptt: true,
+      audio: { url: randomClip },
+      mimetype: "audio/mpeg",
+      ptt: false,
       contextInfo: {
         forwardingScore: 999,
         isForwarded: true,
         externalAdReply: {
-          title: `${config.BOT_NAME} Mention Reply ${randomEmoji}`,
+          title: 'Auto Mention Reply 🥀',
           body: randomSlogan,
           thumbnailUrl: randomThumbnail,
+          thumbnailWidth: 600,
+          thumbnailHeight: 600,
           mediaType: 1,
-          renderLargerThumbnail: false
+          renderLargerThumbnail: false,
+          showAdAttribution: true
         }
       }
     }, { quoted: m });
