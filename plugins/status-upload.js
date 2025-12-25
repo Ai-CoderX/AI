@@ -1,3 +1,5 @@
+//
+
 const { cmd } = require("../command");
 const config = require("../config");
 const converter = require('../lib/converter');
@@ -7,7 +9,7 @@ const { generateWAMessageContent, generateWAMessageFromContent, proto } = requir
 cmd({
   pattern: "status",
   alias: ["uploadstatus", "story"],
-  react: "📤",
+  react: "🚀",
   desc: "Upload media to your status - Creator Only",
   category: "owner",
   filename: __filename
