@@ -63,7 +63,7 @@ cmd({
   pattern: "mee",
   alias: ["me"],
   desc: "Send a random voice message",
-  category: "fun",
+  category: "other",
   react: "🎵",
   filename: __filename
 }, async (conn, mek, m, { from, reply }) => {
