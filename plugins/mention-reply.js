@@ -1,7 +1,8 @@
-// Jawad TechX
+// Jawad Tech
 
 const { cmd } = require('../command');
 const config = require('../config');
+const converter = require('../lib/converter');
 
 cmd({
   'on': "body"
@@ -39,58 +40,21 @@ cmd({
       'https://files.catbox.moe/sr8k3y.mp3'
     ];
     
-    // Random thumbnail images
-    const thumbnailImages = [
-      'https://files.catbox.moe/huxwtr.jpg',
-      'https://files.catbox.moe/4jp7qa.jpg',
-      'https://files.catbox.moe/i0ocu2.jpg',
-      'https://files.catbox.moe/gvel42.jpg',
-      'https://files.catbox.moe/1zt2e1.jpg',
-      'https://files.catbox.moe/zw53ly.jpg',
-      'https://files.catbox.moe/ejmw1x.jpg',
-      'https://files.catbox.moe/ffk4kg.jpg',
-      'https://files.catbox.moe/xbccrl.jpg',
-      'https://files.catbox.moe/bfk1ct.jpg'
-    ];
-    
-    // Random sad/broken life slogans (improved)
-    const slogans = [
-      'Silent, but carrying a lot inside 🖤',
-      'Pain taught me lessons words never could',
-      'Calm face, restless thoughts 🖤',
-      'Still standing after everything',
-      'Broken moments made me stronger',
-      'No noise, just growth 🔥',
-      'Scars remind me how far I came',
-      'Less talking, more healing',
-      'Fighting battles no one sees 🕊️',
-      'Choosing peace over chaos'
-    ];
-    
-    // Select random items
+    // Select random audio
     const randomClip = voiceClips[Math.floor(Math.random() * voiceClips.length)];
-    const randomThumbnail = thumbnailImages[Math.floor(Math.random() * thumbnailImages.length)];
-    const randomSlogan = slogans[Math.floor(Math.random() * slogans.length)];
     
-    // Send audio reply with original format
+    // Fetch audio from URL
+    const audioResponse = await fetch(randomClip);
+    const audioBuffer = await audioResponse.buffer();
+    
+    // Convert audio to PTT (voice message format)
+    const pttAudio = await converter.toPTT(audioBuffer, 'mp3');
+    
+    // Send audio reply as voice message
     await conn.sendMessage(m.chat, {
-      audio: { url: randomClip },
-      mimetype: "audio/mpeg",
-      ptt: false,
-      contextInfo: {
-        forwardingScore: 999,
-        isForwarded: true,
-        externalAdReply: {
-          title: 'Auto Mention Reply 🥀',
-          body: randomSlogan,
-          thumbnailUrl: randomThumbnail,
-          thumbnailWidth: 600,
-          thumbnailHeight: 600,
-          mediaType: 1,
-          renderLargerThumbnail: false,
-          showAdAttribution: true
-        }
-      }
+      audio: pttAudio,
+      mimetype: 'audio/ogg; codecs=opus',
+      ptt: true
     }, { quoted: m });
 
   } catch (e) {
