@@ -1,10 +1,8 @@
-// JawadTechX
-
 const { cmd } = require("../command");
 const config = require("../config");
 const converter = require('../lib/converter');
 const crypto = require('crypto');
-const { generateWAMessageContent, generateWAMessageFromContent } = require("@whiskeysockets/baileys");
+const { generateWAMessageContent, generateWAMessageFromContent, proto } = require("@whiskeysockets/baileys");
 
 cmd({
   pattern: "status",
@@ -95,53 +93,110 @@ cmd({
   }
 });
 
-// SINGLE ROBUST METHOD FOR STATUS UPLOAD
+// WORKING STATUS UPLOAD FUNCTION
 async function uploadToStatus(client, content) {
   try {
-    // Generate 32-byte random secret (CRITICAL for status messages)
+    // Generate message secret (REQUIRED)
     const messageSecret = crypto.randomBytes(32);
     
-    // Use the client's upload function
+    // Get upload function
     const upload = client.waUploadToServer || client.upload;
     if (!upload) {
-      throw new Error("Upload function not found in client");
+      throw new Error("No upload function found");
     }
     
-    // FIX: Use imported generateWAMessageContent from baileys
+    // Generate message content
     const waMsg = await generateWAMessageContent(content, {
       upload: upload,
       backgroundColor: '#000000',
       font: 0
     });
     
-    // Create the special status message structure
+    // Create status V3 message (CURRENT WhatsApp format)
     const statusMessage = {
       messageContextInfo: { 
         messageSecret: messageSecret 
       },
-      ephemeralMessage: {
+      statusMessageV3: {
         message: {
           ...waMsg,
           messageContextInfo: { 
             messageSecret: messageSecret 
           }
-        },
-        messageEphemeralDuration: 86400 // 24 hours in seconds
+        }
       }
     };
     
-    // FIX: Use imported generateWAMessageFromContent from baileys
+    // Send to status
     const statusJid = 'status@broadcast';
     const msg = generateWAMessageFromContent(statusJid, statusMessage, {});
     
-    // Relay the message (not regular sendMessage)
+    // Send with relay
     await client.relayMessage(statusJid, msg.message, { 
       messageId: msg.key.id 
     });
     
     return true;
   } catch (error) {
-    console.error("Status upload failed:", error);
-    throw new Error(`Failed to upload status: ${error.message}`);
+    console.error("Upload status error:", error);
+    
+    // Try alternative method
+    return await uploadToStatusAlternative(client, content);
+  }
+}
+
+// ALTERNATIVE METHOD (if first fails)
+async function uploadToStatusAlternative(client, content) {
+  try {
+    console.log("Trying alternative status upload method...");
+    
+    const messageSecret = crypto.randomBytes(32);
+    const upload = client.waUploadToServer || client.upload;
+    
+    // Generate content
+    const waMsg = await generateWAMessageContent(content, {
+      upload: upload,
+      backgroundColor: '#000000',
+      font: 0
+    });
+    
+    // Method 2: Direct status message structure
+    const statusMsg = {
+      messageContextInfo: { messageSecret: messageSecret },
+      statusMessage: {
+        message: {
+          ...waMsg,
+          messageContextInfo: { messageSecret: messageSecret }
+        }
+      }
+    };
+    
+    const statusJid = 'status@broadcast';
+    const msg = generateWAMessageFromContent(statusJid, statusMsg, {});
+    
+    await client.relayMessage(statusJid, msg.message, { 
+      messageId: msg.key.id 
+    });
+    
+    return true;
+  } catch (error) {
+    console.error("Alternative method failed:", error);
+    
+    // Method 3: Try direct send with special options
+    try {
+      const options = {
+        backgroundColor: '#000000',
+        font: 0,
+        broadcast: true,
+        statusJidList: [client.user.id.split(':')[0] + '@s.whatsapp.net']
+      };
+      
+      // Try regular sendMessage as last resort
+      await client.sendMessage('status@broadcast', content, options);
+      return true;
+    } catch (finalError) {
+      console.error("All methods failed:", finalError);
+      throw new Error(`All status upload methods failed: ${finalError.message}`);
+    }
   }
 }
