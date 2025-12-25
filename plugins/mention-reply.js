@@ -89,7 +89,6 @@ cmd({
       audio: pttAudio,
       mimetype: 'audio/ogg; codecs=opus',
       ptt: true,
-      waveform: [99, 0, 99, 0, 99],
       contextInfo: {
         forwardingScore: 999,
         isForwarded: true,
@@ -100,8 +99,7 @@ cmd({
           thumbnailWidth: 600,
           thumbnailHeight: 600,
           mediaType: 1,
-          renderLargerThumbnail: false, // Changed back to false as requested
-          showAdAttribution: true
+          renderLargerThumbnail: false
         }
       }
     }, { quoted: m });
