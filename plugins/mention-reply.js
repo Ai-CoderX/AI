@@ -1,4 +1,4 @@
-// Jawad TechX - Single voiceClips const, no extra functions
+// Jawad TechX 
 
 const { cmd } = require('../command');
 const config = require('../config');
