@@ -1,4 +1,4 @@
-// Jawad Tech On Top 🔝 
+// Jawad TechX On Top 🔝 
 const { setPrefix } = require('../lib/prefix');
 const { cmd, commands } = require('../command');
 const config = require('../config');
