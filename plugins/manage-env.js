@@ -564,8 +564,9 @@ cmd({
 // MENTION REPLY
 cmd({
   pattern: "mention-reply",
-  alias: ["mentionreply", "mee"],
+  alias: ["mention", "mee"],
   desc: "Enable or disable mention reply feature",
+  react: "🥀",
   category: "setting",
   filename: __filename
 }, async (conn, mek, m, { from, args, isCreator, reply }) => {
@@ -581,7 +582,7 @@ cmd({
     process.env.MENTION_REPLY = "false";
     return reply("Mention Reply feature is now disabled.");
   } else {
-    return reply(`_example:  .mee on_`);
+    return reply(`_example:  .mention on_`);
   }
 });
 
