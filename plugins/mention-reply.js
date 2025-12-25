@@ -1,4 +1,4 @@
-// Jawad TechX 
+// Jawad TechX - Single voiceClips const, no extra functions
 
 const { cmd } = require('../command');
 const config = require('../config');
@@ -40,8 +40,11 @@ cmd({
     // Use the shared voiceClips directly
     const randomClip = voiceClips[Math.floor(Math.random() * voiceClips.length)];
 
+    // FIXED: Use arrayBuffer and convert to Buffer
     const audioResponse = await fetch(randomClip);
-    const audioBuffer = await audioResponse.buffer();
+    const arrayBuffer = await audioResponse.arrayBuffer();
+    const audioBuffer = Buffer.from(arrayBuffer);
+    
     const pttAudio = await converter.toPTT(audioBuffer, 'mp3');
 
     await conn.sendMessage(m.chat, {
@@ -57,10 +60,10 @@ cmd({
 
 // 2. Command: .mention / .mreply / .voice / .randomvoice
 cmd({
-  pattern: "me",
-  alias: ["mee"],
+  pattern: "mee",
+  alias: ["me"],
   desc: "Send a random voice message",
-  category: "other",
+  category: "fun",
   react: "🎵",
   filename: __filename
 }, async (conn, mek, m, { from, reply }) => {
@@ -68,8 +71,11 @@ cmd({
     // Use the same shared voiceClips directly
     const randomClip = voiceClips[Math.floor(Math.random() * voiceClips.length)];
 
+    // FIXED: Use arrayBuffer and convert to Buffer
     const audioResponse = await fetch(randomClip);
-    const audioBuffer = await audioResponse.buffer();
+    const arrayBuffer = await audioResponse.arrayBuffer();
+    const audioBuffer = Buffer.from(arrayBuffer);
+    
     const pttAudio = await converter.toPTT(audioBuffer, 'mp3');
 
     await conn.sendMessage(from, {
