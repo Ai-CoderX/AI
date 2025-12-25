@@ -95,8 +95,6 @@ cmd({
           title: `${config.BOT_NAME} Mention Reply ${randomEmoji}`,
           body: randomSlogan,
           thumbnailUrl: randomThumbnail,
-          thumbnailWidth: 600,
-          thumbnailHeight: 600,
           mediaType: 1,
           renderLargerThumbnail: false
         }
