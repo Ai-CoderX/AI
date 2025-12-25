@@ -1,4 +1,5 @@
 // Jawad TechX On Top 🔝 
+
 const { setPrefix } = require('../lib/prefix');
 const { cmd, commands } = require('../command');
 const config = require('../config');
@@ -564,7 +565,7 @@ cmd({
 // MENTION REPLY
 cmd({
   pattern: "mention-reply",
-  alias: ["mention", "mee"],
+  alias: ["mention"],
   desc: "Enable or disable mention reply feature",
   react: "🥀",
   category: "setting",
