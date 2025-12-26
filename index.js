@@ -1,5 +1,3 @@
-// JawadTech 
-
 const config = require('./config');
 const axios = require("axios");
 const zlib = require('zlib');
@@ -515,14 +513,9 @@ if (sender.includes('@lid')) {
     const urlRegex = /(?:https?:\/\/)?(?:www\.)?[a-z0-9-]+\.(?:com|org|net|co|pk|biz|id|info|xyz|online|site|website|tech|shop|store|blog|app|dev|io|ai|gov|edu|mil|me)(?:\/[^\s]*)?|whatsapp\.com\/channel\/|wa\.me\//gi;
     
     if (urlRegex.test(cleanBody)) {
-        // Check if sender should be ignored ONLY for anti-link (bot itself or botNumber2)
-        if (mek.key.fromMe || sender === botNumber2) {
-            return; // Ignore messages from bot itself or botNumber2 for anti-link ONLY
-        }
-        
         if (config.ANTI_LINK === "true") {
-            // Check if sender is NOT admin before taking action
-            if (!isAdmins) {
+            // Check if sender is NOT admin AND NOT botNumber2 before taking action
+            if (!isAdmins && sender !== botNumber2) {
                 await conn.sendMessage(from, { delete: mek.key });
                 await conn.sendMessage(from, {
                     text: `*⚠️ Links are not allowed in this group.*\n*@${senderNumber} has being removed.*`,
@@ -532,8 +525,8 @@ if (sender.includes('@lid')) {
             }
             return;
         } else if (config.ANTI_LINK === "delete") {
-            // Check if sender is NOT admin before taking action
-            if (!isAdmins) {
+            // Check if sender is NOT admin AND NOT botNumber2 before taking action
+            if (!isAdmins && sender !== botNumber2) {
                 await conn.sendMessage(from, { delete: mek.key });
                 await conn.sendMessage(from, {
                     text: `*⚠️ Links are not allowed in this group.*\n*Please @${senderNumber} take note.*`,
@@ -544,6 +537,7 @@ if (sender.includes('@lid')) {
         }
     }
 }
+    
     
 const ownerFilev2 = JSON.parse(fsSync.readFileSync('./lib/sudo.json', 'utf-8'));
     
