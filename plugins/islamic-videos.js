@@ -1,6 +1,6 @@
 const { cmd } = require("../command");
 const fetch = require("node-fetch");
-
+ 
 const islamicQueries = [
     "Islamic video",
     "Islamic status", 
@@ -15,7 +15,7 @@ cmd({
     pattern: "status",
     desc: "Send random Islamic status videos from TikTok",
     react: '❤️',
-    category: '',
+    category: 'download',
     use: ".status",
     filename: __filename
 }, async (conn, mek, m, { reply, args, from }) => {
