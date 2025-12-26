@@ -38,7 +38,7 @@
     },
 
     "AUTO_TYPING": {
-      "description": "Show typing indicator when receiving messages. Options: 'true' (both), 'ib' (inbox only), 'group' (group only), 'false' (disabled)",
+      "description": "Show typing indicator when receiving messages. Options: 'true' (both), 'inbox' (inbox only), 'group' (group only), 'false' (disabled)",
       "required": false,
       "value": "false"
     },
