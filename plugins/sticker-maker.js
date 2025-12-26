@@ -91,3 +91,33 @@ cmd({
         reply(`❌ ${error.message}`);
     }
 });
+
+
+cmd({
+    pattern: "attp2",
+    desc: "Convert text to animated sticker with new API",
+    react: "✨",
+    category: "tools", 
+    use: ".attp2 YOUR_TEXT",
+    filename: __filename,
+}, async (conn, mek, m, { args, reply }) => {
+    try {
+        if (!args[0]) return reply("*Please provide text!*");
+
+        // Use the new API endpoint
+        const apiUrl = `https://api.deline.web.id/maker/attp?text=${encodeURIComponent(args[0])}`;
+        
+        // Download the GIF from the API
+        const gifBuffer = await StickerMaker.fetchGif(apiUrl);
+        
+        // Convert GIF to sticker
+        const stickerBuffer = await StickerMaker.gifToSticker(gifBuffer);
+        
+        // Send the sticker
+        await conn.sendMessage(m.chat, { sticker: stickerBuffer }, { quoted: mek });
+        
+    } catch (error) {
+        console.error("ATTP2 error:", error);
+        reply(`❌ ${error.message}`);
+    }
+});
