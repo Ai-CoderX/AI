@@ -1,3 +1,5 @@
+// JawadTechXD 
+
 const { cmd } = require('../command');
 const { Sticker, StickerTypes } = require("wa-sticker-formatter");
 const Config = require('../config');
