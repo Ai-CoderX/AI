@@ -1,11 +1,13 @@
+// Jawad Tech
+
 const { cmd } = require("../command");
 const fetch = require("node-fetch");
  
 const islamicQueries = [
     "Islamic video",
     "Islamic status", 
-    "quran",
-    "naat status",
+    "Quran",
+    "Naat status",
     "islamic motivation",
     "Allah",
     "Islamic quotes"
