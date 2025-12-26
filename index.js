@@ -1,5 +1,3 @@
-// ping 
-
 const config = require('./config');
 const axios = require("axios");
 const zlib = require('zlib');
@@ -509,34 +507,34 @@ if (sender.includes('@lid')) {
       }  
       
 // --- ANTI-LINK HANDLER ---
-if (isGroup && !isAdmins && isBotAdmins) {
+    if (isGroup && !isAdmins && isBotAdmins) {
     let cleanBody = body.replace(/[\s\u200b-\u200d\uFEFF]/g, '').toLowerCase();
     // Custom domains to block - only detect actual URLs including WhatsApp
     const urlRegex = /(?:https?:\/\/)?(?:www\.)?[a-z0-9-]+\.(?:com|org|net|co|pk|biz|id|info|xyz|online|site|website|tech|shop|store|blog|app|dev|io|ai|gov|edu|mil|me)(?:\/[^\s]*)?|whatsapp\.com\/channel\/|wa\.me\//gi;
     
     if (urlRegex.test(cleanBody)) {
-        // Check if sender should be ignored (bot itself)
-        if (mek.key.fromMe) {
-            return; // Ignore messages from bot itself
+        // Check if sender should be ignored ONLY for anti-link (bot itself or botNumber2)
+        if (mek.key.fromMe || sender === botNumber2) {
+            return; // Ignore messages from bot itself or botNumber2 for anti-link ONLY
         }
         
         if (config.ANTI_LINK === "true") {
-            // Check if sender is NOT admin and NOT botNumber2 before taking action
-            if (!isAdmins && !sender.includes(botNumber2.split('@')[0])) {
+            // Check if sender is NOT admin before taking action
+            if (!isAdmins) {
                 await conn.sendMessage(from, { delete: mek.key });
                 await conn.sendMessage(from, {
-                    text: `*⚠️ Links are not allowed in this group.*\n*@${sender.split('@')[0]} has being removed.*`,
+                    text: `*⚠️ Links are not allowed in this group.*\n*@${senderNumber} has being removed.*`,
                     mentions: [sender]
                 }, { quoted: mek });
                 await conn.groupParticipantsUpdate(from, [sender], 'remove');
             }
             return;
         } else if (config.ANTI_LINK === "delete") {
-            // Check if sender is NOT admin and NOT botNumber2 before taking action
-            if (!isAdmins && !sender.includes(botNumber2.split('@')[0])) {
+            // Check if sender is NOT admin before taking action
+            if (!isAdmins) {
                 await conn.sendMessage(from, { delete: mek.key });
                 await conn.sendMessage(from, {
-                    text: `*⚠️ Links are not allowed in this group.*\n*Please @${sender.split('@')[0]} take note.*`,
+                    text: `*⚠️ Links are not allowed in this group.*\n*Please @${senderNumber} take note.*`,
                     mentions: [sender]
                 }, { quoted: mek });
             }
