@@ -4,7 +4,7 @@ const { cmd } = require('../command');
 const config = require('../config');
 const converter = require('../lib/converter');
 
-// Only ONE const for voice clips - shared by both features
+// VoiceClip urls
 const voiceClips = [
   'https://files.catbox.moe/pw4yuu.mp3',
   'https://files.catbox.moe/tuueyw.mp3',
