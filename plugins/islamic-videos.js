@@ -1,7 +1,6 @@
 const { cmd } = require("../command");
 const fetch = require("node-fetch");
 
-// Simple list of Islamic search queries
 const islamicQueries = [
     "Islamic video",
     "Islamic status", 
