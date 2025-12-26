@@ -1,3 +1,5 @@
+// Jawad Tech
+
 const { cmd } = require("../command");
 const fetch = require("node-fetch");
 
