@@ -1,33 +1,15 @@
 const { cmd } = require("../command");
 const fetch = require("node-fetch");
 
-// List of Islamic search queries for random selection
+// Simple list of Islamic search queries
 const islamicQueries = [
-    "Islamic status",
-    "Quran recitation",
-    "Islamic nasheed",
-    "Muslim prayer",
-    "Islamic reminder",
-    "Allah names",
-    "Prophet Muhammad",
-    "Islamic dua",
-    "Muslim community",
-    "Islamic teachings",
-    "Ramadan status",
-    "Islamic motivation",
-    "Islamic quotes",
-    "Muslim brotherhood",
-    "Islamic education",
-    "Muslim lifestyle",
-    "Islamic history",
-    "Muslim culture",
-    "Islamic faith",
-    "Muslim unity",
-    "Surah recitation",
-    "Islamic wisdom",
-    "Muslim inspiration",
-    "Islamic values",
-    "Muslim identity"
+    "Islamic video",
+    "Islamic status", 
+    "quran",
+    "naat status",
+    "islamic motivation",
+    "Allah",
+    "Islamic quotes"
 ];
 
 cmd({
@@ -67,7 +49,7 @@ cmd({
                 from,
                 { 
                     video: { url: randomVideo.hd },
-                    caption: `🌺 *Islamic Status Video*\n> *© Powered by KHAN-MD*`
+                    caption: `- 🌺 *Islamic Status Video*\n> *© Powered by KHAN-MD*`
                 },
                 { quoted: mek }
             );
