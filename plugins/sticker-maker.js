@@ -1,3 +1,4 @@
+// Jawad Tech 
 
 const { cmd } = require('../command');
 const { Sticker, StickerTypes } = require("wa-sticker-formatter");
