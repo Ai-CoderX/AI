@@ -528,11 +528,10 @@ cmd({
 // ANTI-LINK
 cmd({
   pattern: "antilink",
-  react: "🫟",
   alias: ["anti-link"],
-  desc: "Enable or disable anti-link feature in groups\nModes: on/off/warn/delete",
+  desc: "Enable or disable anti-link feature in groups\nModes: on/off/delete",
   category: "group",
-  react: "🚫",
+  react: "🚀",
   filename: __filename
 }, async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isCreator, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply }) => {
   try {
@@ -546,16 +545,12 @@ cmd({
       config.ANTI_LINK = "false";
       process.env.ANTI_LINK = "false";
       await reply("🔗 *Anti-link feature is now DISABLED*\n\nLinks will be allowed.");
-    } else if (args[0] === "warn") {
-      config.ANTI_LINK = "warn";
-      process.env.ANTI_LINK = "warn";
-      await reply("⚠️ *Anti-link feature is set to WARN mode*\n\nUsers will be warned when sending links.");
     } else if (args[0] === "delete") {
       config.ANTI_LINK = "delete";
       process.env.ANTI_LINK = "delete";
       await reply("🗑️ *Anti-link feature is set to DELETE mode*\n\nLinks will be automatically deleted.");
     } else {
-      await reply(`*Invalid input! Use one of the following modes:*\n\n• *on* - Enable anti-link (delete links)\n• *off* - Disable anti-link\n• *warn* - Warn users when sending links\n• *delete* - Delete links automatically\n\n*Example:* .antilink warn`);
+      await reply(`*Invalid input! Use one of the following modes:*\n\n• *on* - Enable anti-link (delete links)\n• *off* - Disable anti-link\n• *delete* - Delete links automatically\n\n*Example:* .antilink delete`);
     }
   } catch (error) {
     return reply(`*An error occurred while processing your request.*\n\n_Error:_ ${error.message}`);
@@ -567,7 +562,7 @@ cmd({
   pattern: "mention-reply",
   alias: ["mention"],
   desc: "Enable or disable mention reply feature",
-  react: "🥀",
+  react: "🔗",
   category: "setting",
   filename: __filename
 }, async (conn, mek, m, { from, args, isCreator, reply }) => {
