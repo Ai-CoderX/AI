@@ -24,6 +24,9 @@ const voiceClips = [
   'https://files.catbox.moe/sr8k3y.mp3'
 ];
 
+// Fixed delay of 3 seconds
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 // 1. Auto reply when bot is mentioned in group
 cmd({
   on: "body"
@@ -37,17 +40,27 @@ cmd({
     const mentioned = m.mentionedJid || [];
     if (!mentioned.includes(botNumber2)) return;
 
-    // Use the shared voiceClips directly
+    const chatId = m.chat;
+
+    // Show recording animation
+    await conn.sendPresenceUpdate('recording', chatId);
+
+    // Select random clip
     const randomClip = voiceClips[Math.floor(Math.random() * voiceClips.length)];
 
-    // FIXED: Use arrayBuffer and convert to Buffer
+    // Fetch audio
     const audioResponse = await fetch(randomClip);
     const arrayBuffer = await audioResponse.arrayBuffer();
     const audioBuffer = Buffer.from(arrayBuffer);
-    
+
+    // Fixed 3-second delay before converting
+    await delay(3000);
+
+    // Convert to PTT
     const pttAudio = await converter.toPTT(audioBuffer, 'mp3');
 
-    await conn.sendMessage(m.chat, {
+    // Send voice note
+    await conn.sendMessage(chatId, {
       audio: pttAudio,
       mimetype: 'audio/ogg; codecs=opus',
       ptt: true
@@ -58,7 +71,7 @@ cmd({
   }
 });
 
-// 2. Command: .mention / .mreply / .voice / .randomvoice
+// 2. Command: .mee / .me
 cmd({
   pattern: "mee",
   alias: ["me"],
@@ -68,17 +81,27 @@ cmd({
   filename: __filename
 }, async (conn, mek, m, { from, reply }) => {
   try {
-    // Use the same shared voiceClips directly
+    const chatId = from;
+
+    // Show recording animation
+    await conn.sendPresenceUpdate('recording', chatId);
+
+    // Select random clip
     const randomClip = voiceClips[Math.floor(Math.random() * voiceClips.length)];
 
-    // FIXED: Use arrayBuffer and convert to Buffer
+    // Fetch audio
     const audioResponse = await fetch(randomClip);
     const arrayBuffer = await audioResponse.arrayBuffer();
     const audioBuffer = Buffer.from(arrayBuffer);
-    
+
+    // Fixed 3-second delay before converting
+    await delay(3000);
+
+    // Convert to PTT
     const pttAudio = await converter.toPTT(audioBuffer, 'mp3');
 
-    await conn.sendMessage(from, {
+    // Send voice note
+    await conn.sendMessage(chatId, {
       audio: pttAudio,
       mimetype: 'audio/ogg; codecs=opus',
       ptt: true
