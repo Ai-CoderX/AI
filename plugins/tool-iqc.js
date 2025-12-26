@@ -1,3 +1,4 @@
+// Jawad TechX 
 const { cmd } = require('../command');
 const axios = require('axios');
 
@@ -6,7 +7,7 @@ cmd({
     alias: ["sschat"],
     desc: "Generate fake iPhone quoted chat screenshot",
     category: "other",
-    react: "📱",
+    react: "🦇",
     filename: __filename
 }, async (conn, mek, m, { from, reply, text }) => {
     try {
