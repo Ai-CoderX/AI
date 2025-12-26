@@ -4,7 +4,7 @@ const config = require('../config');
 
 cmd({
     pattern: "alive",
-    alias: ["status", "live"],
+    alias: ["live"],
     desc: "Check uptime and system status",
     category: "main",
     react: "🟢",
