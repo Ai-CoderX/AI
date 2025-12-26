@@ -123,3 +123,127 @@ cmd({
         reply(`❌ ${error.message}`);
     }
 });
+
+
+// Command (Image to Sticker)
+cmd({
+    pattern: "gurl",
+    alias: ["sgirl"],
+    desc: "Create sticker with cewekbrat style",
+    react: "👩",
+    category: "tools", 
+    use: ".gurl YOUR_TEXT",
+    filename: __filename,
+}, async (conn, mek, m, { args, reply }) => {
+    try {
+        if (!args[0]) return reply("*Please provide text!*");
+
+        // Get image from API
+        const apiUrl = `https://api.deline.web.id/maker/cewekbrat?text=${encodeURIComponent(args[0])}`;
+        
+        // Download the image
+        const imageBuffer = await StickerMaker.fetchGif(apiUrl); // Reusing fetchGif for image
+        
+        // Convert image to sticker using wa-sticker-formatter
+        const sticker = new Sticker(imageBuffer, {
+            pack: "Jawad Tech",
+            type: StickerTypes.FULL,
+            categories: ["✨", "🎀"],
+            id: crypto.randomBytes(4).toString('hex'),
+            quality: 50,
+            background: 'transparent',
+        });
+        
+        const stickerBuffer = await sticker.toBuffer();
+        
+        // Send the sticker
+        await conn.sendMessage(m.chat, { sticker: stickerBuffer }, { quoted: mek });
+        
+    } catch (error) {
+        console.error("GURL error:", error);
+        reply(`❌ ${error.message}`);
+    }
+});
+
+// Brat Command (Image to Sticker)
+cmd({
+    pattern: "brat",
+    alias: ["attp3"],
+    desc: "Create sticker with brat style",
+    react: "👨",
+    category: "other", 
+    use: ".brat YOUR_TEXT",
+    filename: __filename,
+}, async (conn, mek, m, { args, reply }) => {
+    try {
+        if (!args[0]) return reply("*Please provide text!*");
+
+        // Get image from API
+        const apiUrl = `https://api.deline.web.id/maker/brat?text=${encodeURIComponent(args[0])}`;
+        
+        // Download the image
+        const imageBuffer = await StickerMaker.fetchGif(apiUrl);
+        
+        // Convert image to sticker
+        const sticker = new Sticker(imageBuffer, {
+            pack: "KHAN MD 🦇",
+            type: StickerTypes.FULL,
+            categories: ["🔥", "⚡"],
+            id: crypto.randomBytes(4).toString('hex'),
+            quality: 50,
+            background: 'transparent',
+        });
+        
+        const stickerBuffer = await sticker.toBuffer();
+        
+        // Send the sticker
+        await conn.sendMessage(m.chat, { sticker: stickerBuffer }, { quoted: mek });
+        
+    } catch (error) {
+        console.error("BRAT error:", error);
+        reply(`❌ ${error.message}`);
+    }
+});
+
+// Brat Video Command (Video to Sticker)
+cmd({
+    pattern: "bratvideo",
+    alias: ["bratvid", "bratsticker"],
+    desc: "Create video sticker with brat style",
+    react: "🎬",
+    category: "other", 
+    use: ".bratvideo YOUR_TEXT",
+    filename: __filename,
+}, async (conn, mek, m, { args, reply }) => {
+    try {
+        if (!args[0]) return reply("*Please provide text!*");
+
+        // Get video from API
+        const apiUrl = `https://api.deline.web.id/maker/bratvid?text=${encodeURIComponent(args[0])}`;
+        
+        // Download the video
+        const videoBuffer = await StickerMaker.fetchGif(apiUrl);
+        
+        // Convert video to WebP sticker
+        const webpBuffer = await StickerMaker.videoToWebp(videoBuffer);
+        
+        // Convert WebP to sticker
+        const sticker = new Sticker(webpBuffer, {
+            pack: "🦇 JawadTechXD",
+            type: StickerTypes.FULL,
+            categories: ["🎬", "✨"],
+            id: crypto.randomBytes(4).toString('hex'),
+            quality: 50,
+            background: 'transparent',
+        });
+        
+        const stickerBuffer = await sticker.toBuffer();
+        
+        // Send the sticker
+        await conn.sendMessage(m.chat, { sticker: stickerBuffer }, { quoted: mek });
+        
+    } catch (error) {
+        console.error("BratVideo error:", error);
+        reply(`❌ ${error.message}`);
+    }
+});
