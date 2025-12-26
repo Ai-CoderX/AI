@@ -4,7 +4,7 @@ const Config = require('../config');
 const StickerMaker = require('../lib/sticker-maker');
 const crypto = require('crypto'); // Added missing import
 
-// Mega Unified Sticker Command
+// Mega Sticker Command
 cmd(
     {
         pattern: 'sticker',
